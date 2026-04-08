@@ -54,18 +54,13 @@ export default function HeroV2() {
               HUDDYERTRADES
             </span>
           </div>
-          {/* Badge hidden on smallest screens to prevent crowding */}
-          <div className="badge-gold hidden sm:inline-flex">
+          {/* Badge — desktop only */}
+          <div className="badge-gold hidden md:inline-flex">
             <span
               className="w-1.5 h-1.5 rounded-full"
               style={{ background: "#C9A84C", boxShadow: "0 0 6px #C9A84C" }}
             />
             Applications Now Open
-          </div>
-          {/* Compact dot indicator on very small screens */}
-          <div className="sm:hidden flex items-center gap-1.5" style={{ color: "#C9A84C", fontSize: "11px", fontFamily: "var(--font-dm-sans)" }}>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#C9A84C", boxShadow: "0 0 4px #C9A84C", display: "inline-block" }} />
-            Open
           </div>
         </div>
 
