@@ -19,7 +19,6 @@ function TradingBarsLogo() {
 
 export default function HeroV2() {
   const ref = useRef<HTMLElement>(null);
-
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -142,30 +141,6 @@ export default function HeroV2() {
         </div>
       </section>
 
-      {/* ── Sticky mobile CTA ── */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-6 md:hidden"
-        style={{
-          background: "linear-gradient(to top, #0A0A0A 60%, transparent)",
-          pointerEvents: "none",
-        }}
-      >
-        <a
-          href={TYPEFORM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full text-center font-body font-bold text-sm uppercase tracking-widest rounded-full py-4"
-          style={{
-            background: "linear-gradient(135deg, #C9A84C, #D4AF37)",
-            color: "#0A0A0A",
-            boxShadow: "0 4px 24px rgba(201,168,76,0.45)",
-            pointerEvents: "all",
-            letterSpacing: "0.1em",
-          }}
-        >
-          Apply Now →
-        </a>
-      </div>
     </>
   );
 }

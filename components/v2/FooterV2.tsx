@@ -13,7 +13,7 @@ export default function FooterV2() {
   return (
     /* Extra bottom padding on mobile so sticky CTA doesn't cover footer */
     <footer
-      className="py-12 pb-24 md:pb-12 px-5 md:px-12"
+      className="py-12 px-5 md:px-12"
       style={{
         backgroundColor: "#060606",
         borderTop: "1px solid rgba(255,255,255,0.06)",
