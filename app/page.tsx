@@ -11,8 +11,8 @@ export default function Page() {
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
       <HeroV2 />
       <ResultsStrip />
-      <SocialProofV2 />
       <CurriculumSection />
+      <SocialProofV2 />
       <WhoIsItFor />
       <ApplyCTA />
       <FooterV2 />

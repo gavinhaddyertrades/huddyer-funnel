@@ -77,8 +77,8 @@ export default function HeroV2() {
                 letterSpacing: "0.02em",
               }}
             >
-              BUILT TO BE{" "}
-              <span className="gold-text-gradient">FUNDED.</span>
+              FUNDED{" "}
+              <span className="gold-text-gradient">STARTS HERE.</span>
             </h1>
             <p
               className="font-body font-medium leading-snug"
