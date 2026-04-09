@@ -34,8 +34,8 @@ export default function BookPage() {
             color: "#999",
           }}
         >
-          Hudson reviews every application personally. Select a time below and
-          he&apos;ll be on the call — no sales team, no middleman.
+          Your application is in. Select a time below and a member of
+          Hudson&apos;s team will be on the call to walk you through next steps.
         </p>
 
         {/* Divider */}
@@ -53,7 +53,7 @@ export default function BookPage() {
       <div className="w-full max-w-3xl px-4 pb-20">
         <div
           className="calendly-inline-widget w-full rounded-2xl overflow-hidden"
-          data-url="https://calendly.com/nahom-fikru1/1-1-mentorship-call?background_color=0a0a0a&text_color=f2ede6&primary_color=c9a84c"
+          data-url="https://calendly.com/nahom-fikru1/1-1-mentorship-call?hide_event_type_details=1&hide_gdpr_banner=1"
           style={{ minWidth: 320, height: 700 }}
         />
         <Script
