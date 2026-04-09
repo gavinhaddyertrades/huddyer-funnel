@@ -15,7 +15,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Huddyer | Built To Be Funded",
+  title: "Huddyer | Become Consistently Profitable",
   description:
     "Hudson Shaffer's trading mentorship. The structured system serious traders use to become consistently profitable and pass funded evaluations.",
 };
