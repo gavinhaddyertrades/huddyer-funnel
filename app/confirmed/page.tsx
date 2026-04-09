@@ -184,23 +184,6 @@ export default function ConfirmedPage() {
         </div>
       </div>
 
-      {/* ── Bottom CTA ── */}
-      <div className="max-w-3xl mx-auto px-5 py-20 text-center">
-        <p
-          className="font-body text-sm leading-relaxed mb-8 max-w-md mx-auto"
-          style={{ color: "#777" }}
-        >
-          Didn&apos;t get a chance to apply yet? There are still a limited number of spots available.
-        </p>
-        <a
-          href={TYPEFORM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-gold"
-        >
-          Apply Now →
-        </a>
-      </div>
 
       {/* ── Footer ── */}
       <div
