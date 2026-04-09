@@ -46,7 +46,7 @@ export default function WhoIsItFor() {
     <section
       ref={ref}
       className="section-fade py-20 md:py-24 px-5 md:px-12"
-      style={{ backgroundColor: "#0A0A0A" }}
+      style={{ backgroundColor: "#0A0A0A", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
     >
       <div className="max-w-5xl mx-auto space-y-10 md:space-y-14">
         <div className="section-label">Who This Is For</div>

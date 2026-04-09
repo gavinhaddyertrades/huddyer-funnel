@@ -22,7 +22,7 @@ export default function ApplyCTA() {
       id="apply"
       className="section-fade py-20 md:py-28 px-5 md:px-12"
       style={{
-        backgroundColor: "#0A0808",
+        backgroundColor: "#111111",
         borderTop: "1px solid rgba(255,255,255,0.07)",
       }}
     >

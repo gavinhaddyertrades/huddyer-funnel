@@ -116,7 +116,7 @@ export default function SocialProofV2() {
     <section
       ref={ref}
       className="section-fade py-24 px-6 md:px-12"
-      style={{ backgroundColor: "#0A0A0A" }}
+      style={{ backgroundColor: "#111111", borderTop: "1px solid rgba(255,255,255,0.07)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
     >
       <div className="max-w-5xl mx-auto space-y-16">
         {/* Label */}

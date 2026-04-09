@@ -42,7 +42,7 @@ export default function CurriculumSection() {
       ref={ref}
       className="section-fade py-20 md:py-24 px-5 md:px-12"
       style={{
-        backgroundColor: "#0D0D0D",
+        backgroundColor: "#0A0A0A",
         borderTop: "1px solid rgba(255,255,255,0.07)",
         borderBottom: "1px solid rgba(255,255,255,0.07)",
       }}
