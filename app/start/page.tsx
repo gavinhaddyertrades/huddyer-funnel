@@ -1,6 +1,6 @@
 "use client";
 
-const CURRICULUM_URL = "#"; // Replace with actual link
+const CURRICULUM_URL = "https://www.fanbasis.com/agency-checkout/huddyer-trades/8EmYg";
 
 const bullets = [
   "9+ hours of structured video modules",
