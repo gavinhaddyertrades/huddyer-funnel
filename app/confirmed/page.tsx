@@ -23,63 +23,6 @@ const sections = [
   },
 ];
 
-const CALENDARS = [
-  {
-    name: "Apple",
-    url: "https://calendar.apple.com",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="white" className="w-7 h-7">
-        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-      </svg>
-    ),
-  },
-  {
-    name: "Google",
-    url: "https://calendar.google.com",
-    icon: (
-      <svg viewBox="0 0 48 48" className="w-7 h-7">
-        <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-4z"/>
-        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.7-3.4-11.3-8l-6.6 5.1C9.6 39.6 16.3 44 24 44z"/>
-        <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.4 4.2-4.4 5.5l6.2 5.2C40.7 35.5 44 30.2 44 24c0-1.3-.1-2.7-.4-4z"/>
-      </svg>
-    ),
-  },
-  {
-    name: "Office 365",
-    url: "https://outlook.office.com/calendar",
-    icon: (
-      <svg viewBox="0 0 48 48" className="w-7 h-7">
-        <path fill="#FF5722" d="M26 6h16v10H26z"/>
-        <path fill="#FF9800" d="M6 6h16v10H6z"/>
-        <path fill="#4CAF50" d="M6 20h16v10H6z"/>
-        <path fill="#0288D1" d="M26 20h16v10H26z"/>
-        <path fill="#FF9800" d="M6 34h16v10H6z"/>
-        <path fill="#FF5722" d="M26 34h16v10H26z"/>
-      </svg>
-    ),
-  },
-  {
-    name: "Outlook",
-    url: "https://outlook.live.com/calendar",
-    icon: (
-      <svg viewBox="0 0 48 48" className="w-7 h-7">
-        <rect width="48" height="48" rx="6" fill="#0078D4"/>
-        <text x="24" y="32" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold" fontFamily="sans-serif">Ol</text>
-      </svg>
-    ),
-  },
-  {
-    name: "Yahoo",
-    url: "https://calendar.yahoo.com",
-    icon: (
-      <svg viewBox="0 0 48 48" className="w-7 h-7">
-        <rect width="48" height="48" rx="6" fill="#6001D2"/>
-        <text x="24" y="32" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold" fontFamily="sans-serif">Y!</text>
-      </svg>
-    ),
-  },
-];
 
 export default function ConfirmedPage() {
   return (
@@ -115,63 +58,12 @@ export default function ConfirmedPage() {
           className="font-display leading-none text-center mb-14"
           style={{ fontSize: "clamp(36px, 6.5vw, 80px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
         >
-          FOLLOW THE STEPS TO{" "}
+          WATCH THIS VIDEO TO{" "}
           <span className="gold-text-gradient">CONFIRM YOUR CALL.</span>
         </h1>
 
-        {/* Step 1 — Add to calendar */}
-        <div className="relative mb-5">
-          {/* Card */}
-          <div
-            className="rounded-2xl px-8 py-10 flex flex-col items-center"
-            style={{ border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
-          >
-            {/* Label inside card */}
-            <p className="font-body text-sm font-semibold text-center mb-8" style={{ color: "#F2EDE6" }}>
-              Step #1:{" "}
-              <span style={{ color: "#C9A84C" }}>Add the call</span>
-              {" "}to your calendar
-            </p>
-
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              {CALENDARS.map((cal) => (
-                <a
-                  key={cal.name}
-                  href={cal.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center rounded-2xl transition-all hover:scale-105"
-                  style={{
-                    width: 72,
-                    height: 72,
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    background: "rgba(255,255,255,0.06)",
-                  }}
-                >
-                  {cal.icon}
-                </a>
-              ))}
-            </div>
-            <p className="font-body text-sm mt-6" style={{ color: "#555" }}>
-              Select the calendar and save the call
-            </p>
-          </div>
-        </div>
-
-        {/* Step 2 — Watch the video */}
+        {/* Video */}
         <div className="relative mb-14">
-          {/* Floating pill label */}
-          <div className="flex justify-center mb-[-1px] relative z-10">
-            <div
-              className="inline-flex items-center gap-2 rounded-full px-5 py-2 font-body text-sm font-semibold"
-              style={{ background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.12)", color: "#F2EDE6" }}
-            >
-              Step #2:{" "}
-              <span style={{ color: "#C9A84C" }}>Watch this</span>
-              {" "}before your call so we don&apos;t cancel it
-            </div>
-          </div>
-
         <div
           className="rounded-2xl p-7"
           style={{ border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
