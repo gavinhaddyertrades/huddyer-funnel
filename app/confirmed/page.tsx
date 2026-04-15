@@ -202,7 +202,8 @@ export default function ConfirmedPage() {
           className="font-display leading-none mb-12"
           style={{ fontSize: "clamp(32px, 5vw, 56px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
         >
-          REAL RESULTS FROM REAL MEMBERS
+          REAL RESULTS FROM{" "}
+          <span className="gold-text-gradient">REAL MEMBERS</span>
         </h2>
 
         {/* Carmine card */}
