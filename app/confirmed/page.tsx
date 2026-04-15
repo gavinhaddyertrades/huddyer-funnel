@@ -48,7 +48,7 @@ export default function ConfirmedPage() {
           >
             <span className="w-2 h-2 rounded-full" style={{ background: "#C9A84C", boxShadow: "0 0 6px #C9A84C" }} />
             <span className="font-body text-xs uppercase tracking-widest" style={{ color: "#C9A84C" }}>
-              Call Confirmed
+              Call Reserved
             </span>
           </div>
         </div>
