@@ -7,6 +7,7 @@ const bullets = [
   { title: "Built for Real Trading", body: "Not theory. Not recycled YouTube content. The actual mechanics behind consistent, profitable trading." },
   { title: "Foundation First", body: "Every trader Hudson coaches personally started here. This is the system before the system." },
   { title: "Lifetime Access", body: "Go at your own pace. Come back to any module whenever you need it. No expiry." },
+  { title: "Hudson's Private Community", body: "You get added to Hudson's most exclusive group — his top clients and students only. This isn't a public Discord. It's where his serious people are." },
 ];
 
 export default function StartPage() {
@@ -66,7 +67,7 @@ export default function StartPage() {
           {[
             { value: "9+", label: "Hours of content" },
             { value: "Self-paced", label: "No schedule required" },
-            { value: "Lifetime", label: "Access included" },
+            { value: "Private", label: "Community access" },
           ].map((s) => (
             <div
               key={s.label}
