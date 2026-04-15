@@ -112,18 +112,13 @@ export default function ConfirmedPage() {
 
         {/* Video */}
         <div className="relative mb-14">
-        <div
-          className="rounded-2xl p-7"
-          style={{ border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
-        >
-
           {/* Video placeholder — swap for Wistia/YouTube embed when ready */}
           <div
-            className="w-full rounded-xl overflow-hidden"
+            className="w-full rounded-2xl overflow-hidden"
             style={{
               aspectRatio: "16/9",
               background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.1)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -143,7 +138,6 @@ export default function ConfirmedPage() {
               </p>
             </div>
           </div>
-        </div>
         </div>
 
         {/* Divider */}
