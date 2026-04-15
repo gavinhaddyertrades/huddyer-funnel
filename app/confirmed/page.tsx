@@ -200,25 +200,9 @@ export default function ConfirmedPage() {
           <span className="gold-text-gradient">REAL MEMBERS</span>
         </h2>
 
-        {/* Carmine card */}
-        <div
-          className="rounded-2xl p-7 mb-16"
-          style={{ border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div
-              className="inline-flex items-center gap-2 rounded-full px-3 py-1"
-              style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)" }}
-            >
-              <span className="font-body text-xs font-semibold uppercase tracking-wider" style={{ color: "#C9A84C" }}>
-                $30K — First Month
-              </span>
-            </div>
-          </div>
+        {/* Carmine video */}
+        <div className="mb-16">
           <YoutubeFacade videoId={CARMINE_VIDEO_ID} />
-          <p className="font-body text-sm mt-5" style={{ color: "#555" }}>
-            Carmine — inside the program less than 30 days.
-          </p>
         </div>
 
         {/* Footer */}
