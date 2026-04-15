@@ -1,5 +1,53 @@
 "use client";
 
+import { useState } from "react";
+
+const CARMINE_VIDEO_ID = "vxHRcR9xTFQ";
+
+function YoutubeFacade({ videoId }: { videoId: string }) {
+  const [playing, setPlaying] = useState(false);
+  const thumbUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&controls=1`;
+
+  return (
+    <div
+      className="relative w-full rounded-xl overflow-hidden"
+      style={{ aspectRatio: "16 / 9", border: "1px solid rgba(201,168,76,0.25)", background: "#111" }}
+    >
+      {playing ? (
+        <iframe
+          className="absolute inset-0 w-full h-full"
+          src={embedUrl}
+          title="Carmine's results"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{ border: "none" }}
+        />
+      ) : (
+        <div
+          className="absolute inset-0 cursor-pointer group"
+          onClick={() => setPlaying(true)}
+          role="button"
+          aria-label="Play Carmine's testimonial video"
+        >
+          <img src={thumbUrl} alt="Carmine's trading results" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 transition-opacity duration-200 group-hover:opacity-30" style={{ background: "rgba(0,0,0,0.4)" }} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="flex items-center justify-center w-16 h-16 rounded-full transition-transform duration-200 group-hover:scale-110"
+              style={{ background: "#C9A84C", boxShadow: "0 4px 30px rgba(201,168,76,0.6)" }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M7 5l10 5-10 5V5z" fill="#0A0A0A" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const sections = [
   {
     num: "01",
@@ -143,8 +191,43 @@ export default function ConfirmedPage() {
           ))}
         </div>
 
+        {/* Divider */}
+        <div className="mt-14 mb-14" style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent)" }} />
+
+        {/* Real Results */}
+        <p className="font-body text-xs uppercase tracking-widest mb-3" style={{ color: "#888" }}>
+          Student Results
+        </p>
+        <h2
+          className="font-display leading-none mb-12"
+          style={{ fontSize: "clamp(32px, 5vw, 56px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
+        >
+          REAL RESULTS FROM REAL MEMBERS
+        </h2>
+
+        {/* Carmine card */}
+        <div
+          className="rounded-2xl p-7 mb-16"
+          style={{ border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-3 py-1"
+              style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)" }}
+            >
+              <span className="font-body text-xs font-semibold uppercase tracking-wider" style={{ color: "#C9A84C" }}>
+                $30K — First Month
+              </span>
+            </div>
+          </div>
+          <YoutubeFacade videoId={CARMINE_VIDEO_ID} />
+          <p className="font-body text-sm mt-5" style={{ color: "#555" }}>
+            Carmine — inside the program less than 30 days.
+          </p>
+        </div>
+
         {/* Footer */}
-        <div className="text-center pt-16">
+        <div className="text-center pt-4">
           <p className="font-body text-xs" style={{ color: "#444" }}>
             © {new Date().getFullYear()} HuddyerTrades. All rights reserved.
           </p>
