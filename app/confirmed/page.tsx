@@ -121,23 +121,18 @@ export default function ConfirmedPage() {
 
         {/* Step 1 — Add to calendar */}
         <div className="relative mb-5">
-          {/* Floating pill label */}
-          <div className="flex justify-center mb-[-1px] relative z-10">
-            <div
-              className="inline-flex items-center gap-2 rounded-full px-5 py-2 font-body text-sm font-semibold"
-              style={{ background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.12)", color: "#F2EDE6" }}
-            >
-              Step #1:{" "}
-              <span style={{ color: "#C9A84C" }}>Add the call</span>
-              {" "}to your calendar
-            </div>
-          </div>
-
           {/* Card */}
           <div
             className="rounded-2xl px-8 py-10 flex flex-col items-center"
             style={{ border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}
           >
+            {/* Label inside card */}
+            <p className="font-body text-sm font-semibold text-center mb-8" style={{ color: "#F2EDE6" }}>
+              Step #1:{" "}
+              <span style={{ color: "#C9A84C" }}>Add the call</span>
+              {" "}to your calendar
+            </p>
+
             <div className="flex items-center justify-center gap-4 flex-wrap">
               {CALENDARS.map((cal) => (
                 <a
