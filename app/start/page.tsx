@@ -3,90 +3,138 @@
 const CURRICULUM_URL = "https://www.fanbasis.com/agency-checkout/huddyer-trades/8EmYg";
 
 const bullets = [
-  "9+ hours of structured video modules",
-  "Self-paced — go through it on your schedule",
-  "The exact foundational strategy Hudson trades with",
-  "Market structure, execution, and risk management — step by step",
-  "Lifetime access — revisit any module at any time",
+  { title: "9+ Hours of Video Modules", body: "The exact system Hudson uses — market structure, execution, entries, risk. All of it, on your schedule." },
+  { title: "Built for Real Trading", body: "Not theory. Not recycled YouTube content. The actual mechanics behind consistent, profitable trading." },
+  { title: "Foundation First", body: "Every trader Hudson coaches personally started here. This is the system before the system." },
+  { title: "Lifetime Access", body: "Go at your own pace. Come back to any module whenever you need it. No expiry." },
 ];
 
 export default function StartPage() {
   return (
-    <main
-      className="min-h-screen flex flex-col items-center justify-center px-5 py-20"
-      style={{ backgroundColor: "#0A0A0A" }}
-    >
-      <div className="w-full max-w-2xl mx-auto">
+    <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
 
-        {/* Label */}
-        <p
-          className="font-body text-xs uppercase tracking-widest mb-5"
-          style={{ color: "#888" }}
+      {/* Top bar */}
+      <div
+        className="flex items-center justify-center px-5 py-4"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+      >
+        <span className="font-display text-base" style={{ color: "#F2EDE6", letterSpacing: "0.12em" }}>
+          HUDDYERTRADES
+        </span>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-5 pt-20 pb-24">
+
+        {/* Gold badge */}
+        <div
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2 mb-10"
+          style={{ border: "1px solid rgba(201,168,76,0.35)", background: "rgba(201,168,76,0.08)" }}
         >
-          The Right Starting Point
-        </p>
+          <span className="w-2 h-2 rounded-full" style={{ background: "#C9A84C", boxShadow: "0 0 6px #C9A84C" }} />
+          <span className="font-body text-xs uppercase tracking-widest" style={{ color: "#C9A84C" }}>
+            Step One
+          </span>
+        </div>
 
         {/* Headline */}
         <h1
-          className="font-display leading-none mb-8"
-          style={{
-            fontSize: "clamp(40px, 7vw, 84px)",
-            color: "#F2EDE6",
-            letterSpacing: "0.02em",
-          }}
+          className="font-display leading-none mb-6"
+          style={{ fontSize: "clamp(44px, 8vw, 96px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
         >
-          START WITH THE{" "}
-          <span className="gold-text-gradient">CURRICULUM.</span>
+          THIS IS WHERE{" "}
+          <span className="gold-text-gradient">IT STARTS.</span>
         </h1>
 
-        {/* Body copy */}
+        {/* Body */}
         <div
-          className="font-body leading-relaxed mb-10 space-y-4"
-          style={{ fontSize: "clamp(15px, 2vw, 17px)", color: "#999", maxWidth: "560px" }}
+          className="font-body leading-relaxed mb-14 space-y-4"
+          style={{ fontSize: "clamp(15px, 2vw, 17px)", color: "#999", maxWidth: "580px" }}
         >
           <p>
-            Before you go all in, you need the foundation. That&apos;s not a knock — that&apos;s how it actually works. The video curriculum is where I&apos;d tell anyone to start who wants to build this the right way.
+            Every trader Hudson works with personally went through this curriculum first. Not because it&apos;s a stepping stone — because it&apos;s the foundation everything else is built on.
           </p>
           <p>
-            Get the system down first. When you&apos;re ready to add live coaching and accountability on top of it, I&apos;ll be here.
+            Most traders never get this right. They skip straight to strategies and setups without ever understanding why the market moves the way it does. This is where you fix that.
           </p>
         </div>
 
-        {/* Divider */}
+        {/* Stat strip */}
         <div
-          className="mb-10"
-          style={{
-            height: 1,
-            background: "linear-gradient(90deg, rgba(201,168,76,0.35), transparent)",
-          }}
-        />
-
-        {/* Bullets */}
-        <ul className="space-y-4 mb-12">
-          {bullets.map((b) => (
-            <li key={b} className="flex items-start gap-3">
+          className="grid grid-cols-3 gap-px mb-14 rounded-2xl overflow-hidden"
+          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          {[
+            { value: "9+", label: "Hours of content" },
+            { value: "Self-paced", label: "No schedule required" },
+            { value: "Lifetime", label: "Access included" },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="flex flex-col items-center justify-center py-6 px-4 text-center"
+              style={{ background: "rgba(255,255,255,0.03)" }}
+            >
               <span
-                className="mt-1 shrink-0 w-1.5 h-1.5 rounded-full"
-                style={{ background: "#C9A84C", boxShadow: "0 0 6px rgba(201,168,76,0.5)", marginTop: 7 }}
-              />
-              <span
-                className="font-body"
-                style={{ fontSize: "clamp(14px, 1.8vw, 16px)", color: "#BBBBBB" }}
+                className="font-display mb-1"
+                style={{ fontSize: "clamp(22px, 3.5vw, 32px)", color: "#C9A84C", letterSpacing: "0.04em" }}
               >
-                {b}
+                {s.value}
               </span>
-            </li>
+              <span className="font-body text-xs" style={{ color: "#666" }}>{s.label}</span>
+            </div>
           ))}
-        </ul>
+        </div>
+
+        {/* What's inside */}
+        <p className="font-body text-xs uppercase tracking-widest mb-6" style={{ color: "#666" }}>
+          What&apos;s Inside
+        </p>
+
+        <div className="flex flex-col mb-14">
+          {bullets.map((b, i) => (
+            <div
+              key={b.title}
+              className="flex gap-5 py-7"
+              style={{
+                borderTop: i === 0 ? "1px solid rgba(255,255,255,0.07)" : "none",
+                borderBottom: "1px solid rgba(255,255,255,0.07)",
+              }}
+            >
+              <div
+                className="font-display shrink-0"
+                style={{ fontSize: "clamp(28px, 4vw, 40px)", color: "rgba(201,168,76,0.25)", lineHeight: 1, minWidth: 44 }}
+              >
+                0{i + 1}
+              </div>
+              <div className="flex flex-col gap-1.5 justify-center">
+                <h3
+                  className="font-display"
+                  style={{ fontSize: "clamp(16px, 2.2vw, 22px)", color: "#F2EDE6", letterSpacing: "0.03em" }}
+                >
+                  {b.title.toUpperCase()}
+                </h3>
+                <p className="font-body text-sm leading-relaxed" style={{ color: "#777", maxWidth: 500 }}>
+                  {b.body}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* CTA */}
-        <a
-          href={CURRICULUM_URL}
-          className="btn-gold inline-flex"
-          style={{ fontSize: "clamp(13px, 1.5vw, 15px)" }}
-        >
-          Get Instant Access →
-        </a>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <a
+            href={CURRICULUM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-gold"
+            style={{ fontSize: "clamp(13px, 1.5vw, 15px)" }}
+          >
+            Get Instant Access →
+          </a>
+          <p className="font-body text-xs" style={{ color: "#555" }}>
+            Instant access after payment. No waiting.
+          </p>
+        </div>
 
       </div>
     </main>
