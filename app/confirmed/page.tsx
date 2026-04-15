@@ -3,23 +3,23 @@
 const sections = [
   {
     num: "01",
-    label: "Who Hudson Is",
-    body: "Not a highlight reel. Hudson spent years figuring out the market on his own — blew accounts, bought courses, had months that looked good then gave it all back. He cracked it when he finally had someone in his corner who had already done what he was trying to do. That's what he does for the people he works with.",
+    label: "What is this call exactly?",
+    body: "This is a strategy call with Hudson's team. They'll ask about your trading background, where you're at right now, and what you're trying to achieve. If the program is the right fit, you'll have the opportunity to get started. No pressure, no pitch — just a real conversation.",
   },
   {
     num: "02",
-    label: "What The Program Is",
-    body: "9+ hours of structured video modules built around the actual mechanics of how Hudson trades. Two direct calls with Hudson every week — live trade reviews, real-time feedback, Q&A. Built to keep you accountable and moving forward every single week until you're consistently profitable.",
+    label: "Do I need trading experience?",
+    body: "You don't need to be an expert, but you do need to be serious. Hudson works with traders at different levels — what matters is that you're committed to doing the work and ready to follow a proven system.",
   },
   {
     num: "03",
-    label: "The Guarantee",
-    body: "Put in the work and Hudson guarantees you'll be profitable within 90 days. That's not a marketing line — that's him putting his name behind the system he's built, because he knows what it produces when someone actually shows up.",
+    label: "What's the 90-day guarantee?",
+    body: "If you put in the work and don't hit profitability within 90 days, Hudson continues working with you at no extra cost. The guarantee exists because the system works — but only if you do.",
   },
   {
     num: "04",
-    label: "What To Expect On The Call",
-    body: "Hudson's team isn't running a pitch. They're going to ask about your situation, walk you through exactly how the program works, and if it's the right fit — you'll have the opportunity to get started. Come ready to have a real conversation about where you're at and where you want to be in 90 days.",
+    label: "How much time do I need to commit?",
+    body: "Enough to trade and show up to the calls. The curriculum is self-paced so you can go through it on your schedule. The live calls are twice a week. Traders who get results are the ones who treat this like the business it is.",
   },
 ];
 
@@ -222,7 +222,7 @@ export default function ConfirmedPage() {
           className="font-display leading-none mb-12"
           style={{ fontSize: "clamp(32px, 5vw, 56px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
         >
-          WHAT YOU NEED TO KNOW
+          FREQUENTLY ASKED QUESTIONS
         </h2>
 
         <div className="flex flex-col">
