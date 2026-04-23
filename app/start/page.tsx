@@ -59,6 +59,22 @@ export default function StartPage() {
           </p>
         </div>
 
+        {/* CTA — above stat strip */}
+        <div className="flex flex-col gap-3 mb-14">
+          <p className="font-body text-sm" style={{ color: "#666" }}>
+            $249 — Lifetime access. No waiting.
+          </p>
+          <a
+            href={CURRICULUM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-gold self-start"
+            style={{ fontSize: "clamp(13px, 1.5vw, 15px)" }}
+          >
+            Get Instant Access →
+          </a>
+        </div>
+
         {/* Stat strip */}
         <div
           className="grid grid-cols-3 gap-px mb-14 rounded-2xl overflow-hidden"
@@ -121,21 +137,6 @@ export default function StartPage() {
           ))}
         </div>
 
-        {/* CTA */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <a
-            href={CURRICULUM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-gold"
-            style={{ fontSize: "clamp(13px, 1.5vw, 15px)" }}
-          >
-            Get Instant Access →
-          </a>
-          <p className="font-body text-xs" style={{ color: "#555" }}>
-            Instant access after payment. No waiting.
-          </p>
-        </div>
 
       </div>
     </main>
