@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useUTMUrl } from "@/hooks/useUTMUrl";
 
-const TYPEFORM_URL = "https://form.typeform.com/to/AH6Qxmyu?utm_source=xxxxx&utm_medium=xxxxx&utm_campaign=xxxxx";
+const TYPEFORM_BASE = "https://form.typeform.com/to/AH6Qxmyu";
 
 export default function ApplyCTA() {
+  const typeformUrl = useUTMUrl(TYPEFORM_BASE);
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function ApplyCTA() {
 
         {/* Button — full width on mobile */}
         <a
-          href={TYPEFORM_URL}
+          href={typeformUrl}
           className="btn-gold w-full sm:w-auto justify-center"
           target="_blank"
           rel="noopener noreferrer"

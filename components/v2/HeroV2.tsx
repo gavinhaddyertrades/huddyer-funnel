@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import Script from "next/script";
+import { useUTMUrl } from "@/hooks/useUTMUrl";
 
-const TYPEFORM_URL = "https://form.typeform.com/to/AH6Qxmyu?utm_source=xxxxx&utm_medium=xxxxx&utm_campaign=xxxxx";
+const TYPEFORM_BASE = "https://form.typeform.com/to/AH6Qxmyu";
 const WISTIA_ID = "ht3wh0gzng";
 
 function TradingBarsLogo() {
@@ -18,6 +19,7 @@ function TradingBarsLogo() {
 }
 
 export default function HeroV2() {
+  const typeformUrl = useUTMUrl(TYPEFORM_BASE);
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -117,7 +119,7 @@ export default function HeroV2() {
           {/* CTA — full width on mobile, auto on desktop */}
           <div className="flex flex-col items-center gap-3 w-full sm:w-auto">
             <a
-              href={TYPEFORM_URL}
+              href={typeformUrl}
               className="btn-gold w-full sm:w-auto justify-center"
               target="_blank"
               rel="noopener noreferrer"
