@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Script from "next/script";
 
-const TYPEFORM_URL = "https://form.typeform.com/to/AH6Qxmyu";
+const TYPEFORM_URL = "https://form.typeform.com/to/AH6Qxmyu?utm_source=xxxxx&utm_medium=xxxxx&utm_campaign=xxxxx";
 const WISTIA_ID = "ht3wh0gzng";
 
 function TradingBarsLogo() {
