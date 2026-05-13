@@ -216,6 +216,7 @@ export default function HeroV2() {
             target="_blank"
             rel="noopener noreferrer"
             style={{ fontSize: "16px", padding: "14px 32px", maxWidth: 260 }}
+            onClick={() => { (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead"); }}
           >
             Apply Now
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">

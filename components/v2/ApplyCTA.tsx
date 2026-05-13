@@ -61,6 +61,7 @@ export default function ApplyCTA() {
           className="btn-gold w-full sm:w-auto justify-center"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => { (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead"); }}
         >
           Apply Now
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
