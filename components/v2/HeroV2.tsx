@@ -19,39 +19,44 @@ export default function HeroV2() {
       />
 
       <section
-        className="min-h-screen flex items-center justify-center px-5 py-12"
-        style={{ backgroundColor: "#0A0A0A" }}
+        className="min-h-screen flex items-center justify-center px-5"
+        style={{ backgroundColor: "#0A0A0A", paddingTop: 40, paddingBottom: 32 }}
       >
-        <div className="w-full flex flex-col items-center gap-6" style={{ maxWidth: 700 }}>
+        <div className="w-full flex flex-col items-center gap-5" style={{ maxWidth: 700 }}>
 
           {/* Headline */}
           <h1
             className="font-display leading-none text-center"
             style={{
-              fontSize: "clamp(40px, 8vw, 80px)",
+              fontSize: "clamp(38px, 7.5vw, 76px)",
               color: "#F2EDE6",
               letterSpacing: "0.02em",
             }}
           >
-            BECOME CONSISTENTLY{" "}
-            <span className="gold-text-gradient">PROFITABLE.</span>
+            FROM INCONSISTENT TO{" "}
+            <span className="gold-text-gradient">PROFITABLE IN 90 DAYS.</span>
           </h1>
 
           {/* Subheadline */}
           <p
             className="font-body text-center leading-snug"
             style={{
-              fontSize: "clamp(14px, 2vw, 17px)",
+              fontSize: "clamp(14px, 2vw, 16px)",
               color: "#777",
-              maxWidth: 520,
+              maxWidth: 480,
             }}
           >
-            The structured system Hudson uses to turn serious traders into
-            consistently profitable, funded professionals.
+            A private mentorship built for serious traders who are done leaving money on the table.
           </p>
 
           {/* Video */}
-          <div className="w-full rounded-xl overflow-hidden" style={{ border: "1px solid rgba(201,168,76,0.2)" }}>
+          <div
+            className="w-full overflow-hidden"
+            style={{
+              border: "1.5px solid #C9A84C",
+              borderRadius: 12,
+            }}
+          >
             <style>{`
               wistia-player[media-id='${WISTIA_ID}']:not(:defined) {
                 background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${WISTIA_ID}/swatch');
@@ -68,13 +73,17 @@ export default function HeroV2() {
           </div>
 
           {/* CTA */}
-          <div className="flex flex-col items-center gap-3 w-full">
+          <div className="flex flex-col items-center gap-2 w-full">
             <a
               href={typeformUrl}
-              className="btn-gold w-full sm:w-auto justify-center"
+              className="btn-gold w-full justify-center"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ fontSize: "16px", padding: "18px 48px" }}
+              style={{
+                fontSize: "16px",
+                padding: "14px 48px",
+                maxWidth: 420,
+              }}
             >
               Apply Now
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
