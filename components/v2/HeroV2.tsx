@@ -180,7 +180,7 @@ export default function HeroV2() {
             style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#777", maxWidth: 480 }}
           >
             A private mentorship built for{" "}
-            <strong style={{ color: "#F2EDE6", fontWeight: 600 }}>serious traders</strong>{" "}
+            <strong style={{ color: "#999", fontWeight: 700 }}>serious traders</strong>{" "}
             who are done leaving money on the table.
           </p>
 
