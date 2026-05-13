@@ -6,6 +6,17 @@ import { useUTMUrl } from "@/hooks/useUTMUrl";
 const TYPEFORM_BASE = "https://form.typeform.com/to/AH6Qxmyu";
 const WISTIA_ID = "ht3wh0gzng";
 
+function TradingBarsLogo() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2"  y="22" width="6" height="14" rx="1.5" fill="#C9A84C" />
+      <rect x="12" y="14" width="6" height="22" rx="1.5" fill="#D4AF37" />
+      <rect x="22" y="8"  width="6" height="28" rx="1.5" fill="#C9A84C" />
+      <rect x="32" y="2"  width="6" height="34" rx="1.5" fill="#D4AF37" />
+    </svg>
+  );
+}
+
 export default function HeroV2() {
   const typeformUrl = useUTMUrl(TYPEFORM_BASE);
 
@@ -23,6 +34,14 @@ export default function HeroV2() {
         style={{ backgroundColor: "#0A0A0A", paddingTop: 40, paddingBottom: 32 }}
       >
         <div className="w-full flex flex-col items-center gap-5" style={{ maxWidth: 700 }}>
+
+          {/* Logo */}
+          <div className="flex items-center gap-2 mb-1">
+            <TradingBarsLogo />
+            <span className="font-display text-lg" style={{ color: "#F2EDE6", letterSpacing: "0.12em" }}>
+              HUDDYERTRADES
+            </span>
+          </div>
 
           {/* Headline */}
           <h1
