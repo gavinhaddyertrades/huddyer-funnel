@@ -46,15 +46,15 @@ export default function HeroV2() {
               maxWidth: 480,
             }}
           >
-            A private mentorship built for serious traders who are done leaving money on the table.
+            A private mentorship built for <strong style={{ color: "#F2EDE6", fontWeight: 600 }}>serious traders</strong> who are done leaving money on the table.
           </p>
 
           {/* Video */}
           <div
-            className="w-full overflow-hidden"
             style={{
               border: "1.5px solid #C9A84C",
               borderRadius: 12,
+              padding: 5,
             }}
           >
             <style>{`
@@ -66,6 +66,7 @@ export default function HeroV2() {
               }
             `}</style>
             <div
+              style={{ borderRadius: 8, overflow: "hidden" }}
               dangerouslySetInnerHTML={{
                 __html: `<wistia-player media-id="${WISTIA_ID}" aspect="1.7777777777777777"></wistia-player>`,
               }}
