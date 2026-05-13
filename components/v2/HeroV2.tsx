@@ -82,8 +82,8 @@ export default function HeroV2() {
               rel="noopener noreferrer"
               style={{
                 fontSize: "16px",
-                padding: "14px 48px",
-                maxWidth: 420,
+                padding: "14px 32px",
+                maxWidth: 260,
               }}
             >
               Apply Now
