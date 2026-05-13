@@ -17,6 +17,97 @@ function TradingBarsLogo() {
   );
 }
 
+// Deterministic candlestick chart background
+function ChartBackground() {
+  const viewW = 1400;
+  const viewH = 700;
+  const count = 42;
+  const spacing = viewW / (count + 1);
+  const bodyW = 11;
+
+  const candles = Array.from({ length: count }, (_, i) => {
+    const t = i / (count - 1);
+    // Uptrend from ~y=530 to ~y=160 with realistic noise
+    const trend = 530 - t * 370;
+    const noise = Math.sin(i * 2.1) * 22 + Math.cos(i * 3.8) * 12 + Math.sin(i * 5.3) * 8;
+    const mid = trend + noise;
+
+    const bodyH = 10 + Math.abs(Math.sin(i * 1.7)) * 28;
+    const wickT = 6 + Math.abs(Math.cos(i * 2.4)) * 18;
+    const wickB = 6 + Math.abs(Math.sin(i * 3.1)) * 14;
+    const bull = Math.cos(i * 2.9) > 0;
+
+    const closeY = bull ? mid - bodyH / 2 : mid + bodyH / 2;
+    const openY  = bull ? mid + bodyH / 2 : mid - bodyH / 2;
+    const highY  = Math.min(openY, closeY) - wickT;
+    const lowY   = Math.max(openY, closeY) + wickB;
+
+    return { x: spacing * (i + 1), openY, closeY, highY, lowY };
+  });
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0, pointerEvents: "none" }}>
+      <svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${viewW} ${viewH}`}
+        preserveAspectRatio="xMidYMid slice"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          {/* Soft radial glow — gold version of the reference */}
+          <radialGradient id="goldGlow" cx="52%" cy="48%" r="58%">
+            <stop offset="0%"   stopColor="#C9A84C" stopOpacity="0.13" />
+            <stop offset="55%"  stopColor="#C9A84C" stopOpacity="0.05" />
+            <stop offset="100%" stopColor="#C9A84C" stopOpacity="0"    />
+          </radialGradient>
+          {/* Fade mask: bars fade toward edges */}
+          <linearGradient id="fadeH" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="white" stopOpacity="0"   />
+            <stop offset="15%"  stopColor="white" stopOpacity="1"   />
+            <stop offset="85%"  stopColor="white" stopOpacity="1"   />
+            <stop offset="100%" stopColor="white" stopOpacity="0"   />
+          </linearGradient>
+          <linearGradient id="fadeV" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stopColor="white" stopOpacity="0"   />
+            <stop offset="20%"  stopColor="white" stopOpacity="1"   />
+            <stop offset="80%"  stopColor="white" stopOpacity="1"   />
+            <stop offset="100%" stopColor="white" stopOpacity="0"   />
+          </linearGradient>
+          <mask id="edgeFade">
+            <rect width={viewW} height={viewH} fill="url(#fadeH)" />
+          </mask>
+        </defs>
+
+        {/* Glow layer */}
+        <rect width={viewW} height={viewH} fill="url(#goldGlow)" />
+
+        {/* Candlestick bars */}
+        <g mask="url(#edgeFade)" opacity="0.07">
+          {candles.map((c, i) => (
+            <g key={i} fill="#C9A84C" stroke="#C9A84C">
+              {/* Wick */}
+              <line
+                x1={c.x} y1={c.highY}
+                x2={c.x} y2={c.lowY}
+                strokeWidth="1.5"
+              />
+              {/* Body */}
+              <rect
+                x={c.x - bodyW / 2}
+                y={Math.min(c.openY, c.closeY)}
+                width={bodyW}
+                height={Math.abs(c.closeY - c.openY) || 2}
+                rx="1"
+              />
+            </g>
+          ))}
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 export default function HeroV2() {
   const typeformUrl = useUTMUrl(TYPEFORM_BASE);
 
@@ -31,9 +122,11 @@ export default function HeroV2() {
 
       <section
         className="min-h-screen flex items-center justify-center px-5"
-        style={{ backgroundColor: "#0A0A0A", paddingTop: 40, paddingBottom: 32 }}
+        style={{ backgroundColor: "#0A0A0A", paddingTop: 40, paddingBottom: 32, position: "relative" }}
       >
-        <div className="w-full flex flex-col items-center gap-5" style={{ maxWidth: 700 }}>
+        <ChartBackground />
+
+        <div className="w-full flex flex-col items-center gap-5" style={{ maxWidth: 700, position: "relative", zIndex: 1 }}>
 
           {/* Logo */}
           <div className="flex items-center gap-2 mb-1">
@@ -74,6 +167,7 @@ export default function HeroV2() {
               border: "1px solid rgba(201,168,76,0.5)",
               borderRadius: 12,
               padding: 5,
+              width: "100%",
             }}
           >
             <style>{`
