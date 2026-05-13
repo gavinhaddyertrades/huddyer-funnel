@@ -52,7 +52,7 @@ export default function HeroV2() {
           {/* Video */}
           <div
             style={{
-              border: "1.5px solid #C9A84C",
+              border: "1px solid rgba(201,168,76,0.5)",
               borderRadius: 12,
               padding: 5,
             }}
