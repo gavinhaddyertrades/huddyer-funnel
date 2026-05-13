@@ -91,9 +91,6 @@ export default function HeroV2() {
                 <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
-            <p className="font-body text-xs" style={{ color: "#555" }}>
-              Limited spots per cohort. Every application is reviewed.
-            </p>
           </div>
 
         </div>
