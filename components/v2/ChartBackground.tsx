@@ -37,13 +37,13 @@ export default function ChartBackground({ mobilePush = false }: { mobilePush?: b
         pointerEvents: "none",
       }}
     >
-      {mobilePush && (
-        <style>{`
-          @media (max-width: 767px) {
-            #chart-bg { transform: translateY(-38%); }
-          }
-        `}</style>
-      )}
+      <style>{`
+        #chart-bg {
+          height: 100vh;
+          height: 100svh;
+        }
+        ${mobilePush ? `@media (max-width: 767px) { #chart-bg { transform: translateY(-38%); } }` : ""}
+      `}</style>
       <svg
         width="100%" height="100%"
         viewBox={`0 0 ${viewW} ${viewH}`}
