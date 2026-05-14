@@ -10,7 +10,7 @@ type CalendlyGlobal = {
   initInlineWidget: (opts: {
     url: string;
     parentElement: HTMLElement;
-    prefill?: { email?: string; name?: string; customAnswers?: { a1?: string } };
+    prefill?: { email?: string; name?: string; smsReminderNumber?: string };
   }) => void;
 };
 
@@ -33,9 +33,7 @@ export default function BookPage() {
       prefill: {
         email,
         name: `${firstName} ${lastName}`.trim(),
-        customAnswers: {
-          a1: phone,
-        },
+        smsReminderNumber: phone,
       },
     });
   }, []);
