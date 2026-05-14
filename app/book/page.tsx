@@ -10,7 +10,7 @@ type CalendlyGlobal = {
   initInlineWidget: (opts: {
     url: string;
     parentElement: HTMLElement;
-    prefill?: { email?: string; name?: string };
+    prefill?: { email?: string; name?: string; customAnswers?: { a1?: string } };
   }) => void;
 };
 
@@ -25,6 +25,7 @@ export default function BookPage() {
     const email     = params.get("email") ?? "";
     const firstName = params.get("first") ?? "";
     const lastName  = params.get("last")  ?? "";
+    const phone     = params.get("phone") ?? "";
 
     cal.initInlineWidget({
       url: CALENDLY_URL,
@@ -32,6 +33,9 @@ export default function BookPage() {
       prefill: {
         email,
         name: `${firstName} ${lastName}`.trim(),
+        customAnswers: {
+          a1: phone,
+        },
       },
     });
   }, []);
