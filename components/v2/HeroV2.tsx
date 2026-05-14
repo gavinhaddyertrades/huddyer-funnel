@@ -66,7 +66,7 @@ export default function HeroV2() {
         className="min-h-screen flex items-center justify-center px-5"
         style={{ backgroundColor: "#0A0A0A", paddingTop: 40, paddingBottom: 32, position: "relative" }}
       >
-        <ChartBackground />
+        <ChartBackground mobilePush />
 
         {/* Mobile logo — absolutely positioned halfway between top and heading */}
         <div

@@ -96,7 +96,7 @@ export default function BookPage() {
         <div
           ref={containerRef}
           className="w-full rounded-2xl overflow-hidden"
-          style={{ minWidth: 320, height: 700 }}
+          style={{ minWidth: 320, height: 700, background: "#0A0A0A" }}
         />
         <Script
           src="https://assets.calendly.com/assets/external/widget.js"

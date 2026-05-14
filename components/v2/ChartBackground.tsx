@@ -1,4 +1,4 @@
-export default function ChartBackground() {
+export default function ChartBackground({ mobilePush = false }: { mobilePush?: boolean }) {
   const viewW = 1400;
   const viewH = 700;
   const count = 42;
@@ -24,12 +24,26 @@ export default function ChartBackground() {
   });
 
   return (
-    <div id="chart-bg" style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0, pointerEvents: "none" }}>
-      <style>{`
-        @media (max-width: 767px) {
-          #chart-bg { transform: translateY(-38%); }
-        }
-      `}</style>
+    <div
+      id="chart-bg"
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "100vh",
+        overflow: "hidden",
+        zIndex: 0,
+        pointerEvents: "none",
+      }}
+    >
+      {mobilePush && (
+        <style>{`
+          @media (max-width: 767px) {
+            #chart-bg { transform: translateY(-38%); }
+          }
+        `}</style>
+      )}
       <svg
         width="100%" height="100%"
         viewBox={`0 0 ${viewW} ${viewH}`}
