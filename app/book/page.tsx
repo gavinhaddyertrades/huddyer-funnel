@@ -8,15 +8,7 @@ const CALENDLY_URL =
   "https://calendly.com/1on1-mentorship/1-1-mentorship-call?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0a&text_color=f2ede6&primary_color=c9a84c";
 
 type CalendlyGlobal = {
-  initInlineWidget: (opts: {
-    url: string;
-    parentElement: HTMLElement;
-    prefill?: {
-      email?: string;
-      name?: string;
-      readOnly?: { email?: boolean; name?: boolean };
-    };
-  }) => void;
+  initInlineWidget: (opts: { url: string; parentElement: HTMLElement }) => void;
 };
 
 export default function BookPage() {
@@ -30,17 +22,17 @@ export default function BookPage() {
     const email     = params.get("email") ?? "";
     const firstName = params.get("first") ?? "";
     const lastName  = params.get("last")  ?? "";
+    const name      = `${firstName} ${lastName}`.trim();
+
+    // Passing values as URL params locks the fields (Calendly won't allow editing them).
+    // The prefill object alone only fills without locking.
+    const url = new URL(CALENDLY_URL);
+    if (email) url.searchParams.set("email", email);
+    if (name)  url.searchParams.set("name", name);
+
     cal.initInlineWidget({
-      url: CALENDLY_URL,
+      url: url.toString(),
       parentElement: containerRef.current,
-      prefill: {
-        email: email || "",
-        name: `${firstName} ${lastName}`.trim(),
-        readOnly: {
-          email: true,
-          name: true,
-        },
-      },
     });
   }, []);
 
