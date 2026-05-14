@@ -11,7 +11,11 @@ type CalendlyGlobal = {
   initInlineWidget: (opts: {
     url: string;
     parentElement: HTMLElement;
-    prefill?: { email?: string; name?: string };
+    prefill?: {
+      email?: string;
+      name?: string;
+      readOnly?: { email?: boolean; name?: boolean };
+    };
   }) => void;
 };
 
@@ -30,8 +34,12 @@ export default function BookPage() {
       url: CALENDLY_URL,
       parentElement: containerRef.current,
       prefill: {
-        email,
+        email: email || "",
         name: `${firstName} ${lastName}`.trim(),
+        readOnly: {
+          email: true,
+          name: true,
+        },
       },
     });
   }, []);
