@@ -10,7 +10,7 @@ type CalendlyGlobal = {
   initInlineWidget: (opts: {
     url: string;
     parentElement: HTMLElement;
-    prefill?: { email?: string; name?: string; smsReminderNumber?: string };
+    prefill?: { email?: string; name?: string };
   }) => void;
 };
 
@@ -25,19 +25,12 @@ export default function BookPage() {
     const email     = params.get("email") ?? "";
     const firstName = params.get("first") ?? "";
     const lastName  = params.get("last")  ?? "";
-    const rawPhone  = params.get("phone") ?? "";
-    // Calendly requires E.164 format — prepend +1 if no country code present
-    const phone = rawPhone
-      ? rawPhone.startsWith("+") ? rawPhone : `+1${rawPhone.replace(/\D/g, "")}`
-      : "";
-
     cal.initInlineWidget({
       url: CALENDLY_URL,
       parentElement: containerRef.current,
       prefill: {
         email,
         name: `${firstName} ${lastName}`.trim(),
-        smsReminderNumber: phone,
       },
     });
   }, []);
