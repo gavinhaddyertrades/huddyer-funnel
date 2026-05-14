@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import Script from "next/script";
+import ChartBackground from "@/components/v2/ChartBackground";
 
 const CALENDLY_URL =
   "https://calendly.com/1on1-mentorship/1-1-mentorship-call?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0a&text_color=f2ede6&primary_color=c9a84c";
@@ -47,6 +48,7 @@ export default function BookPage() {
       className="min-h-screen flex flex-col items-center"
       style={{ backgroundColor: "#0A0A0A", position: "relative" }}
     >
+      <ChartBackground />
       {/* Header */}
       <div className="w-full text-center px-5 pt-16 pb-10">
         <p

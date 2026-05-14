@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ChartBackground from "@/components/v2/ChartBackground";
 
 const CARMINE_VIDEO_ID = "vxHRcR9xTFQ";
 
@@ -75,6 +76,7 @@ const sections = [
 export default function ConfirmedPage() {
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", position: "relative" }}>
+      <ChartBackground />
       {/* Top bar */}
       <div
         className="flex items-center justify-center px-5 py-4"
