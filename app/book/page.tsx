@@ -10,7 +10,7 @@ type CalendlyGlobal = {
   initInlineWidget: (opts: {
     url: string;
     parentElement: HTMLElement;
-    prefill?: { email?: string };
+    prefill?: { email?: string; name?: string };
   }) => void;
 };
 
@@ -21,13 +21,18 @@ export default function BookPage() {
     const cal = (window as Window & { Calendly?: CalendlyGlobal }).Calendly;
     if (!cal || !containerRef.current) return;
 
-    const email =
-      new URLSearchParams(window.location.search).get("email") ?? "";
+    const params = new URLSearchParams(window.location.search);
+    const email     = params.get("email") ?? "";
+    const firstName = params.get("first") ?? "";
+    const lastName  = params.get("last")  ?? "";
 
     cal.initInlineWidget({
       url: CALENDLY_URL,
       parentElement: containerRef.current,
-      prefill: { email },
+      prefill: {
+        email,
+        name: `${firstName} ${lastName}`.trim(),
+      },
     });
   }, []);
 
