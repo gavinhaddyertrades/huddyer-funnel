@@ -27,7 +27,7 @@ export default function ChartBackground({ mobilePush = false }: { mobilePush?: b
     <div
       id="chart-bg"
       style={{
-        position: "absolute",
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
