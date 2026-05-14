@@ -1,4 +1,4 @@
-export default function ChartBackground({ mobilePush = false }: { mobilePush?: boolean }) {
+export default function ChartBackground() {
   const viewW = 1400;
   const viewH = 700;
   const count = 42;
@@ -42,7 +42,6 @@ export default function ChartBackground({ mobilePush = false }: { mobilePush?: b
           height: 100vh;
           height: 100svh;
         }
-        ${mobilePush ? `@media (max-width: 767px) { #chart-bg { transform: translateY(-38%); } }` : ""}
       `}</style>
       <svg
         width="100%" height="100%"

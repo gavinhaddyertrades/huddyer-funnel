@@ -3,7 +3,6 @@
 import Script from "next/script";
 import { useEffect, useRef } from "react";
 import { useUTMUrl } from "@/hooks/useUTMUrl";
-import ChartBackground from "@/components/v2/ChartBackground";
 
 const TYPEFORM_BASE = "https://form.typeform.com/to/AH6Qxmyu";
 const WISTIA_ID = "ht3wh0gzng";
@@ -66,9 +65,7 @@ export default function HeroV2() {
         className="min-h-screen flex items-center justify-center px-5"
         style={{ backgroundColor: "#0A0A0A", paddingTop: 40, paddingBottom: 32, position: "relative" }}
       >
-        <ChartBackground mobilePush />
-
-        {/* Mobile logo — absolutely positioned halfway between top and heading */}
+{/* Mobile logo — absolutely positioned halfway between top and heading */}
         <div
           ref={mobileLogoRef}
           className="md:hidden"

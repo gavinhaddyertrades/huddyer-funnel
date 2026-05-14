@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, DM_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import ChartBackground from "@/components/v2/ChartBackground";
 import "./globals.css";
 
 // Trim DM Sans to only the two weights actually used on the page
@@ -89,6 +90,7 @@ export default function RootLayout({
           fontFamily: "var(--font-dm-sans), sans-serif",
         }}
       >
+        <ChartBackground />
         {children}
         <Analytics />
       </body>
