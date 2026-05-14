@@ -30,8 +30,11 @@ export default function BookPage() {
     if (email) url.searchParams.set("email", email);
     if (name)  url.searchParams.set("name", name);
 
+    // URLSearchParams encodes spaces as "+" but Calendly requires "%20"
+    const finalUrl = url.toString().replace(/\+/g, "%20");
+
     cal.initInlineWidget({
-      url: url.toString(),
+      url: finalUrl,
       parentElement: containerRef.current,
     });
   }, []);
