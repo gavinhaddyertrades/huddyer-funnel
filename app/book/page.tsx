@@ -25,7 +25,11 @@ export default function BookPage() {
     const email     = params.get("email") ?? "";
     const firstName = params.get("first") ?? "";
     const lastName  = params.get("last")  ?? "";
-    const phone     = params.get("phone") ?? "";
+    const rawPhone  = params.get("phone") ?? "";
+    // Calendly requires E.164 format — prepend +1 if no country code present
+    const phone = rawPhone
+      ? rawPhone.startsWith("+") ? rawPhone : `+1${rawPhone.replace(/\D/g, "")}`
+      : "";
 
     cal.initInlineWidget({
       url: CALENDLY_URL,
