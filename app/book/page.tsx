@@ -1,8 +1,43 @@
 "use client";
 
+import { useEffect, useRef, useCallback } from "react";
 import Script from "next/script";
 
+const CALENDLY_URL =
+  "https://calendly.com/1on1-mentorship/1-1-mentorship-call?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0a&text_color=f2ede6&primary_color=c9a84c";
+
+type CalendlyGlobal = {
+  initInlineWidget: (opts: {
+    url: string;
+    parentElement: HTMLElement;
+    prefill?: { email?: string };
+  }) => void;
+};
+
 export default function BookPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const initCalendly = useCallback(() => {
+    const cal = (window as Window & { Calendly?: CalendlyGlobal }).Calendly;
+    if (!cal || !containerRef.current) return;
+
+    const email =
+      new URLSearchParams(window.location.search).get("email") ?? "";
+
+    cal.initInlineWidget({
+      url: CALENDLY_URL,
+      parentElement: containerRef.current,
+      prefill: { email },
+    });
+  }, []);
+
+  // Fallback: if the script was already cached and fired before this component
+  // mounted, initCalendly won't be called via onLoad — so we check here too.
+  useEffect(() => {
+    const cal = (window as Window & { Calendly?: CalendlyGlobal }).Calendly;
+    if (cal) initCalendly();
+  }, [initCalendly]);
+
   return (
     <main
       className="min-h-screen flex flex-col items-center"
@@ -44,21 +79,23 @@ export default function BookPage() {
           style={{
             height: 1,
             maxWidth: 480,
-            background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent)",
+            background:
+              "linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent)",
           }}
         />
       </div>
 
-      {/* Calendly Embed */}
+      {/* Calendly Embed — initialised via JS so prefill can be applied */}
       <div className="w-full max-w-3xl px-4 pb-20">
         <div
-          className="calendly-inline-widget w-full rounded-2xl overflow-hidden"
-          data-url="https://calendly.com/1on1-mentorship/1-1-mentorship-call?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0a&text_color=f2ede6&primary_color=c9a84c"
+          ref={containerRef}
+          className="w-full rounded-2xl overflow-hidden"
           style={{ minWidth: 320, height: 700 }}
         />
         <Script
           src="https://assets.calendly.com/assets/external/widget.js"
           strategy="afterInteractive"
+          onLoad={initCalendly}
         />
       </div>
     </main>
