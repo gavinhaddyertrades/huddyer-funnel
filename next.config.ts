@@ -28,6 +28,11 @@ const nextConfig: NextConfig = {
         destination: "https://huddyertrades.biz?utm_source=tiktok",
         permanent: true,
       },
+      {
+        source: "/lt",
+        destination: "https://huddyertrades.biz?utm_source=linktree",
+        permanent: true,
+      },
     ];
   },
 };
