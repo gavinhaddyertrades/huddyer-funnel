@@ -20,12 +20,12 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/disc",
-        destination: "https://huddyertrades.biz?utm_source=discord&utm_medium=community",
+        destination: "https://huddyertrades.biz?utm_source=discord",
         permanent: true,
       },
       {
         source: "/tt",
-        destination: "https://huddyertrades.biz?utm_source=tiktok&utm_medium=bio",
+        destination: "https://huddyertrades.biz?utm_source=tiktok",
         permanent: true,
       },
     ];
