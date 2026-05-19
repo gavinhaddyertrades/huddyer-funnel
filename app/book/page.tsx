@@ -14,6 +14,11 @@ type CalendlyGlobal = {
 export default function BookPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Fire Lead event once on mount — visitor reached the booking page
+  useEffect(() => {
+    (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead");
+  }, []);
+
   const initCalendly = useCallback(() => {
     const cal = (window as Window & { Calendly?: CalendlyGlobal }).Calendly;
     if (!cal || !containerRef.current) return;
