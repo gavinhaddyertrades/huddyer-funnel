@@ -11,7 +11,7 @@ const items = [
   {
     num: "02",
     title: "Live Direct Calls With Hudson",
-    desc: "Twice-weekly live calls with Hudson — kept intentionally small so you actually get access. Real-time feedback on your setups, your mistakes, and your progress.",
+    desc: "Twice-weekly live calls with Hudson, kept intentionally small so you actually get access. Real-time feedback on your setups, your mistakes, and your progress.",
   },
   {
     num: "03",
@@ -21,7 +21,7 @@ const items = [
   {
     num: "04",
     title: "The 90-Day Guarantee",
-    desc: "Do the work and don't hit profitability within 90 days? Hudson continues working with you at no extra cost. The guarantee exists because the system works — if you do.",
+    desc: "Do the work and don't hit profitability within 90 days? Hudson continues working with you at no extra cost. The guarantee exists because the system works. If you do.",
   },
 ];
 

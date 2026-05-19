@@ -5,7 +5,7 @@ import ChartBackground from "@/components/v2/ChartBackground";
 const WHOP_URL = "https://whop.com/huddyertrades-coaching-ea05/huddyer-trades-community/";
 
 const bullets = [
-  "Live trade alerts in real time — see exactly what Hudson is doing and why",
+  "Live trade alerts in real time. See exactly what Hudson is doing and why.",
   "Daily market breakdowns before the open",
   "Active community of serious traders",
   "Weekly recaps and post-market analysis",
@@ -48,10 +48,10 @@ export default function CommunityPage() {
           style={{ fontSize: "clamp(15px, 2vw, 17px)", color: "#999", maxWidth: "560px" }}
         >
           <p>
-            This is where Hudson trades live. Real alerts, real positions, real reasoning — as it happens. Not a recap. Not a highlight reel.
+            This is where Hudson trades live. Real alerts, real positions, real reasoning. As it happens. Not a recap. Not a highlight reel.
           </p>
           <p>
-            If you want to see what consistent, disciplined trading actually looks like in practice — this is where you watch it.
+            If you want to see what consistent, disciplined trading actually looks like in practice, this is where you watch it.
           </p>
         </div>
 

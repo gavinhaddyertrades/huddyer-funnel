@@ -75,7 +75,7 @@ const quotes = [
   },
   {
     quote:
-      "The live direct calls are where it clicked for me. Getting real-time feedback on my actual setups — not theory. That's the difference.",
+      "The live direct calls are where it clicked for me. Getting real-time feedback on my actual setups. Not theory. That's the difference.",
     name: "Jordan M.",
     result: "Passed 100K evaluation",
     featured: false,
@@ -84,7 +84,7 @@ const quotes = [
     quote:
       "I applied skeptical. I stayed because the risk framework alone was worth it. My consistency went from maybe 40% to over 70% win rate on quality setups.",
     name: "Marcus T.",
-    result: "Funded — first attempt",
+    result: "Funded, first attempt",
     featured: false,
   },
 ];

@@ -39,7 +39,7 @@ const testimonials = [
     type: "certificate",
     name: "Brandon Bartolo",
     handle: "Funded Trader",
-    text: "Certificate of Achievement — Funded Trading Program",
+    text: "Certificate of Achievement: Funded Trading Program",
     time: "This month",
     color: "#D4AF37",
   },

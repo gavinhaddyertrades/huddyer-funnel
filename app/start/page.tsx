@@ -3,11 +3,11 @@
 const CURRICULUM_URL = "https://www.fanbasis.com/agency-checkout/huddyer-trades/8EmYg";
 
 const bullets = [
-  { title: "9+ Hours of Video Modules", body: "The exact system Hudson uses — market structure, execution, entries, risk. All of it, on your schedule." },
+  { title: "9+ Hours of Video Modules", body: "The exact system Hudson uses: market structure, execution, entries, risk. All of it, on your schedule." },
   { title: "Built for Real Trading", body: "Not theory. Not recycled YouTube content. The actual mechanics behind consistent, profitable trading." },
   { title: "Foundation First", body: "Every trader Hudson coaches personally started here. This is the system before the system." },
   { title: "Lifetime Access", body: "Go at your own pace. Come back to any module whenever you need it. No expiry." },
-  { title: "Hudson's Private Community", body: "You get added to Hudson's most exclusive group — his top clients and students only. This isn't a public Discord. It's where his serious people are." },
+  { title: "Hudson's Private Community", body: "You get added to Hudson's most exclusive group. His top clients and students only. This isn't a public Discord. It's where his serious people are." },
 ];
 
 export default function StartPage() {
@@ -52,7 +52,7 @@ export default function StartPage() {
           style={{ fontSize: "clamp(15px, 2vw, 17px)", color: "#999", maxWidth: "580px" }}
         >
           <p>
-            Every trader Hudson works with personally went through this curriculum first. Not because it&apos;s a stepping stone — because it&apos;s the foundation everything else is built on.
+            Every trader Hudson works with personally went through this curriculum first. Not because it&apos;s a stepping stone. Because it&apos;s the foundation everything else is built on.
           </p>
           <p>
             Most traders never get this right. They skip straight to strategies and setups without ever understanding why the market moves the way it does. This is where you fix that.
@@ -62,7 +62,7 @@ export default function StartPage() {
         {/* CTA — above stat strip */}
         <div className="flex flex-col gap-3 mb-14">
           <p className="font-body text-sm" style={{ color: "#666" }}>
-            $249 — Lifetime access. No waiting.
+            $249. Lifetime access. No waiting.
           </p>
           <a
             href={CURRICULUM_URL}

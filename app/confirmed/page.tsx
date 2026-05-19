@@ -271,17 +271,17 @@ const sections = [
   {
     num: "01",
     label: "What is this call exactly?",
-    body: "This is a strategy call with Hudson's team. They'll ask about your trading background, where you're at right now, and what you're trying to achieve. If the program is the right fit, you'll have the opportunity to get started. No pressure, no pitch — just a real conversation.",
+    body: "This is a strategy call with Hudson's team. They'll ask about your trading background, where you're at right now, and what you're trying to achieve. If the program is the right fit, you'll have the opportunity to get started. No pressure, no pitch. Just a real conversation.",
   },
   {
     num: "02",
     label: "Do I need trading experience?",
-    body: "You don't need to be an expert, but you do need to be serious. Hudson works with traders at different levels — what matters is that you're committed to doing the work and ready to follow a proven system.",
+    body: "You don't need to be an expert, but you do need to be serious. Hudson works with traders at different levels. What matters is that you're committed to doing the work and ready to follow a proven system.",
   },
   {
     num: "03",
     label: "What's the 90-day guarantee?",
-    body: "If you put in the work and don't hit profitability within 90 days, Hudson continues working with you at no extra cost. The guarantee exists because the system works — but only if you do.",
+    body: "If you put in the work and don't hit profitability within 90 days, Hudson continues working with you at no extra cost. The guarantee exists because the system works. But only if you do.",
   },
   {
     num: "04",
@@ -354,7 +354,7 @@ export default function ConfirmedPage() {
                 </svg>
               </div>
               <p className="font-body text-sm" style={{ color: "#555" }}>
-                Pre-call video from Hudson — coming soon
+                Pre-call video from Hudson, coming soon
               </p>
             </div>
           </div>
