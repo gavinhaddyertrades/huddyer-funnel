@@ -331,11 +331,6 @@ export default function ConfirmedPage() {
           <span className="gold-text-gradient">CONFIRM YOUR CALL.</span>
         </h1>
 
-        {/* Add to Calendar — only renders when Calendly passes event params */}
-        <Suspense fallback={null}>
-          <AddToCalendar />
-        </Suspense>
-
         {/* Video */}
         <div className="relative mb-14">
           <div
@@ -364,6 +359,11 @@ export default function ConfirmedPage() {
             </div>
           </div>
         </div>
+
+        {/* Add to Calendar — only renders when Calendly passes event params */}
+        <Suspense fallback={null}>
+          <AddToCalendar />
+        </Suspense>
 
         {/* Divider */}
         <div className="mb-14" style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent)" }} />
