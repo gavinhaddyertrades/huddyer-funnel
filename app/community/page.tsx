@@ -76,7 +76,7 @@ export default function CommunityPage() {
         />
 
         {/* Bullets */}
-        <ul className="space-y-4 w-full flex flex-col items-center">
+        <ul className="space-y-4 inline-flex flex-col">
           {bullets.map((b) => (
             <li key={b} className="flex items-start gap-3">
               <span
