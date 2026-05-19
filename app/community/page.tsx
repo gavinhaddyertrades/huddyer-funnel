@@ -52,6 +52,17 @@ export default function CommunityPage() {
           </p>
         </div>
 
+        {/* CTA */}
+        <a
+          href={WHOP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-gold inline-flex mb-10"
+          style={{ fontSize: "clamp(13px, 1.5vw, 15px)" }}
+        >
+          Join the Community →
+        </a>
+
         {/* Divider */}
         <div
           className="mb-10"
@@ -62,7 +73,7 @@ export default function CommunityPage() {
         />
 
         {/* Bullets */}
-        <ul className="space-y-4 mb-12">
+        <ul className="space-y-4">
           {bullets.map((b) => (
             <li key={b} className="flex items-start gap-3">
               <span
@@ -78,17 +89,6 @@ export default function CommunityPage() {
             </li>
           ))}
         </ul>
-
-        {/* CTA */}
-        <a
-          href={WHOP_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-gold inline-flex"
-          style={{ fontSize: "clamp(13px, 1.5vw, 15px)" }}
-        >
-          Join the Community →
-        </a>
 
       </div>
     </main>
