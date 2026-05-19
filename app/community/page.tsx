@@ -7,7 +7,7 @@ const WHOP_URL = "https://whop.com/huddyertrades-coaching-ea05/huddyer-trades-co
 const bullets = [
   "Live trade alerts in real time — see exactly what Hudson is doing and why",
   "Daily market breakdowns before the open",
-  "Active community of serious traders — no noise, no beginners asking basic questions",
+  "Active community of serious traders",
   "Weekly recaps and post-market analysis",
   "Direct access to Hudson and his team inside the server",
 ];
