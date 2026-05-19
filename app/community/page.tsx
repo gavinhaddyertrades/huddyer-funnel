@@ -1,5 +1,7 @@
 "use client";
 
+import ChartBackground from "@/components/v2/ChartBackground";
+
 const WHOP_URL = "https://whop.com/huddyertrades-coaching-ea05/huddyer-trades-community/";
 
 const bullets = [
@@ -14,8 +16,9 @@ export default function CommunityPage() {
   return (
     <main
       className="min-h-screen flex flex-col items-center justify-center px-5 py-20"
-      style={{ backgroundColor: "#0A0A0A" }}
+      style={{ backgroundColor: "#0A0A0A", position: "relative" }}
     >
+      <ChartBackground />
       <div className="w-full max-w-2xl mx-auto">
 
         {/* Label */}
