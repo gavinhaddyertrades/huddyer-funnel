@@ -19,7 +19,7 @@ export default function CommunityPage() {
       style={{ backgroundColor: "#0A0A0A", position: "relative" }}
     >
       <ChartBackground />
-      <div className="w-full max-w-2xl mx-auto">
+      <div className="w-full max-w-2xl mx-auto flex flex-col items-center text-center">
 
         {/* Label */}
         <p
@@ -76,7 +76,7 @@ export default function CommunityPage() {
         />
 
         {/* Bullets */}
-        <ul className="space-y-4">
+        <ul className="space-y-4 w-full text-left">
           {bullets.map((b) => (
             <li key={b} className="flex items-start gap-3">
               <span
