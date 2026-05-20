@@ -467,10 +467,11 @@ type WhopPayment = {
 };
 type WhopMembership = {
   id:         string;
-  status:     string;
-  plan:       string;
-  created_at: number;
-  valid:      boolean;
+  status:                string;
+  plan:                  string;
+  created_at:            number;
+  valid:                 boolean;
+  cancel_at_period_end:  boolean;
 };
 type WhopPlan = { id: string; renewal_price: string | number | null; initial_price: string | number | null };
 
@@ -520,7 +521,7 @@ async function fetchWhopData(): Promise<WhopData | null> {
       const batch = d.data ?? [];
       if (!batch.length) break;
       for (const m of batch) {
-        if (m.status === "active") activeMembers++;
+        if (m.status === "active" && !m.cancel_at_period_end) activeMembers++;
         // MRR: active + trialing (paying or about to pay)
         if (m.status === "active" || m.status === "trialing") {
           // Use actual last-paid amount to capture promo-code discounts;
