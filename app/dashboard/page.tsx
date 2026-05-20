@@ -169,7 +169,7 @@ function SectionLabel({children}:{children:React.ReactNode}){return <p style={{f
 function Card({children,style}:{children:React.ReactNode;style?:React.CSSProperties}){return <div style={{background:"rgba(255,255,255,0.025)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"18px 20px",...style}}>{children}</div>;}
 
 function KpiCard({label,value,sub,accent,warn,green}:{label:string;value:string|number;sub?:string;accent?:boolean;warn?:boolean;green?:boolean;}){
-  const col=warn?"#E05252":green?"#4CAF6E":accent?"#C9A84C":"#F2EDE6";
+  const col=warn?"#E05252":green?"#C9A84C":accent?"#C9A84C":"#F2EDE6";
   return(
     <Card>
       <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:8}}>{label}</p>
@@ -181,8 +181,8 @@ function KpiCard({label,value,sub,accent,warn,green}:{label:string;value:string|
 
 function Pill({ok,label}:{ok:boolean;label:string}){
   return(
-    <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,fontFamily:"var(--font-body)",background:ok?"rgba(76,175,110,0.12)":"rgba(224,82,82,0.12)",color:ok?"#4CAF6E":"#E05252",border:`1px solid ${ok?"rgba(76,175,110,0.25)":"rgba(224,82,82,0.25)"}`}}>
-      <span style={{width:6,height:6,borderRadius:"50%",background:ok?"#4CAF6E":"#E05252",display:"inline-block"}}/>
+    <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"3px 9px",borderRadius:999,fontSize:11,fontWeight:600,fontFamily:"var(--font-body)",background:ok?"rgba(201,168,76,0.12)":"rgba(224,82,82,0.12)",color:ok?"#C9A84C":"#E05252",border:`1px solid ${ok?"rgba(201,168,76,0.25)":"rgba(224,82,82,0.25)"}`}}>
+      <span style={{width:6,height:6,borderRadius:"50%",background:ok?"#C9A84C":"#E05252",display:"inline-block"}}/>
       {label}
     </span>
   );
@@ -257,7 +257,7 @@ function FunnelViz({steps}:{steps:{label:string;value:number;pct?:number}[]}){
             </div>
           </div>
           <div style={{height:8,borderRadius:4,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
-            <div style={{width:`${Math.max((step.value/max)*100,step.value>0?4:0)}%`,height:"100%",borderRadius:4,background:i===0?"#555":i===1?"#C9A84C":"#4CAF6E",transition:"width 0.6s ease"}}/>
+            <div style={{width:`${Math.max((step.value/max)*100,step.value>0?4:0)}%`,height:"100%",borderRadius:4,background:i===0?"#555":i===1?"#C9A84C":"#A07830",transition:"width 0.6s ease"}}/>
           </div>
         </div>
       ))}
@@ -317,7 +317,7 @@ function RevanaPanel({netEarnings,setterTotal,closerTotal}:{netEarnings:number;s
       </div>
       <div style={{display:"flex",justifyContent:"space-between"}}>
         <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777"}}>Hudson net</span>
-        <span style={{fontFamily:"var(--font-display)",fontSize:22,color:"#4CAF6E",lineHeight:1}}>{fmt$(hudson)}</span>
+        <span style={{fontFamily:"var(--font-display)",fontSize:22,color:"#F2EDE6",lineHeight:1}}>{fmt$(hudson)}</span>
       </div>
     </Card>
   );
@@ -398,7 +398,7 @@ function BottomNav({current,onChange}:{current:PageKey;onChange:(k:PageKey)=>voi
 }
 
 // ── Page views ────────────────────────────────────────────────────────────────
-const PROG_COLORS=["#C9A84C","#4CAF6E","#5B8DD9","#E05252","#B07DDA","#E8924E"];
+const PROG_COLORS=["#C9A84C","#D4AF37","#A07830","#E8D5A3","#8B6914","#F0C060"];
 
 function DashboardView({data}:{data:DashboardData}){
   const mobile=useMobile();
@@ -454,7 +454,7 @@ function RevenueView({data}:{data:DashboardData}){
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>PIF vs Financed</p>
             {sh&&(sh.pifContracted>0||sh.financedContracted>0)?(
-              <DonutChart segments={[{label:"PIF",value:sh.pifContracted,color:"#C9A84C"},{label:"Financed",value:sh.financedContracted,color:"#4CAF6E"}]}/>
+              <DonutChart segments={[{label:"PIF",value:sh.pifContracted,color:"#C9A84C"},{label:"Financed",value:sh.financedContracted,color:"#A07830"}]}/>
             ):<p style={{color:"#555",fontSize:12}}>No data</p>}
           </Card>
           <Card>
@@ -560,7 +560,7 @@ function CommissionsView({data}:{data:DashboardData}){
             <Card>
               <CommissionTable title="Setter Commissions (total owed)" rows={sh.setterCommOwed} subRows={sh.setterCommPaid}/>
               <div style={{height:1,background:"rgba(255,255,255,0.06)",margin:"16px 0"}}/>
-              <CommissionTable title="Closer Commissions (total owed)" rows={sh.closerCommOwed} subRows={sh.closerCommPaid} accent="#4CAF6E"/>
+              <CommissionTable title="Closer Commissions (total owed)" rows={sh.closerCommOwed} subRows={sh.closerCommPaid} accent="#C9A84C"/>
               <p style={{fontFamily:"var(--font-body)",fontSize:10,color:"#3A3A3A",marginTop:12}}>Right = total owed · left = paid to date</p>
             </Card>
             <RevanaPanel netEarnings={sh.totalNetEarnings} setterTotal={setterTotal} closerTotal={closerTotal}/>
