@@ -314,8 +314,8 @@ function DashboardView({data}:{data:DashboardData}){
         <div style={{display:"grid",gridTemplateColumns:grid1,gap:10}}>
           <KpiCard label="Total Contracted" value={sh?fmt$(sh.combinedTotalContracted):"—"} accent/>
           <KpiCard label="Cash Collected"   value={sh?fmt$(sh.combinedCashCollected)  :"—"} green/>
-          <KpiCard label="MRR"              value={whop?fmt$Exact(whop.mrr)            :"—"} sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
-          <KpiCard label="Deals Closed"      value={sh?.dealsClosed??"—"} sub="All time · distinct leads"/>
+          <KpiCard label="MRR"              value={whop?fmt$Exact(whop.mrr):"—"}/>
+          <KpiCard label="Deals Closed"     value={sh?.dealsClosed??"—"}/>
         </div>
       </section>
 
