@@ -235,6 +235,10 @@ export type SheetsData =
       lowTicketPaymentCount: number;    // total count of paid transactions
       lowTicketRows:         LowTicketRow[];
 
+      // ── Monthly charts (current year, cash collected up to today) ──
+      htCashCollectedByMonth: { month: string; amount: number }[];
+      ltRevenueByMonth:       { month: string; amount: number }[];
+
       // ── Combined totals (High Ticket Deals + Low Ticket sheet) ──
       // Total Contracted: all Deals rows + all LT rows (no date filter)
       combinedTotalContracted: number;
@@ -407,7 +411,31 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
       processor:     String(c[5] ?? "").trim(),
     });
   }
-  const ltPaidRows            = lowTicketRows.filter(r => r.amountPaid > 0);
+  const ltPaidRows = lowTicketRows.filter(r => r.amountPaid > 0);
+
+  // ── Monthly chart data (current calendar year, up to end of today) ────────
+  const CHART_MONTHS  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const chartYear     = new Date().getFullYear();
+  const todayForChart = new Date(); todayForChart.setHours(23, 59, 59, 999);
+
+  const htCashCollectedByMonth = CHART_MONTHS.map((month, i) => {
+    const ms = new Date(chartYear, i, 1);
+    const me = new Date(chartYear, i + 1, 0, 23, 59, 59);
+    const amount = round2(allDealRows
+      .filter(r => r.paymentDate >= ms && r.paymentDate <= me && r.paymentDate <= todayForChart)
+      .reduce((s, r) => s + r.cashCollected, 0));
+    return { month, amount };
+  });
+
+  const ltRevenueByMonth = CHART_MONTHS.map((month, i) => {
+    const ms = new Date(chartYear, i, 1);
+    const me = new Date(chartYear, i + 1, 0, 23, 59, 59);
+    const amount = round2(ltPaidRows
+      .filter(r => r.paymentDate >= ms && r.paymentDate <= me && r.paymentDate <= todayForChart)
+      .reduce((s, r) => s + r.amountPaid, 0));
+    return { month, amount };
+  });
+
   const lowTicketRevenue      = round2(ltPaidRows.reduce((s, r) => s + r.amountPaid, 0));
   const lowTicketEarnings     = round2(ltPaidRows.reduce((s, r) => s + r.earnings, 0));
   const lowTicketThisMonth    = round2(ltPaidRows.filter(r => r.paymentDate >= monthStart).reduce((s, r) => s + r.amountPaid, 0));
@@ -449,6 +477,8 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     closerEod:  { submitted: closerEodRows.length  > 0, rows: closerEodRows  },
     addOns,
     addOnTotal,
+    htCashCollectedByMonth,
+    ltRevenueByMonth,
     lowTicketRevenue,
     lowTicketEarnings,
     lowTicketThisMonth,

@@ -135,6 +135,73 @@ function DonutChart({segments,size=130}:{segments:{label:string;value:number;col
   );
 }
 
+// ── Monthly bar chart ─────────────────────────────────────────────────────────
+function MonthlyBarChart({ data, title }: { data: { month: string; amount: number }[]; title: string }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const mobile = useMobile();
+  const max = Math.max(...data.map(d => d.amount), 1);
+  const chartH = 150;
+  const barW   = mobile ? 16 : 26;
+  const gap    = mobile ? 4  : 10;
+  const padL   = 44;
+  const padB   = 26;
+  const padT   = 10;
+  const svgW   = padL + data.length * (barW + gap) + gap;
+  const svgH   = chartH + padB + padT;
+  const niceMax = Math.ceil(max / 1000) * 1000 || 1000;
+  const yTicks  = [0, 0.25, 0.5, 0.75, 1].map(f => Math.round(niceMax * f));
+
+  return (
+    <Card>
+      <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:14}}>{title}</p>
+      <div style={{overflowX:"auto",position:"relative"}}>
+        {/* Tooltip */}
+        {hovered !== null && data[hovered].amount > 0 && (()=>{
+          const d   = data[hovered];
+          const cx  = padL + gap + hovered * (barW + gap) + barW / 2;
+          const barH = Math.max((d.amount / niceMax) * chartH, 2);
+          const tipY = padT + chartH - barH - 34;
+          return(
+            <div style={{position:"absolute",left:cx,top:tipY,transform:"translateX(-50%)",background:"rgba(13,13,13,0.97)",border:"1px solid rgba(201,168,76,0.4)",borderRadius:6,padding:"4px 10px",pointerEvents:"none",zIndex:10,whiteSpace:"nowrap"}}>
+              <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#C9A84C",margin:0,fontWeight:700}}>{fmt$(d.amount)}</p>
+            </div>
+          );
+        })()}
+        <svg width={svgW} height={svgH} style={{display:"block"}}>
+          {/* Grid lines + Y labels */}
+          {yTicks.map(tick=>{
+            const y=padT+chartH-(tick/niceMax)*chartH;
+            return(
+              <g key={tick}>
+                <line x1={padL} x2={svgW} y1={y} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth={1}/>
+                <text x={padL-6} y={y+4} textAnchor="end" fontSize={9} fill="#444" fontFamily="sans-serif">
+                  {tick===0?"0":tick>=1000?`${tick/1000}K`:tick}
+                </text>
+              </g>
+            );
+          })}
+          {/* X axis */}
+          <line x1={padL} x2={svgW} y1={padT+chartH} y2={padT+chartH} stroke="rgba(255,255,255,0.1)" strokeWidth={1}/>
+          {/* Bars */}
+          {data.map((d,i)=>{
+            const barH  = d.amount>0?Math.max((d.amount/niceMax)*chartH,2):0;
+            const x     = padL+gap+i*(barW+gap);
+            const y     = padT+chartH-barH;
+            const isHov = hovered===i;
+            return(
+              <g key={d.month} onMouseEnter={()=>setHovered(i)} onMouseLeave={()=>setHovered(null)} style={{cursor:d.amount>0?"pointer":"default"}}>
+                <rect x={x} y={d.amount>0?y:padT+chartH-1} width={barW} height={d.amount>0?barH:1}
+                  fill={d.amount>0?(isHov?"#D4AF37":"#C9A84C"):"rgba(255,255,255,0.04)"} rx={2}/>
+                <text x={x+barW/2} y={padT+chartH+17} textAnchor="middle" fontSize={9} fill={isHov?"#888":"#444"} fontFamily="sans-serif">{d.month}</text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </Card>
+  );
+}
+
 // ── Funnel viz ────────────────────────────────────────────────────────────────
 function FunnelViz({steps}:{steps:{label:string;value:number;pct?:number}[]}){
   const max=Math.max(...steps.map(s=>s.value),1);
@@ -397,6 +464,7 @@ function RevenueView({data}:{data:DashboardData}){
           <KpiCard label="Uncollected"       value={sh?fmt$(sh.uncollectedRevenue):"—"} sub="Future scheduled"/>
           <KpiCard label="Still Due This Month" value={sh?fmt$(sh.revenueStillDueThisMonth):"—"} sub="Tomorrow → end of month"/>
         </div>
+        {sh&&<div style={{marginBottom:14}}><MonthlyBarChart data={sh.htCashCollectedByMonth} title="Cash Collected by Month"/></div>}
         <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>PIF vs Financed</p>
@@ -418,13 +486,14 @@ function RevenueView({data}:{data:DashboardData}){
       {/* ── LOW TICKET (WHOP) ── */}
       <section>
         <SectionLabel>Low Ticket Revenue (Whop)</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:10}}>
+        <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:10,marginBottom:14}}>
           <KpiCard label="All-Time Revenue" value={sh?fmt$(sh.lowTicketRevenue)      :"—"} accent sub={sh?`${sh.lowTicketPaymentCount} payments`:undefined}/>
           <KpiCard label="This Month"       value={sh?fmt$(sh.lowTicketThisMonth)    :"—"} sub="Payments this month"/>
           <KpiCard label="Today"            value={sh?fmt$Exact(sh.lowTicketToday)   :"—"} sub="Payments today"/>
           <KpiCard label="MRR"              value={whop?fmt$Exact(whop.mrr)          :"—"} accent sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
           <KpiCard label="New This Month"   value={whop?whop.newMembersThisMonth     :"—"} sub="New subscribers"/>
         </div>
+        {sh&&<MonthlyBarChart data={sh.ltRevenueByMonth} title="Revenue by Month"/>}
       </section>
 
       {/* ── CHURNED / VOIDED ── */}
