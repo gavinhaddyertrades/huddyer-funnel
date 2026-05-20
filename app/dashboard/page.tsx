@@ -398,7 +398,7 @@ function BottomNav({current,onChange}:{current:PageKey;onChange:(k:PageKey)=>voi
 }
 
 // ── Page views ────────────────────────────────────────────────────────────────
-const PROG_COLORS=["#C9A84C","#D4AF37","#A07830","#E8D5A3","#8B6914","#F0C060"];
+const PROG_COLORS=["#A07830","#C9A84C","#D4AF37","#8B6914","#E8C878","#7A5C1E"];
 
 function DashboardView({data}:{data:DashboardData}){
   const mobile=useMobile();
@@ -454,7 +454,7 @@ function RevenueView({data}:{data:DashboardData}){
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>PIF vs Financed</p>
             {sh&&(sh.pifContracted>0||sh.financedContracted>0)?(
-              <DonutChart segments={[{label:"PIF",value:sh.pifContracted,color:"#C9A84C"},{label:"Financed",value:sh.financedContracted,color:"#A07830"}]}/>
+              <DonutChart segments={[{label:"PIF",value:sh.pifContracted,color:"#A07830"},{label:"Financed",value:sh.financedContracted,color:"#C9A84C"}]}/>
             ):<p style={{color:"#555",fontSize:12}}>No data</p>}
           </Card>
           <Card>
