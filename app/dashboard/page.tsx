@@ -410,8 +410,10 @@ function DashboardView({data}:{data:DashboardData}){
     return end && _now >= end && new Date(c.startTime) >= _todayStart && new Date(c.startTime) < _tomorrowStart;
   }).length;
   const remaining = upcoming.filter(c => {
-    const end = c.endTime ? new Date(c.endTime) : null;
-    return end ? _now < end : _now < new Date(c.startTime);
+    const start = new Date(c.startTime);
+    const end   = c.endTime ? new Date(c.endTime) : null;
+    const isToday = start >= _todayStart && start < _tomorrowStart;
+    return isToday && (end ? _now < end : _now < start);
   }).length;
 
   // Expandable lead info state
