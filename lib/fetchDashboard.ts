@@ -520,7 +520,7 @@ async function fetchWhopData(): Promise<WhopData | null> {
       const batch = d.data ?? [];
       if (!batch.length) break;
       for (const m of batch) {
-        if (m.status === "active" || m.status === "trialing") activeMembers++;
+        if (m.status === "active") activeMembers++;
         // MRR: active + trialing (paying or about to pay)
         if (m.status === "active" || m.status === "trialing") {
           // Use actual last-paid amount to capture promo-code discounts;
