@@ -257,6 +257,8 @@ export type SheetsData =
           htEarnings: number;
           ltEarnings: number;
           revana:     number;
+          setterComm: CommissionLine[];
+          closerComm: CommissionLine[];
         };
         previous: {
           label:      string;
@@ -264,6 +266,8 @@ export type SheetsData =
           htEarnings: number;
           ltEarnings: number;
           revana:     number;
+          setterComm: CommissionLine[];
+          closerComm: CommissionLine[];
         };
       };
 
@@ -523,6 +527,19 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
   const currentLtEarnings   = round2(ltPaidRows.filter(r  => r.paymentDate >= periods.current.start  && r.paymentDate <= periods.current.end ).reduce((s, r) => s + r.earnings, 0));
   const previousLtEarnings  = round2(ltPaidRows.filter(r  => r.paymentDate >= periods.previous.start && r.paymentDate <= periods.previous.end).reduce((s, r) => s + r.earnings, 0));
 
+  // Per-period setter/closer commissions (reuse toLines exclusion filter)
+  const buildPeriodComm = (start: Date, end: Date) => {
+    const sm = new Map<string, number>();
+    const cm = new Map<string, number>();
+    for (const r of allDealRows.filter(r => r.paymentDate >= start && r.paymentDate <= end)) {
+      sm.set(r.setterName, (sm.get(r.setterName) ?? 0) + r.setterCommission);
+      cm.set(r.closerName, (cm.get(r.closerName) ?? 0) + r.closerCommission);
+    }
+    return { setter: toLines(sm), closer: toLines(cm) };
+  };
+  const currComm = buildPeriodComm(periods.current.start,  periods.current.end);
+  const prevComm = buildPeriodComm(periods.previous.start, periods.previous.end);
+
   const payPeriodCommission = {
     current: {
       label:      periods.current.label,
@@ -530,6 +547,8 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
       htEarnings: currentHtEarnings,
       ltEarnings: currentLtEarnings,
       revana:     round2((currentHtEarnings + currentLtEarnings) * 0.20),
+      setterComm: currComm.setter,
+      closerComm: currComm.closer,
     },
     previous: {
       label:      periods.previous.label,
@@ -537,6 +556,8 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
       htEarnings: previousHtEarnings,
       ltEarnings: previousLtEarnings,
       revana:     round2((previousHtEarnings + previousLtEarnings) * 0.20),
+      setterComm: prevComm.setter,
+      closerComm: prevComm.closer,
     },
   };
 

@@ -313,6 +313,53 @@ function PayPeriodCard({title,label,payDate,htEarnings,ltEarnings,revana,isPast}
   );
 }
 
+// ── Sales team period card ────────────────────────────────────────────────────
+function SalesTeamPeriodCard({title,label,payDate,setterComm,closerComm,isPast}:{
+  title:string;label:string;payDate:string;
+  setterComm:CommissionLine[];closerComm:CommissionLine[];isPast?:boolean;
+}){
+  const noData = setterComm.length===0 && closerComm.length===0;
+  return(
+    <Card>
+      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:4}}>{title}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isPast?"#555":"#888",margin:"0 0 2px"}}>{label}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isPast?"#3A3A3A":"#555",marginBottom:16}}>{payDate}</p>
+      {noData?(
+        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#333",fontStyle:"italic"}}>No commissions this period</p>
+      ):(
+        <>
+          {setterComm.length>0&&(
+            <>
+              <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"#444",marginBottom:8}}>Setters</p>
+              <div style={{border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,overflow:"hidden",marginBottom:14}}>
+                {setterComm.map((r,i)=>(
+                  <div key={r.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",borderBottom:i<setterComm.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                    <span style={{fontFamily:"var(--font-body)",fontSize:13,color:isPast?"#888":"#CCC"}}>{r.name}</span>
+                    <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:isPast?"#555":"#C9A84C"}}>{fmt$Exact(r.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {closerComm.length>0&&(
+            <>
+              <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"#444",marginBottom:8}}>Closers</p>
+              <div style={{border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,overflow:"hidden"}}>
+                {closerComm.map((r,i)=>(
+                  <div key={r.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",borderBottom:i<closerComm.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                    <span style={{fontFamily:"var(--font-body)",fontSize:13,color:isPast?"#888":"#CCC"}}>{r.name}</span>
+                    <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:isPast?"#555":"#C9A84C"}}>{fmt$Exact(r.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </Card>
+  );
+}
+
 // ── EOD table ─────────────────────────────────────────────────────────────────
 function EodTable({title,rows,columns,emptyMsg}:{title:string;rows:Record<string,string|number>[];columns:{key:string;label:string}[];emptyMsg?:string;}){
   return(
@@ -708,44 +755,56 @@ function CommissionsView({data}:{data:DashboardData}){
         {!sh?(
           <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>Google Sheets not connected.</p>
         ):(
-          <div style={{display:"flex",flexDirection:"column",gap:14}}>
-            {/* ── Pay periods ── */}
-            <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
-              <PayPeriodCard
-                title="Current Period"
-                label={sh.payPeriodCommission.current.label}
-                payDate={sh.payPeriodCommission.current.payDate}
-                htEarnings={sh.payPeriodCommission.current.htEarnings}
-                ltEarnings={sh.payPeriodCommission.current.ltEarnings}
-                revana={sh.payPeriodCommission.current.revana}
-              />
-              <PayPeriodCard
-                title="Previous Period"
-                label={sh.payPeriodCommission.previous.label}
-                payDate={sh.payPeriodCommission.previous.payDate}
-                htEarnings={sh.payPeriodCommission.previous.htEarnings}
-                ltEarnings={sh.payPeriodCommission.previous.ltEarnings}
-                revana={sh.payPeriodCommission.previous.revana}
-                isPast
-              />
+          <div style={{display:"flex",flexDirection:"column",gap:28}}>
+
+            {/* ── Revana Commission ── */}
+            <div>
+              <SectionLabel>Revana Commission</SectionLabel>
+              <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
+                <PayPeriodCard
+                  title="Current Period"
+                  label={sh.payPeriodCommission.current.label}
+                  payDate={sh.payPeriodCommission.current.payDate}
+                  htEarnings={sh.payPeriodCommission.current.htEarnings}
+                  ltEarnings={sh.payPeriodCommission.current.ltEarnings}
+                  revana={sh.payPeriodCommission.current.revana}
+                />
+                <PayPeriodCard
+                  title="Previous Period"
+                  label={sh.payPeriodCommission.previous.label}
+                  payDate={sh.payPeriodCommission.previous.payDate}
+                  htEarnings={sh.payPeriodCommission.previous.htEarnings}
+                  ltEarnings={sh.payPeriodCommission.previous.ltEarnings}
+                  revana={sh.payPeriodCommission.previous.revana}
+                  isPast
+                />
+              </div>
             </div>
 
             <GoldDivider/>
 
-            {/* ── All-time + setter/closer ── */}
-            <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
-              <Card>
-                <CommissionTable title="Setter Commissions (total owed)" rows={sh.setterCommOwed} subRows={sh.setterCommPaid}/>
-                <div style={{height:1,background:"rgba(255,255,255,0.06)",margin:"16px 0"}}/>
-                <CommissionTable title="Closer Commissions (total owed)" rows={sh.closerCommOwed} subRows={sh.closerCommPaid} accent="#C9A84C"/>
-                <p style={{fontFamily:"var(--font-body)",fontSize:10,color:"#3A3A3A",marginTop:12}}>Right = total owed · left = paid to date</p>
-              </Card>
-              <RevanaCommissionCard
-                htEarnings={sh.htEarningsCollected}
-                ltEarnings={sh.lowTicketEarnings}
-                commission={sh.revanaCommission}
-              />
+            {/* ── Sales Team Commission ── */}
+            <div>
+              <SectionLabel>Sales Team Commission</SectionLabel>
+              <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
+                <SalesTeamPeriodCard
+                  title="Current Period"
+                  label={sh.payPeriodCommission.current.label}
+                  payDate={sh.payPeriodCommission.current.payDate}
+                  setterComm={sh.payPeriodCommission.current.setterComm}
+                  closerComm={sh.payPeriodCommission.current.closerComm}
+                />
+                <SalesTeamPeriodCard
+                  title="Previous Period"
+                  label={sh.payPeriodCommission.previous.label}
+                  payDate={sh.payPeriodCommission.previous.payDate}
+                  setterComm={sh.payPeriodCommission.previous.setterComm}
+                  closerComm={sh.payPeriodCommission.previous.closerComm}
+                  isPast
+                />
+              </div>
             </div>
+
           </div>
         )}
       </section>
