@@ -252,8 +252,8 @@ function CommissionTable({title,rows,subRows,accent}:{title:string;rows:Commissi
         {rows.map((r,i)=>(
           <div key={r.name} style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:10,padding:"9px 14px",alignItems:"center",borderBottom:i<rows.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
             <span style={{fontFamily:"var(--font-body)",fontSize:13,color:"#CCC"}}>{r.name}</span>
-            <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555"}}>{paidMap.has(r.name)?`${fmt$(paidMap.get(r.name)!)} paid`:""}</span>
-            <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:accent??"#C9A84C",minWidth:64,textAlign:"right"}}>{fmt$(r.amount)}</span>
+            <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555"}}>{paidMap.has(r.name)?`${fmt$Exact(paidMap.get(r.name)!)} paid`:""}</span>
+            <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:accent??"#C9A84C",minWidth:64,textAlign:"right"}}>{fmt$Exact(r.amount)}</span>
           </div>
         ))}
       </div>
@@ -267,8 +267,8 @@ function RevanaCommissionCard({htEarnings,ltEarnings,commission}:{htEarnings:num
     <Card>
       <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:16}}>Revana Commission</p>
       {[
-        {label:"HT Earnings (collected)", value:fmt$(htEarnings)},
-        {label:"LT Earnings",             value:fmt$(ltEarnings)},
+        {label:"HT Earnings (collected)", value:fmt$Exact(htEarnings)},
+        {label:"LT Earnings",             value:fmt$Exact(ltEarnings)},
       ].map(row=>(
         <div key={row.label} style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
           <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777"}}>{row.label}</span>
@@ -278,7 +278,7 @@ function RevanaCommissionCard({htEarnings,ltEarnings,commission}:{htEarnings:num
       <div style={{height:1,background:"rgba(255,255,255,0.07)",margin:"10px 0 14px"}}/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <span style={{fontFamily:"var(--font-body)",fontSize:13,color:"#C9A84C",fontWeight:700}}>Revana (20%)</span>
-        <span style={{fontFamily:"var(--font-display)",fontSize:28,color:"#C9A84C",lineHeight:1}}>{fmt$(commission)}</span>
+        <span style={{fontFamily:"var(--font-display)",fontSize:28,color:"#C9A84C",lineHeight:1}}>{fmt$Exact(commission)}</span>
       </div>
     </Card>
   );
@@ -296,8 +296,8 @@ function PayPeriodCard({title,label,payDate,htEarnings,ltEarnings,revana,isPast}
       <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isPast?"#555":"#888",margin:"0 0 2px"}}>{label}</p>
       <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isPast?"#3A3A3A":"#555",marginBottom:16}}>{payDate}</p>
       {[
-        {label:"HT Earnings",value:fmt$(htEarnings)},
-        {label:"LT Earnings",value:fmt$(ltEarnings)},
+        {label:"HT Earnings",value:fmt$Exact(htEarnings)},
+        {label:"LT Earnings",value:fmt$Exact(ltEarnings)},
       ].map(row=>(
         <div key={row.label} style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
           <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#666"}}>{row.label}</span>
@@ -307,7 +307,7 @@ function PayPeriodCard({title,label,payDate,htEarnings,ltEarnings,revana,isPast}
       <div style={{height:1,background:"rgba(255,255,255,0.07)",margin:"10px 0 12px"}}/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <span style={{fontFamily:"var(--font-body)",fontSize:13,color:gold,fontWeight:700}}>Revana (20%)</span>
-        <span style={{fontFamily:"var(--font-display)",fontSize:isPast?22:28,color:gold,lineHeight:1}}>{fmt$(revana)}</span>
+        <span style={{fontFamily:"var(--font-display)",fontSize:isPast?22:28,color:gold,lineHeight:1}}>{fmt$Exact(revana)}</span>
       </div>
     </Card>
   );
