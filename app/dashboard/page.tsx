@@ -248,39 +248,24 @@ function CommissionTable({title,rows,subRows,accent}:{title:string;rows:Commissi
   );
 }
 
-// ── Revana panel ──────────────────────────────────────────────────────────────
-function RevanaPanel({netEarnings,setterTotal,closerTotal}:{netEarnings:number;setterTotal:number;closerTotal:number;}){
-  const [rate,setRate]=useState(10);
-  const remaining=Math.max(netEarnings-setterTotal-closerTotal,0);
-  const revana=Math.round(remaining*(rate/100)*100)/100;
-  const hudson=Math.round(Math.max(remaining-revana,0)*100)/100;
+// ── Revana commission card ────────────────────────────────────────────────────
+function RevanaCommissionCard({htEarnings,ltEarnings,commission}:{htEarnings:number;ltEarnings:number;commission:number;}){
   return(
     <Card>
-      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:14}}>Revana Commission</p>
-      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
-        <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777"}}>Agency rate:</span>
-        <input type="number" min={0} max={100} value={rate} onChange={e=>setRate(Math.max(0,Math.min(100,Number(e.target.value))))}
-          style={{width:52,padding:"3px 8px",borderRadius:6,border:"1px solid rgba(201,168,76,0.3)",background:"rgba(201,168,76,0.07)",color:"#F2EDE6",fontFamily:"var(--font-body)",fontSize:13,outline:"none"}}/>
-        <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777"}}>%</span>
-      </div>
+      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:16}}>Revana Commission</p>
       {[
-        {label:"Net Earnings (collected)",value:fmt$(netEarnings),col:"#F2EDE6"},
-        {label:"Setter commissions paid", value:`-${fmt$(setterTotal)}`,col:"#E05252"},
-        {label:"Closer commissions paid", value:`-${fmt$(closerTotal)}`,col:"#E05252"},
+        {label:"HT Earnings (collected)", value:fmt$(htEarnings)},
+        {label:"LT Earnings",             value:fmt$(ltEarnings)},
       ].map(row=>(
-        <div key={row.label} style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+        <div key={row.label} style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
           <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777"}}>{row.label}</span>
-          <span style={{fontFamily:"var(--font-body)",fontSize:13,color:row.col,fontWeight:600}}>{row.value}</span>
+          <span style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",fontWeight:600}}>{row.value}</span>
         </div>
       ))}
-      <div style={{height:1,background:"rgba(255,255,255,0.07)",margin:"8px 0 10px"}}/>
-      <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-        <span style={{fontFamily:"var(--font-body)",fontSize:13,color:"#C9A84C",fontWeight:700}}>Revana ({rate}%)</span>
-        <span style={{fontFamily:"var(--font-display)",fontSize:22,color:"#C9A84C",lineHeight:1}}>{fmt$(revana)}</span>
-      </div>
-      <div style={{display:"flex",justifyContent:"space-between"}}>
-        <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777"}}>Hudson net</span>
-        <span style={{fontFamily:"var(--font-display)",fontSize:22,color:"#F2EDE6",lineHeight:1}}>{fmt$(hudson)}</span>
+      <div style={{height:1,background:"rgba(255,255,255,0.07)",margin:"10px 0 14px"}}/>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <span style={{fontFamily:"var(--font-body)",fontSize:13,color:"#C9A84C",fontWeight:700}}>Revana (20%)</span>
+        <span style={{fontFamily:"var(--font-display)",fontSize:28,color:"#C9A84C",lineHeight:1}}>{fmt$(commission)}</span>
       </div>
     </Card>
   );
@@ -657,8 +642,6 @@ function FunnelView({data}:{data:DashboardData}){
 function CommissionsView({data}:{data:DashboardData}){
   const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
-  const setterTotal=sh?.setterCommPaid.reduce((s,r)=>s+r.amount,0)??0;
-  const closerTotal=sh?.closerCommPaid.reduce((s,r)=>s+r.amount,0)??0;
   const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
@@ -674,7 +657,11 @@ function CommissionsView({data}:{data:DashboardData}){
               <CommissionTable title="Closer Commissions (total owed)" rows={sh.closerCommOwed} subRows={sh.closerCommPaid} accent="#C9A84C"/>
               <p style={{fontFamily:"var(--font-body)",fontSize:10,color:"#3A3A3A",marginTop:12}}>Right = total owed · left = paid to date</p>
             </Card>
-            <RevanaPanel netEarnings={sh.totalNetEarnings} setterTotal={setterTotal} closerTotal={closerTotal}/>
+            <RevanaCommissionCard
+              htEarnings={sh.htEarningsCollected}
+              ltEarnings={sh.lowTicketEarnings}
+              commission={sh.revanaCommission}
+            />
           </div>
         )}
       </section>

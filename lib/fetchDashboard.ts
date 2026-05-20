@@ -230,6 +230,8 @@ export type SheetsData =
       // ── Low Ticket sheet ──
       lowTicketRevenue:      number;    // all-time sum of amountPaid (paid rows only)
       lowTicketEarnings:     number;    // all-time Revana earnings cut
+      htEarningsCollected:   number;    // sum of Deals earnings where paymentDate ≤ today
+      revanaCommission:      number;    // 20% × (htEarningsCollected + lowTicketEarnings)
       lowTicketThisMonth:    number;    // amountPaid in current calendar month
       lowTicketToday:        number;    // amountPaid today (US calendar date)
       lowTicketPaymentCount: number;    // total count of paid transactions
@@ -277,6 +279,8 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
   const totalContracted          = round2(allDealRows.reduce((s, r) => s + r.cashCollected, 0));
   const cashCollected            = round2(allDealRows.filter(r => r.paymentDate <= today).reduce((s, r) => s + r.cashCollected, 0));
   const uncollectedRevenue       = round2(allDealRows.filter(r => r.paymentDate > today).reduce((s, r) => s + r.cashCollected, 0));
+  // All-time HT earnings for collected payments (paymentDate ≤ today)
+  const htEarningsCollected      = round2(allDealRows.filter(r => r.paymentDate <= today).reduce((s, r) => s + r.earnings, 0));
   const revenueThisMonth         = round2(allDealRows.filter(r => r.paymentDate >= monthStart && r.paymentDate <= monthEnd).reduce((s, r) => s + r.cashCollected, 0));
   const revenueStillDueThisMonth = round2(allDealRows.filter(r => r.paymentDate >= tomorrowStart && r.paymentDate <= monthEnd).reduce((s, r) => s + r.cashCollected, 0));
 
@@ -438,6 +442,8 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
 
   const lowTicketRevenue      = round2(ltPaidRows.reduce((s, r) => s + r.amountPaid, 0));
   const lowTicketEarnings     = round2(ltPaidRows.reduce((s, r) => s + r.earnings, 0));
+  // Revana commission: 20% of (HT collected earnings + LT earnings)
+  const revanaCommission      = round2((htEarningsCollected + lowTicketEarnings) * 0.20);
   const lowTicketThisMonth    = round2(ltPaidRows.filter(r => r.paymentDate >= monthStart).reduce((s, r) => s + r.amountPaid, 0));
   const lowTicketToday        = round2(ltPaidRows.filter(r => r.paymentDate >= ltTodayStart).reduce((s, r) => s + r.amountPaid, 0));
   const lowTicketPaymentCount = ltPaidRows.length;
@@ -481,6 +487,8 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     ltRevenueByMonth,
     lowTicketRevenue,
     lowTicketEarnings,
+    htEarningsCollected,
+    revanaCommission,
     lowTicketThisMonth,
     lowTicketToday,
     lowTicketPaymentCount,
