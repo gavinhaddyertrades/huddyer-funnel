@@ -249,11 +249,77 @@ export type SheetsData =
       combinedUncollected:     number;  // Deals future installments only (LT has none)
       combinedNetCollected:    number;  // combinedCashCollected − churnedRevenue
 
+      // ── Pay period commissions (paid on 5th and 20th) ──
+      payPeriodCommission: {
+        current: {
+          label:      string;   // e.g. "Apr 20 – May 4"
+          payDate:    string;   // e.g. "May 5 (next pay)"
+          htEarnings: number;
+          ltEarnings: number;
+          revana:     number;
+        };
+        previous: {
+          label:      string;
+          payDate:    string;   // e.g. "May 20 (paid)"
+          htEarnings: number;
+          ltEarnings: number;
+          revana:     number;
+        };
+      };
+
       // ── Overhead ──
       subscriptions:      { tool: string; monthlyCost: number }[];
       totalMonthlyOverhead: number;
     }
   | { connected: false; error: string };
+
+// ── Pay period helpers ────────────────────────────────────────────────────────
+// Paid on 5th  → covers 20th (prev month) → 4th (current month)
+// Paid on 20th → covers 5th → 19th (current month)
+
+function getPayPeriods(now: Date) {
+  const d = now.getDate();
+  const m = now.getMonth();
+  const y = now.getFullYear();
+  const fmt = (dt: Date) => dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  let currStart: Date, currEnd: Date, currPay: Date;
+  let prevStart: Date, prevEnd: Date, prevPay: Date;
+
+  if (d >= 20) {
+    // Current: 20th of this month → 4th of next month, pays on next 5th
+    currStart = new Date(y, m, 20);
+    currEnd   = new Date(y, m + 1, 4, 23, 59, 59, 999);
+    currPay   = new Date(y, m + 1, 5);
+    // Previous: 5th → 19th of this month, paid on 20th
+    prevStart = new Date(y, m, 5);
+    prevEnd   = new Date(y, m, 19, 23, 59, 59, 999);
+    prevPay   = new Date(y, m, 20);
+  } else if (d >= 5) {
+    // Current: 5th → 19th, pays on 20th
+    currStart = new Date(y, m, 5);
+    currEnd   = new Date(y, m, 19, 23, 59, 59, 999);
+    currPay   = new Date(y, m, 20);
+    // Previous: 20th prev → 4th, paid on 5th
+    prevStart = new Date(y, m - 1, 20);
+    prevEnd   = new Date(y, m, 4, 23, 59, 59, 999);
+    prevPay   = new Date(y, m, 5);
+  } else {
+    // 1st–4th: current = 20th prev → 4th, pays on 5th
+    currStart = new Date(y, m - 1, 20);
+    currEnd   = new Date(y, m, 4, 23, 59, 59, 999);
+    currPay   = new Date(y, m, 5);
+    // Previous: 5th prev → 19th prev, paid on 20th prev
+    prevStart = new Date(y, m - 1, 5);
+    prevEnd   = new Date(y, m - 1, 19, 23, 59, 59, 999);
+    prevPay   = new Date(y, m - 1, 20);
+  }
+
+  return {
+    current:  { start: currStart, end: currEnd, payLabel: `${fmt(currPay)} (next pay)`,  label: `${fmt(currStart)} – ${fmt(currEnd)}` },
+    previous: { start: prevStart, end: prevEnd, payLabel: `${fmt(prevPay)} (paid)`,       label: `${fmt(prevStart)} – ${fmt(prevEnd)}` },
+  };
+}
 
 // ── Main fetch ────────────────────────────────────────────────────────────────
 
@@ -328,7 +394,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     closerPaidMap.set(r.closerName, (closerPaidMap.get(r.closerName) ?? 0) + r.closerCommission);
   }
   // Names to exclude from setter/closer commission tables (owners, not sales reps)
-  const COMM_EXCLUDE = new Set(["hudson", "gavin van jaarsveldt", "gavin"]);
+  const COMM_EXCLUDE = new Set(["hudson", "hudson shaffer", "gavin van jaarsveldt", "gavin"]);
   const toLines = (m: Map<string, number>) =>
     Array.from(m.entries())
       .filter(([n]) => n && !COMM_EXCLUDE.has(n.toLowerCase().trim()))
@@ -450,6 +516,30 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
   const lowTicketToday        = round2(ltPaidRows.filter(r => r.paymentDate >= ltTodayStart).reduce((s, r) => s + r.amountPaid, 0));
   const lowTicketPaymentCount = ltPaidRows.length;
 
+  // ── Pay period commissions ─────────────────────────────────────────────────
+  const periods             = getPayPeriods(new Date());
+  const currentHtEarnings   = round2(allDealRows.filter(r => r.paymentDate >= periods.current.start  && r.paymentDate <= periods.current.end ).reduce((s, r) => s + r.earnings, 0));
+  const previousHtEarnings  = round2(allDealRows.filter(r => r.paymentDate >= periods.previous.start && r.paymentDate <= periods.previous.end).reduce((s, r) => s + r.earnings, 0));
+  const currentLtEarnings   = round2(ltPaidRows.filter(r  => r.paymentDate >= periods.current.start  && r.paymentDate <= periods.current.end ).reduce((s, r) => s + r.earnings, 0));
+  const previousLtEarnings  = round2(ltPaidRows.filter(r  => r.paymentDate >= periods.previous.start && r.paymentDate <= periods.previous.end).reduce((s, r) => s + r.earnings, 0));
+
+  const payPeriodCommission = {
+    current: {
+      label:      periods.current.label,
+      payDate:    periods.current.payLabel,
+      htEarnings: currentHtEarnings,
+      ltEarnings: currentLtEarnings,
+      revana:     round2((currentHtEarnings + currentLtEarnings) * 0.20),
+    },
+    previous: {
+      label:      periods.previous.label,
+      payDate:    periods.previous.payLabel,
+      htEarnings: previousHtEarnings,
+      ltEarnings: previousLtEarnings,
+      revana:     round2((previousHtEarnings + previousLtEarnings) * 0.20),
+    },
+  };
+
   // ── Combined totals ────────────────────────────────────────────────────────
   // LT payments are always historical (no future-dated rows) so ltCollected ≈ lowTicketRevenue,
   // but we filter properly for correctness.
@@ -499,6 +589,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     combinedCashCollected,
     combinedUncollected,
     combinedNetCollected,
+    payPeriodCommission,
     subscriptions,
     totalMonthlyOverhead: round2(subscriptions.reduce((s, x) => s + x.monthlyCost, 0)),
   };
@@ -510,7 +601,9 @@ export type UpcomingCall = {
   inviteeName:  string;
   inviteeEmail: string;
   startTime:    string;   // ISO 8601
+  endTime:      string;   // ISO 8601
   eventType:    string;   // Calendly event type name
+  hostName:     string;   // Calendly host (the closer taking the call)
 };
 
 export type CalendlyData = {
@@ -528,21 +621,25 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
     const org     = encodeURIComponent(CALENDLY_ORG);
     const min     = start.toISOString();
     const max     = end.toISOString();
-    const nowIso  = new Date().toISOString();
+    // Look back 3 hours so live/recently-ended calls still appear in the list
+    const past3h  = new Date(Date.now() - 3 * 3_600_000).toISOString();
     const future30= new Date(Date.now() + 30 * 24 * 3600_000).toISOString();
     const headers = { Authorization: "Bearer " + CALENDLY_TOKEN };
 
     const [activeRes, cancelRes, upcomingRes] = await Promise.all([
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`,   { headers, cache: "no-store" }),
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=canceled&count=100`, { headers, cache: "no-store" }),
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${nowIso}&max_start_time=${future30}&status=active&count=50`, { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${past3h}&max_start_time=${future30}&status=active&count=50`, { headers, cache: "no-store" }),
     ]);
 
     const active    = ((await activeRes.json()).collection ?? []) as unknown[];
     const cancelled = ((await cancelRes.json()).collection ?? []) as Array<{ cancellation?: { reason?: string } }>;
     const total     = active.length + cancelled.length;
 
-    type CalEvent = { uri: string; name: string; start_time: string };
+    type CalEvent = {
+      uri: string; name: string; start_time: string; end_time: string;
+      event_memberships?: Array<{ user_name?: string }>;
+    };
     const upcomingEvents = ((await upcomingRes.json()).collection ?? []) as CalEvent[];
 
     // Fetch invitees for every upcoming event in parallel
@@ -567,7 +664,9 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
           inviteeName:  inv.name  || "Unknown",
           inviteeEmail: inv.email || "",
           startTime:    event.start_time,
+          endTime:      event.end_time,
           eventType:    event.name,
+          hostName:     event.event_memberships?.[0]?.user_name || "",
         });
       }
     }

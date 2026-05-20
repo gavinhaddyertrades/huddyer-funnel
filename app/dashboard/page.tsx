@@ -14,12 +14,11 @@ const fmt$Exact = (n: number) =>
   "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n: number) => n + "%";
 
-function fmtCallTime(iso: string): { when: string; fromNow: string; isToday: boolean; isSoon: boolean } {
-  const d   = new Date(iso);
+function fmtCallTime(startIso: string, endIso?: string): { when: string; fromNow: string; isToday: boolean; isSoon: boolean; isLive: boolean; isPast: boolean } {
+  const d   = new Date(startIso);
+  const end = endIso ? new Date(endIso) : null;
   const now = new Date();
-  const diff = d.getTime() - now.getTime();
-  const diffH = Math.floor(diff / 3_600_000);
-  const diffD = Math.floor(diff / 86_400_000);
+  const diff = d.getTime() - now.getTime(); // positive = future
 
   const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   const todayStart    = new Date(); todayStart.setHours(0, 0, 0, 0);
@@ -28,20 +27,34 @@ function fmtCallTime(iso: string): { when: string; fromNow: string; isToday: boo
 
   const isToday    = d >= todayStart && d < tomorrowStart;
   const isTomorrow = d >= tomorrowStart && d < dayAfterStart;
+  const isLive     = end ? now >= d && now < end : false;
+  const isPast     = end ? now >= end : diff < -600_000;
   const isSoon     = diff > 0 && diff < 2 * 3_600_000; // within 2 hours
 
   let when: string;
-  if (isToday)    when = `Today · ${timeStr}`;
+  if (isToday)         when = `Today · ${timeStr}`;
   else if (isTomorrow) when = `Tomorrow · ${timeStr}`;
-  else            when = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + ` · ${timeStr}`;
+  else                 when = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + ` · ${timeStr}`;
 
   let fromNow: string;
-  if (diff <= 0)       fromNow = "now";
-  else if (diffH < 1)  fromNow = "< 1h";
-  else if (diffH < 24) fromNow = `in ${diffH}h`;
-  else                 fromNow = `in ${diffD}d`;
+  if (isLive) {
+    fromNow = "LIVE";
+  } else if (isPast) {
+    const ref  = end ?? d;
+    const mAgo = Math.floor((now.getTime() - ref.getTime()) / 60_000);
+    const hAgo = Math.floor(mAgo / 60);
+    fromNow = hAgo > 0 ? `${hAgo}hr ago` : `${mAgo}m ago`;
+  } else if (diff < 60_000) {
+    fromNow = "now";
+  } else if (diff < 3_600_000) {
+    fromNow = `in ${Math.floor(diff / 60_000)}m`;
+  } else if (diff < 86_400_000) {
+    fromNow = `in ${Math.floor(diff / 3_600_000)}hr`;
+  } else {
+    fromNow = `in ${Math.floor(diff / 86_400_000)}d`;
+  }
 
-  return { when, fromNow, isToday, isSoon };
+  return { when, fromNow, isToday, isSoon, isLive, isPast };
 }
 
 // ── Page types ────────────────────────────────────────────────────────────────
@@ -271,6 +284,35 @@ function RevanaCommissionCard({htEarnings,ltEarnings,commission}:{htEarnings:num
   );
 }
 
+// ── Pay period card ───────────────────────────────────────────────────────────
+function PayPeriodCard({title,label,payDate,htEarnings,ltEarnings,revana,isPast}:{
+  title:string;label:string;payDate:string;
+  htEarnings:number;ltEarnings:number;revana:number;isPast?:boolean;
+}){
+  const gold=isPast?"#666":"#C9A84C";
+  return(
+    <Card>
+      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:4}}>{title}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isPast?"#555":"#888",margin:"0 0 2px"}}>{label}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isPast?"#3A3A3A":"#555",marginBottom:16}}>{payDate}</p>
+      {[
+        {label:"HT Earnings",value:fmt$(htEarnings)},
+        {label:"LT Earnings",value:fmt$(ltEarnings)},
+      ].map(row=>(
+        <div key={row.label} style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+          <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#666"}}>{row.label}</span>
+          <span style={{fontFamily:"var(--font-body)",fontSize:13,color:isPast?"#888":"#F2EDE6",fontWeight:600}}>{row.value}</span>
+        </div>
+      ))}
+      <div style={{height:1,background:"rgba(255,255,255,0.07)",margin:"10px 0 12px"}}/>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <span style={{fontFamily:"var(--font-body)",fontSize:13,color:gold,fontWeight:700}}>Revana (20%)</span>
+        <span style={{fontFamily:"var(--font-display)",fontSize:isPast?22:28,color:gold,lineHeight:1}}>{fmt$(revana)}</span>
+      </div>
+    </Card>
+  );
+}
+
 // ── EOD table ─────────────────────────────────────────────────────────────────
 function EodTable({title,rows,columns,emptyMsg}:{title:string;rows:Record<string,string|number>[];columns:{key:string;label:string}[];emptyMsg?:string;}){
   return(
@@ -426,7 +468,7 @@ function DashboardView({data}:{data:DashboardData}){
         ):(
           <Card style={{padding:0,overflow:"hidden"}}>
             {upcoming.map((call,i)=>{
-              const {when,fromNow,isToday,isSoon}=fmtCallTime(call.startTime);
+              const {when,fromNow,isToday,isSoon,isLive,isPast}=fmtCallTime(call.startTime, call.endTime);
               const isOpen = openRows.has(i);
               const info   = leadInfoMap.get(i);
               return(
@@ -435,7 +477,8 @@ function DashboardView({data}:{data:DashboardData}){
                   <div style={{
                     display:"flex",alignItems:"center",gap:14,
                     padding:"13px 20px",
-                    background:isToday?"rgba(201,168,76,0.04)":"transparent",
+                    background:isPast?"rgba(255,255,255,0.01)":isLive?"rgba(76,175,80,0.04)":isToday?"rgba(201,168,76,0.04)":"transparent",
+                    opacity:isPast?0.65:1,
                     cursor:"pointer",
                   }} onClick={()=>call.inviteeEmail&&toggleRow(i,call.inviteeEmail)}>
                     {/* Chevron */}
@@ -450,7 +493,7 @@ function DashboardView({data}:{data:DashboardData}){
                     {/* Right: when + countdown */}
                     <div style={{textAlign:"right",flexShrink:0}}>
                       <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday?600:400}}>{when}</p>
-                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isSoon?700:400}}>{fromNow}</p>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isLive?"#4CAF50":isPast?"#444":isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isLive||isSoon?700:400,letterSpacing:isLive?"0.08em":undefined}}>{fromNow}</p>
                     </div>
                   </div>
                   {/* Expanded: Typeform answers */}
@@ -459,17 +502,24 @@ function DashboardView({data}:{data:DashboardData}){
                       {info==="loading"?(
                         <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",margin:0,fontStyle:"italic"}}>Loading…</p>
                       ):!info||!info.found?(
-                        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#333",margin:0,fontStyle:"italic"}}>No Typeform response found in Close</p>
+                        <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
+                          <div>
+                            <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>Closer</p>
+                            <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0,fontWeight:600}}>{call.hostName||"—"}</p>
+                          </div>
+                          <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#333",margin:"auto 0",fontStyle:"italic"}}>No Typeform data in Close</p>
+                        </div>
                       ):(
                         <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
                           {[
-                            {label:"Age",    value:info.age},
-                            {label:"Budget", value:info.budget},
-                            {label:"Credit", value:info.credit},
-                          ].map(({label,value})=>(
+                            {label:"Closer", value:call.hostName||"—",  gold:false},
+                            {label:"Age",    value:info.age,            gold:true},
+                            {label:"Budget", value:info.budget,         gold:true},
+                            {label:"Credit", value:info.credit,         gold:true},
+                          ].map(({label,value,gold})=>(
                             <div key={label}>
                               <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>{label}</p>
-                              <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#C9A84C",margin:0,fontWeight:600}}>{value??"—"}</p>
+                              <p style={{fontFamily:"var(--font-body)",fontSize:13,color:gold?"#C9A84C":"#F2EDE6",margin:0,fontWeight:600}}>{value??"—"}</p>
                             </div>
                           ))}
                         </div>
@@ -650,18 +700,44 @@ function CommissionsView({data}:{data:DashboardData}){
         {!sh?(
           <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>Google Sheets not connected.</p>
         ):(
-          <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
-            <Card>
-              <CommissionTable title="Setter Commissions (total owed)" rows={sh.setterCommOwed} subRows={sh.setterCommPaid}/>
-              <div style={{height:1,background:"rgba(255,255,255,0.06)",margin:"16px 0"}}/>
-              <CommissionTable title="Closer Commissions (total owed)" rows={sh.closerCommOwed} subRows={sh.closerCommPaid} accent="#C9A84C"/>
-              <p style={{fontFamily:"var(--font-body)",fontSize:10,color:"#3A3A3A",marginTop:12}}>Right = total owed · left = paid to date</p>
-            </Card>
-            <RevanaCommissionCard
-              htEarnings={sh.htEarningsCollected}
-              ltEarnings={sh.lowTicketEarnings}
-              commission={sh.revanaCommission}
-            />
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            {/* ── Pay periods ── */}
+            <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
+              <PayPeriodCard
+                title="Current Period"
+                label={sh.payPeriodCommission.current.label}
+                payDate={sh.payPeriodCommission.current.payDate}
+                htEarnings={sh.payPeriodCommission.current.htEarnings}
+                ltEarnings={sh.payPeriodCommission.current.ltEarnings}
+                revana={sh.payPeriodCommission.current.revana}
+              />
+              <PayPeriodCard
+                title="Previous Period"
+                label={sh.payPeriodCommission.previous.label}
+                payDate={sh.payPeriodCommission.previous.payDate}
+                htEarnings={sh.payPeriodCommission.previous.htEarnings}
+                ltEarnings={sh.payPeriodCommission.previous.ltEarnings}
+                revana={sh.payPeriodCommission.previous.revana}
+                isPast
+              />
+            </div>
+
+            <GoldDivider/>
+
+            {/* ── All-time + setter/closer ── */}
+            <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
+              <Card>
+                <CommissionTable title="Setter Commissions (total owed)" rows={sh.setterCommOwed} subRows={sh.setterCommPaid}/>
+                <div style={{height:1,background:"rgba(255,255,255,0.06)",margin:"16px 0"}}/>
+                <CommissionTable title="Closer Commissions (total owed)" rows={sh.closerCommOwed} subRows={sh.closerCommPaid} accent="#C9A84C"/>
+                <p style={{fontFamily:"var(--font-body)",fontSize:10,color:"#3A3A3A",marginTop:12}}>Right = total owed · left = paid to date</p>
+              </Card>
+              <RevanaCommissionCard
+                htEarnings={sh.htEarningsCollected}
+                ltEarnings={sh.lowTicketEarnings}
+                commission={sh.revanaCommission}
+              />
+            </div>
           </div>
         )}
       </section>
