@@ -14,6 +14,7 @@ const SHEET_VOIDED        = "Voided Payments";
 const SHEET_SUBSCRIPTIONS = "Subscriptions";
 const SHEET_ADDONS        = "Add ons";
 const SHEET_LOW_TICKET    = "Low Ticket";
+const SHEET_APPLICATIONS  = "Applications";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const startOfMonth = () => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; };
@@ -200,6 +201,8 @@ export type SheetsData =
       revenueThisMonth:      number;
       /** Payments still due from tomorrow → end of month (not yet collected) */
       revenueStillDueThisMonth: number;
+      /** Cash collected today (US calendar date) */
+      htCashCollectedToday: number;
 
       // ── Date-range filtered ──
       dealsClosed:        number;    // distinct lead names where dateClosed in range
@@ -353,6 +356,8 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
   const htEarningsCollected      = round2(allDealRows.filter(r => r.paymentDate <= today).reduce((s, r) => s + r.earnings, 0));
   const revenueThisMonth         = round2(allDealRows.filter(r => r.paymentDate >= monthStart && r.paymentDate <= monthEnd).reduce((s, r) => s + r.cashCollected, 0));
   const revenueStillDueThisMonth = round2(allDealRows.filter(r => r.paymentDate >= tomorrowStart && r.paymentDate <= monthEnd).reduce((s, r) => s + r.cashCollected, 0));
+  const htTodayStart = startOfTodayUS();
+  const htCashCollectedToday = round2(allDealRows.filter(r => r.paymentDate >= htTodayStart && r.paymentDate <= today).reduce((s, r) => s + r.cashCollected, 0));
 
   // ── Date-range filtered ─────────────────────────────────────────────────────
   const dealsInRange  = allDealRows.filter(r => r.dateClosed >= start && r.dateClosed <= end);
@@ -577,6 +582,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     uncollectedRevenue,
     revenueThisMonth,
     revenueStillDueThisMonth,
+    htCashCollectedToday,
     dealsClosed,
     avgDealValue,
     pifContracted:        round2(pif),
@@ -626,6 +632,8 @@ export type UpcomingCall = {
   eventType:    string;   // Calendly event type name
   hostName:     string;   // Calendly host (the closer taking the call)
   cancelled:    boolean;
+  noShow:       boolean;  // true when invitee was marked no-show OR cancel reason is "no show"
+  rescheduled:  boolean;  // true when cancel reason contains "reschedule"
 };
 
 export type CalendlyData = {
@@ -643,16 +651,16 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
     const org     = encodeURIComponent(CALENDLY_ORG);
     const min     = start.toISOString();
     const max     = end.toISOString();
-    // Look back to start of today (US) so all of today's calls appear
-    const todayStartISO = startOfTodayUS().toISOString();
-    const future30      = new Date(Date.now() + 30 * 24 * 3600_000).toISOString();
+    // Look back 30 days so Previous sub-sections (Today / Last 7 / Last 30) are populated
+    const past30ISO = new Date(Date.now() - 30 * 24 * 3600_000).toISOString();
+    const future30  = new Date(Date.now() + 30 * 24 * 3600_000).toISOString();
     const headers = { Authorization: "Bearer " + CALENDLY_TOKEN };
 
     const [activeRes, cancelRes, upcomingRes, upcomingCancelRes] = await Promise.all([
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`,    { headers, cache: "no-store" }),
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=canceled&count=100`,  { headers, cache: "no-store" }),
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${todayStartISO}&max_start_time=${future30}&status=active&count=100`,   { headers, cache: "no-store" }),
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${todayStartISO}&max_start_time=${future30}&status=canceled&count=100`, { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${past30ISO}&max_start_time=${future30}&status=active&count=100`,   { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${past30ISO}&max_start_time=${future30}&status=canceled&count=100`, { headers, cache: "no-store" }),
     ]);
 
     const active    = ((await activeRes.json()).collection ?? []) as unknown[];
@@ -662,6 +670,7 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
     type CalEvent = {
       uri: string; name: string; start_time: string; end_time: string;
       event_memberships?: Array<{ user_name?: string }>;
+      cancellation?: { reason?: string; canceled_by?: string };
     };
     const upcomingActive   = ((await upcomingRes.json()).collection        ?? []) as CalEvent[];
     const upcomingCancelled= ((await upcomingCancelRes.json()).collection  ?? []) as CalEvent[];
@@ -679,7 +688,7 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
           `https://api.calendly.com/scheduled_events/${uuid}/invitees?count=10`,
           { headers, cache: "no-store" }
         );
-        const j = await r.json() as { collection?: Array<{ name: string; email: string }> };
+        const j = await r.json() as { collection?: Array<{ name: string; email: string; no_show?: object | null }> };
         return { event, invitees: j.collection ?? [] };
       })
     );
@@ -692,6 +701,10 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
       const { event, invitees } = result.value;
       for (const inv of invitees) {
         if (INVITEE_EXCLUDE.has((inv.name || "").toLowerCase().trim())) continue;
+        // No-show: invitee marked no-show OR cancellation reason mentions "no show"
+        const cancelReason = (event.cancellation?.reason ?? "").toLowerCase();
+        const noShow      = !!inv.no_show || cancelReason.includes("no show") || cancelReason.includes("no-show");
+        const rescheduled = cancelReason.includes("reschedule") || cancelReason.includes("rescheduled");
         upcomingCalls.push({
           inviteeName:  inv.name  || "Unknown",
           inviteeEmail: inv.email || "",
@@ -700,6 +713,8 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
           eventType:    event.name,
           hostName:     event.event_memberships?.[0]?.user_name || "",
           cancelled:    event._cancelled,
+          noShow,
+          rescheduled,
         });
       }
     }
@@ -718,7 +733,9 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
   }
 }
 
-// ── Typeform ──────────────────────────────────────────────────────────────────
+// ── Applications (Google Sheets) ─────────────────────────────────────────────
+// Replaces Typeform — reads from the "Applications" sheet tab.
+// Columns: 0=Date, 1=Name, 2=Age, 3=Budget, 4=utm_source, 5=utm_medium
 
 export type TypeformData = {
   totalInRange:   number;
@@ -727,47 +744,29 @@ export type TypeformData = {
 
 async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData | null> {
   try {
-    type TfItem = { token?: string; metadata?: { referer?: string } };
-    const allResponses: TfItem[] = [];
-    let before: string | undefined = undefined;
-
-    // Paginate until we have all responses in range
-    while (true) {
-      const params = new URLSearchParams({
-        page_size: "1000",
-        since: start.toISOString(),
-        until: end.toISOString(),
-      });
-      if (before) params.set("before", before);
-
-      const res = await fetch(
-        `https://api.typeform.com/forms/${TYPEFORM_FORM_ID}/responses?${params}`,
-        { headers: { Authorization: "Bearer " + TYPEFORM_TOKEN }, cache: "no-store" }
-      );
-      const json = await res.json() as { items?: TfItem[] };
-      const items = json.items ?? [];
-      allResponses.push(...items);
-
-      // Fewer than page_size means we have all of them
-      if (items.length < 1000) break;
-      const lastToken = items[items.length - 1]?.token;
-      if (!lastToken) break;
-      before = lastToken;
-    }
+    const raw = await fetchGviz(SHEET_APPLICATIONS);
+    if (!raw) return null;
 
     const sourceMap = new Map<string, number>();
-    for (const r of allResponses) {
-      const ref = r.metadata?.referer ?? "";
-      const m   = ref.match(/utm_source=([^&]+)/);
-      const src = m ? decodeURIComponent(m[1]) : "organic";
+    let totalInRange = 0;
+
+    for (const c of raw) {
+      const date = parseGvizDate(c[0]);
+      if (!date) continue;
+      if (date < start || date > end) continue;
+      totalInRange++;
+      const src = String(c[4] ?? "").trim().toLowerCase() || "organic";
       sourceMap.set(src, (sourceMap.get(src) ?? 0) + 1);
     }
+
     return {
-      totalInRange: allResponses.length,
-      trafficSources: Array.from(sourceMap.entries()).sort((a, b) => b[1] - a[1]).map(([source, count]) => ({ source, count })),
+      totalInRange,
+      trafficSources: Array.from(sourceMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([source, count]) => ({ source, count })),
     };
   } catch (e) {
-    console.error("Typeform error:", (e as Error).message);
+    console.error("Applications sheet error:", (e as Error).message);
     return null;
   }
 }

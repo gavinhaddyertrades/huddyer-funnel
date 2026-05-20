@@ -43,7 +43,8 @@ function fmtCallTime(startIso: string, endIso?: string): { when: string; fromNow
     const ref  = end ?? d;
     const mAgo = Math.floor((now.getTime() - ref.getTime()) / 60_000);
     const hAgo = Math.floor(mAgo / 60);
-    fromNow = hAgo > 0 ? `${hAgo}hr ago` : `${mAgo}m ago`;
+    const dAgo = Math.floor(hAgo / 24);
+    fromNow = dAgo > 0 ? `${dAgo}d ago` : hAgo > 0 ? `${hAgo}hr ago` : `${mAgo}m ago`;
   } else if (diff < 60_000) {
     fromNow = "now";
   } else if (diff < 3_600_000) {
@@ -71,16 +72,16 @@ const NAV: { key: PageKey; label: string }[] = [
 
 // ── Atoms ─────────────────────────────────────────────────────────────────────
 function GoldDivider(){return <div style={{height:1,background:"linear-gradient(90deg,rgba(201,168,76,0.3),transparent)",margin:"0 0 28px"}}/>;}
-function SectionLabel({children}:{children:React.ReactNode}){return <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"#444",marginBottom:14}}>{children}</p>;}
+function SectionLabel({children}:{children:React.ReactNode}){return <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"#AAA",marginBottom:14}}>{children}</p>;}
 function Card({children,style}:{children:React.ReactNode;style?:React.CSSProperties}){return <div style={{background:"rgba(255,255,255,0.025)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"18px 20px",...style}}>{children}</div>;}
 
 function KpiCard({label,value,sub,accent,warn,green}:{label:string;value:string|number;sub?:string;accent?:boolean;warn?:boolean;green?:boolean;}){
   const col=warn?"#E05252":green?"#C9A84C":accent?"#C9A84C":"#F2EDE6";
   return(
     <Card>
-      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:8}}>{label}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#AAA",marginBottom:8}}>{label}</p>
       <p style={{fontFamily:"var(--font-display)",fontSize:"clamp(20px,3vw,30px)",color:col,lineHeight:1}}>{value}</p>
-      {sub&&<p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",marginTop:6}}>{sub}</p>}
+      {sub&&<p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888",marginTop:6}}>{sub}</p>}
     </Card>
   );
 }
@@ -115,7 +116,7 @@ function DonutChart({segments,size=130}:{segments:{label:string;value:number;col
   const mobile=useMobile();
   const sz=mobile?110:size;
   const total=segments.reduce((s,seg)=>s+seg.value,0);
-  if(total===0) return <p style={{color:"#555",fontSize:12}}>No data</p>;
+  if(total===0) return <p style={{color:"#777",fontSize:12}}>No data</p>;
   const cx=sz/2,cy=sz/2,r=sz*0.38,inner=sz*0.22;
   let angle=-Math.PI/2;
   const paths=segments.map(seg=>{
@@ -139,7 +140,7 @@ function DonutChart({segments,size=130}:{segments:{label:string;value:number;col
             <span style={{width:10,height:10,borderRadius:2,background:p.color,flexShrink:0}}/>
             <div>
               <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0}}>{p.label}</p>
-              <p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#666",margin:0}}>{p.pct}% · {fmt$(p.value)}</p>
+              <p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888",margin:0}}>{p.pct}% · {fmt$(p.value)}</p>
             </div>
           </div>
         ))}
@@ -190,7 +191,7 @@ function MonthlyBarChart({ data, title }: { data: { month: string; amount: numbe
             return(
               <g key={tick}>
                 <line x1={padL} x2={VBW} y1={y} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth={1}/>
-                <text x={padL-6} y={y+4} textAnchor="end" fontSize={11} fill="#444" fontFamily="sans-serif">
+                <text x={padL-6} y={y+4} textAnchor="end" fontSize={12} fill="#444" fontFamily="sans-serif">
                   {tick===0?"0":tick>=1000?`${tick/1000}K`:tick}
                 </text>
               </g>
@@ -208,7 +209,7 @@ function MonthlyBarChart({ data, title }: { data: { month: string; amount: numbe
               <g key={d.month} onMouseEnter={()=>setHovered(i)} onMouseLeave={()=>setHovered(null)} style={{cursor:d.amount>0?"pointer":"default"}}>
                 <rect x={x} y={d.amount>0?y:padT+chartH-1} width={barW} height={d.amount>0?barH:1}
                   fill={d.amount>0?(isHov?"#D4AF37":"#C9A84C"):"rgba(255,255,255,0.04)"} rx={2}/>
-                <text x={x+barW/2} y={padT+chartH+17} textAnchor="middle" fontSize={11} fill={isHov?"#888":"#444"} fontFamily="sans-serif">{d.month}</text>
+                <text x={x+barW/2} y={padT+chartH+17} textAnchor="middle" fontSize={12} fill={isHov?"#888":"#444"} fontFamily="sans-serif">{d.month}</text>
               </g>
             );
           })}
@@ -228,7 +229,7 @@ function FunnelViz({steps}:{steps:{label:string;value:number;pct?:number}[]}){
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
             <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#888"}}>{step.label}</span>
             <div style={{display:"flex",gap:8,alignItems:"center"}}>
-              {step.pct!==undefined&&step.pct>0&&<span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#666"}}>{step.pct}%</span>}
+              {step.pct!==undefined&&step.pct>0&&<span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888"}}>{step.pct}%</span>}
               <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6"}}>{step.value}</span>
             </div>
           </div>
@@ -247,12 +248,12 @@ function CommissionTable({title,rows,subRows,accent}:{title:string;rows:Commissi
   const paidMap=new Map((subRows??[]).map(r=>[r.name,r.amount]));
   return(
     <div>
-      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"#555",marginBottom:10}}>{title}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"#AAA",marginBottom:10}}>{title}</p>
       <div style={{border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,overflow:"hidden"}}>
         {rows.map((r,i)=>(
           <div key={r.name} style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:10,padding:"9px 14px",alignItems:"center",borderBottom:i<rows.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
             <span style={{fontFamily:"var(--font-body)",fontSize:13,color:"#CCC"}}>{r.name}</span>
-            <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555"}}>{paidMap.has(r.name)?`${fmt$Exact(paidMap.get(r.name)!)} paid`:""}</span>
+            <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888"}}>{paidMap.has(r.name)?`${fmt$Exact(paidMap.get(r.name)!)} paid`:""}</span>
             <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:accent??"#C9A84C",minWidth:64,textAlign:"right"}}>{fmt$Exact(r.amount)}</span>
           </div>
         ))}
@@ -265,13 +266,13 @@ function CommissionTable({title,rows,subRows,accent}:{title:string;rows:Commissi
 function RevanaCommissionCard({htEarnings,ltEarnings,commission}:{htEarnings:number;ltEarnings:number;commission:number;}){
   return(
     <Card>
-      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:16}}>Revana Commission</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#AAA",marginBottom:16}}>Revana Commission</p>
       {[
         {label:"HT Earnings (collected)", value:fmt$Exact(htEarnings)},
         {label:"LT Earnings",             value:fmt$Exact(ltEarnings)},
       ].map(row=>(
         <div key={row.label} style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
-          <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777"}}>{row.label}</span>
+          <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#AAA"}}>{row.label}</span>
           <span style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",fontWeight:600}}>{row.value}</span>
         </div>
       ))}
@@ -292,15 +293,15 @@ function PayPeriodCard({title,label,payDate,htEarnings,ltEarnings,revana,isPast}
   const gold=isPast?"#666":"#C9A84C";
   return(
     <Card>
-      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:4}}>{title}</p>
-      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isPast?"#555":"#888",margin:"0 0 2px"}}>{label}</p>
-      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isPast?"#3A3A3A":"#555",marginBottom:16}}>{payDate}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#AAA",marginBottom:4}}>{title}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isPast?"#777":"#CCC",margin:"0 0 2px"}}>{label}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isPast?"#555":"#888",marginBottom:16}}>{payDate}</p>
       {[
         {label:"HT Earnings",value:fmt$Exact(htEarnings)},
         {label:"LT Earnings",value:fmt$Exact(ltEarnings)},
       ].map(row=>(
         <div key={row.label} style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-          <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#666"}}>{row.label}</span>
+          <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#AAA"}}>{row.label}</span>
           <span style={{fontFamily:"var(--font-body)",fontSize:13,color:isPast?"#888":"#F2EDE6",fontWeight:600}}>{row.value}</span>
         </div>
       ))}
@@ -321,16 +322,16 @@ function SalesTeamPeriodCard({title,label,payDate,setterComm,closerComm,isPast}:
   const noData = setterComm.length===0 && closerComm.length===0;
   return(
     <Card>
-      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:4}}>{title}</p>
-      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isPast?"#555":"#888",margin:"0 0 2px"}}>{label}</p>
-      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isPast?"#3A3A3A":"#555",marginBottom:16}}>{payDate}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#AAA",marginBottom:4}}>{title}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isPast?"#777":"#CCC",margin:"0 0 2px"}}>{label}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isPast?"#555":"#888",marginBottom:16}}>{payDate}</p>
       {noData?(
-        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#333",fontStyle:"italic"}}>No commissions this period</p>
+        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777",fontStyle:"italic"}}>No commissions this period</p>
       ):(
         <>
           {setterComm.length>0&&(
             <>
-              <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"#444",marginBottom:8}}>Setters</p>
+              <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"#AAA",marginBottom:8}}>Setters</p>
               <div style={{border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,overflow:"hidden",marginBottom:14}}>
                 {setterComm.map((r,i)=>(
                   <div key={r.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",borderBottom:i<setterComm.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
@@ -343,7 +344,7 @@ function SalesTeamPeriodCard({title,label,payDate,setterComm,closerComm,isPast}:
           )}
           {closerComm.length>0&&(
             <>
-              <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"#444",marginBottom:8}}>Closers</p>
+              <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"#AAA",marginBottom:8}}>Closers</p>
               <div style={{border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,overflow:"hidden"}}>
                 {closerComm.map((r,i)=>(
                   <div key={r.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",borderBottom:i<closerComm.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
@@ -366,11 +367,11 @@ function EodTable({title,rows,columns,emptyMsg}:{title:string;rows:Record<string
     <Card>
       <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:14}}>{title}</p>
       {rows.length===0?(
-        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",fontStyle:"italic"}}>{emptyMsg??"No reports yet"}</p>
+        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777",fontStyle:"italic"}}>{emptyMsg??"No reports yet"}</p>
       ):(
         <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
           <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"var(--font-body)",fontSize:12,minWidth:420}}>
-            <thead><tr>{columns.map(col=><th key={col.key} style={{textAlign:"left",color:"#555",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",fontSize:10,padding:"0 10px 8px 0",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>{col.label}</th>)}</tr></thead>
+            <thead><tr>{columns.map(col=><th key={col.key} style={{textAlign:"left",color:"#AAA",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",fontSize:10,padding:"0 10px 8px 0",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>{col.label}</th>)}</tr></thead>
             <tbody>{rows.map((row,i)=><tr key={i}>{columns.map(col=><td key={col.key} style={{padding:"7px 10px 7px 0",color:"#AAA",borderBottom:"1px solid rgba(255,255,255,0.04)",whiteSpace:"nowrap"}}>{String(row[col.key]??"")}</td>)}</tr>)}</tbody>
           </table>
         </div>
@@ -410,7 +411,7 @@ function Sidebar({current,onChange,refreshing,onRefresh,updated}:{current:PageKe
       <div style={{padding:"14px 16px",borderTop:"1px solid rgba(255,255,255,0.06)"}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
           {refreshing&&<div style={{width:10,height:10,border:"1.5px solid rgba(201,168,76,0.2)",borderTopColor:"#C9A84C",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/>}
-          <span style={{fontFamily:"var(--font-body)",fontSize:10,color:"#333"}}>Updated {updated}</span>
+          <span style={{fontFamily:"var(--font-body)",fontSize:10,color:"#777"}}>Updated {updated}</span>
         </div>
         <button onClick={onRefresh} disabled={refreshing} style={{fontFamily:"var(--font-body)",fontSize:11,padding:"5px 0",width:"100%",borderRadius:6,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",color:"#555",cursor:"pointer",opacity:refreshing?0.4:1}}>↻ Refresh</button>
       </div>
@@ -437,7 +438,7 @@ function BottomNav({current,onChange}:{current:PageKey;onChange:(k:PageKey)=>voi
 // ── Page views ────────────────────────────────────────────────────────────────
 const PROG_COLORS=["#A07830","#C9A84C","#D4AF37","#8B6914","#E8C878","#7A5C1E"];
 
-type LeadInfo = { found: boolean; age?: string|null; budget?: string|null; credit?: string|null };
+type LeadInfo = { found: boolean; statusLabel?: string|null; age?: string|null; budget?: string|null; credit?: string|null };
 
 function DashboardView({data}:{data:DashboardData}){
   const mobile=useMobile();
@@ -449,20 +450,35 @@ function DashboardView({data}:{data:DashboardData}){
   const allCalls = cal?.upcomingCalls ?? [];
   const _now = new Date();
 
-  // Split into previous (fully ended) and upcoming (live or future)
-  const indexedCalls  = allCalls.map((call, idx) => ({ call, idx }));
-  const prevCalls     = indexedCalls.filter(({ call: c }) => {
-    const end = c.endTime ? new Date(c.endTime) : null;
-    return end && _now >= end;
-  }).reverse(); // most recent first
-  const futureCalls   = indexedCalls.filter(({ call: c }) => {
-    const end = c.endTime ? new Date(c.endTime) : null;
-    return !end || _now < end;
-  });
+  // Split into previous (past/cancelled today) and upcoming (live or future)
+  const indexedCalls = allCalls.map((call, idx) => ({ call, idx }));
+  const isInPrevious = (c: typeof allCalls[0]) => {
+    const start = new Date(c.startTime);
+    const end   = c.endTime ? new Date(c.endTime) : null;
+    const isLive = end && !c.cancelled ? _now >= start && _now < end : false;
+    if (isLive) return false; // LIVE calls stay in Upcoming
+    if (c.rescheduled) return true; // rescheduled always goes to Previous
+    if (c.cancelled) return true;   // cancelled/no-show always goes to Previous
+    if (end && _now >= end) return true; // fully ended
+    return false;
+  };
+  const prevCalls   = indexedCalls.filter(({ call: c }) => isInPrevious(c)).reverse(); // most recent first
+  const futureCalls = indexedCalls.filter(({ call: c }) => !isInPrevious(c));
 
-  // Expandable lead info state
+  // Expandable lead info state — keyed by email for stability across refreshes
   const [openRows,    setOpenRows]    = useState<Set<number>>(new Set());
-  const [leadInfoMap, setLeadInfoMap] = useState<Map<number, LeadInfo | "loading">>(new Map());
+  const [leadInfoMap, setLeadInfoMap] = useState<Map<string, LeadInfo | "loading">>(new Map());
+  const fetchInitiatedRef = useRef<Set<string>>(new Set());
+
+  const fetchLeadInfo = useCallback((email: string) => {
+    if (!email || fetchInitiatedRef.current.has(email)) return;
+    fetchInitiatedRef.current.add(email);
+    setLeadInfoMap(prev => new Map(prev).set(email, "loading"));
+    fetch(`/api/lead-info?email=${encodeURIComponent(email)}`)
+      .then(r => r.json())
+      .then((info: LeadInfo) => setLeadInfoMap(prev => new Map(prev).set(email, info)))
+      .catch(() => setLeadInfoMap(prev => new Map(prev).set(email, { found: false })));
+  }, []);
 
   function toggleRow(i: number, email: string) {
     setOpenRows(prev => {
@@ -471,14 +487,25 @@ function DashboardView({data}:{data:DashboardData}){
       next.add(i);
       return next;
     });
-    if (!leadInfoMap.has(i)) {
-      setLeadInfoMap(prev => new Map(prev).set(i, "loading"));
-      fetch(`/api/lead-info?email=${encodeURIComponent(email)}`)
-        .then(r => r.json())
-        .then((info: LeadInfo) => setLeadInfoMap(prev => new Map(prev).set(i, info)))
-        .catch(() => setLeadInfoMap(prev => new Map(prev).set(i, { found: false })));
-    }
+    fetchLeadInfo(email);
   }
+
+  // Auto-fetch Close CRM status for previous AND live calls
+  useEffect(() => {
+    if (!cal?.upcomingCalls) return;
+    const now2 = new Date();
+    cal.upcomingCalls.forEach(c => {
+      if (!c.inviteeEmail) return;
+      const start  = new Date(c.startTime);
+      const end    = c.endTime ? new Date(c.endTime) : null;
+      const isLive = end && !c.cancelled ? now2 >= start && now2 < end : false;
+      const inPrev = !isLive && (c.rescheduled || (c.cancelled && start < now2) || (!!end && now2 >= end));
+      // For live calls: always re-fetch so "LIVE → Closed" updates on each 120s refresh
+      if (isLive) fetchInitiatedRef.current.delete(c.inviteeEmail);
+      if (inPrev || isLive) fetchLeadInfo(c.inviteeEmail);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cal, fetchLeadInfo]);
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
@@ -498,44 +525,76 @@ function DashboardView({data}:{data:DashboardData}){
 
       {/* ── Shared call row renderer ── */}
       {(()=>{
-        const renderRow = (call: typeof allCalls[0], idx: number, isLast: boolean) => {
+        // Emails that have a new upcoming call — used to flip "Rescheduling" → "Rescheduled"
+        const futureEmailSet = new Set(futureCalls.map(({call:c})=>c.inviteeEmail));
+
+        const renderRow = (call: typeof allCalls[0], idx: number, isLast: boolean, isPrev = false) => {
           const {when,fromNow,isToday,isSoon,isLive,isPast}=fmtCallTime(call.startTime, call.endTime);
           const isCancelled = call.cancelled;
           const isOpen = openRows.has(idx);
-          const info   = leadInfoMap.get(idx);
+          const info   = leadInfoMap.get(call.inviteeEmail);
           return(
             <div key={idx} style={{borderBottom:!isLast?"1px solid rgba(255,255,255,0.05)":"none"}}>
               <div style={{
                 display:"flex",alignItems:"center",gap:14,padding:"13px 20px",
-                background:isCancelled?"rgba(224,82,82,0.04)":isLive?"rgba(76,175,80,0.04)":isToday?"rgba(201,168,76,0.04)":"transparent",
+                background:isPrev?"transparent":isCancelled?"rgba(224,82,82,0.04)":isLive?"rgba(76,175,80,0.04)":isToday?"rgba(201,168,76,0.04)":"transparent",
                 opacity:isCancelled||isPast?0.6:1,
                 cursor:"pointer",
               }} onClick={()=>call.inviteeEmail&&toggleRow(idx,call.inviteeEmail)}>
-                <span style={{flexShrink:0,color:"#444",transition:"transform 0.2s",display:"inline-flex",alignItems:"center",transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>
+                <span style={{flexShrink:0,color:"#777",transition:"transform 0.2s",display:"inline-flex",alignItems:"center",transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M2 1l5 3-5 3V1z"/></svg>
                 </span>
                 <div style={{flex:1,minWidth:0}}>
                   <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",margin:0,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeName}</p>
-                  {call.inviteeEmail&&<p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeEmail}</p>}
+                  {call.inviteeEmail&&<p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeEmail}</p>}
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
                   <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isCancelled?"#666":isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday&&!isCancelled?600:400}}>{when}</p>
-                  <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isCancelled?"#E05252":isLive?"#4CAF50":isPast?"#444":isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isCancelled||isLive||isSoon?700:400,letterSpacing:isLive?"0.08em":undefined}}>
-                    {isCancelled?"Cancelled":fromNow}
-                  </p>
+                  {(()=>{
+                    // Rescheduling: check if new call booked → "Rescheduled" (green), else within 24h → "Rescheduling" (gold), else → "Cancelled"
+                    const hasNewCall    = call.rescheduled && futureEmailSet.has(call.inviteeEmail);
+                    const reschedActive = call.rescheduled && !hasNewCall && (_now.getTime()-new Date(call.startTime).getTime()) < 24*3600_000;
+
+                    // Close CRM outcome for non-cancelled previous AND live calls
+                    const closeStatus = (!isCancelled && (isPrev || isLive) && info && info !== "loading")
+                      ? (info.statusLabel ?? "").toLowerCase() : "";
+                    const isPitched   = closeStatus.includes("pitched");
+                    const isClosedWon = closeStatus.includes("closed");
+
+                    const statusLabel = isCancelled
+                      ? (hasNewCall ? "Rescheduled" : reschedActive ? "Rescheduling" : call.noShow ? "No Show" : "Cancelled")
+                      : isPitched   ? "Pitched"
+                      : isClosedWon ? "Closed"
+                      : fromNow;
+                    const statusColor = isCancelled
+                      ? (hasNewCall ? "#4CAF50" : reschedActive ? "#C9A84C" : "#E05252")
+                      : isPitched   ? "#E08020"
+                      : isClosedWon ? "#4CAF50"
+                      : isLive      ? "#4CAF50"
+                      : isPast      ? "#444"
+                      : isSoon      ? "#E05252"
+                      : isToday     ? "#C9A84C"
+                      : "#555";
+                    const isBold = isCancelled||isLive||isSoon||isPitched||isClosedWon||hasNewCall;
+                    return(
+                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:statusColor,margin:"2px 0 0",fontWeight:isBold?700:400,letterSpacing:isLive?"0.08em":undefined}}>
+                        {statusLabel}
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
               {isOpen&&(
                 <div style={{padding:"10px 20px 14px 48px",background:"rgba(255,255,255,0.02)",borderTop:"1px solid rgba(255,255,255,0.04)"}}>
                   {info==="loading"?(
-                    <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",margin:0,fontStyle:"italic"}}>Loading…</p>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777",margin:0,fontStyle:"italic"}}>Loading…</p>
                   ):!info||!info.found?(
                     <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
                       <div>
                         <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>Closer</p>
                         <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0,fontWeight:600}}>{call.hostName||"—"}</p>
                       </div>
-                      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#333",margin:"auto 0",fontStyle:"italic"}}>No Typeform data in Close</p>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#666",margin:"auto 0",fontStyle:"italic"}}>No Typeform data in Close</p>
                     </div>
                   ):(
                     <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
@@ -546,7 +605,7 @@ function DashboardView({data}:{data:DashboardData}){
                         {label:"Credit", value:info.credit,        gold:true},
                       ].map(({label,value,gold})=>(
                         <div key={label}>
-                          <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>{label}</p>
+                          <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#AAA",margin:"0 0 3px"}}>{label}</p>
                           <p style={{fontFamily:"var(--font-body)",fontSize:13,color:gold?"#C9A84C":"#F2EDE6",margin:0,fontWeight:600}}>{value??"—"}</p>
                         </div>
                       ))}
@@ -560,39 +619,70 @@ function DashboardView({data}:{data:DashboardData}){
 
         return(
           <>
-            {/* ── Previous calls ── */}
-            {prevCalls.length>0&&(
-              <section>
-                <SectionLabel>Previous</SectionLabel>
-                <Card style={{padding:0,overflow:"hidden"}}>
-                  {prevCalls.map(({call,idx},pos)=>renderRow(call,idx,pos===prevCalls.length-1))}
-                </Card>
-              </section>
-            )}
-
-            <GoldDivider/>
-
             {/* ── Upcoming calls ── */}
             <section>
-              <SectionLabel>Upcoming</SectionLabel>
-              <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:18,flexWrap:"wrap"}}>
-                <span style={{fontFamily:"var(--font-display)",fontSize:36,color:"#C9A84C",lineHeight:1}}>{futureCalls.length}</span>
-                <div>
-                  <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#CCC",margin:0}}>
-                    call{futureCalls.length!==1?"s":""} booked in the next 30 days
-                  </p>
-                </div>
-              </div>
-              {futureCalls.length===0?(
-                <Card>
-                  <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#444",fontStyle:"italic"}}>No upcoming calls scheduled</p>
-                </Card>
-              ):(
-                <Card style={{padding:0,overflow:"hidden"}}>
-                  {futureCalls.map(({call,idx},pos)=>renderRow(call,idx,pos===futureCalls.length-1))}
-                </Card>
-              )}
+              <p style={{fontFamily:"var(--font-body)",fontSize:18,fontWeight:700,color:"#F2EDE6",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:16}}>Upcoming</p>
+              {(()=>{
+                const _todayStart    = new Date(_now); _todayStart.setHours(0,0,0,0);
+                const _tomorrowStart = new Date(_todayStart); _tomorrowStart.setDate(_todayStart.getDate()+1);
+                const todayGroup      = futureCalls.filter(({call:c})=>new Date(c.startTime)<_tomorrowStart);
+                const afterGroup      = futureCalls.filter(({call:c})=>new Date(c.startTime)>=_tomorrowStart);
+
+                const SubSection = ({label,calls}:{label:string;calls:typeof futureCalls})=>
+                  calls.length===0?null:(
+                    <div style={{marginBottom:24}}>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"#888",marginBottom:10,paddingLeft:2}}>{label}</p>
+                      <Card style={{padding:0,overflow:"hidden"}}>
+                        {calls.map(({call,idx},pos)=>renderRow(call,idx,pos===calls.length-1))}
+                      </Card>
+                    </div>
+                  );
+
+                if (futureCalls.length===0) return(
+                  <Card><p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#777",fontStyle:"italic"}}>No upcoming calls scheduled</p></Card>
+                );
+                return(
+                  <>
+                    <SubSection label="Today"       calls={todayGroup}/>
+                    <SubSection label="Future Events" calls={afterGroup}/>
+                  </>
+                );
+              })()}
             </section>
+
+            {/* ── Previous calls (sub-sections) ── */}
+            {prevCalls.length>0&&(()=>{
+              const _todayStart  = new Date(_now); _todayStart.setHours(0,0,0,0);
+              const _7dAgo       = new Date(_todayStart); _7dAgo.setDate(_todayStart.getDate()-7);
+              const _30dAgo      = new Date(_todayStart); _30dAgo.setDate(_todayStart.getDate()-30);
+
+              const todayGroup   = prevCalls.filter(({call:c})=>new Date(c.startTime)>=_todayStart);
+              const last7Group   = prevCalls.filter(({call:c})=>{const s=new Date(c.startTime);return s>=_7dAgo&&s<_todayStart;});
+              const last30Group  = prevCalls.filter(({call:c})=>{const s=new Date(c.startTime);return s>=_30dAgo&&s<_7dAgo;});
+
+              const SubSection = ({label,calls}:{label:string;calls:typeof prevCalls})=>(
+                calls.length===0?null:(
+                  <div style={{marginBottom:24}}>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"#888",marginBottom:10,paddingLeft:2}}>{label}</p>
+                    <Card style={{padding:0,overflow:"hidden"}}>
+                      {calls.map(({call,idx},pos)=>renderRow(call,idx,pos===calls.length-1,true))}
+                    </Card>
+                  </div>
+                )
+              );
+
+              return(
+                <>
+                  <GoldDivider/>
+                  <section>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:18,fontWeight:700,color:"#F2EDE6",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:16}}>Previous</p>
+                    <SubSection label="Today"        calls={todayGroup}/>
+                    <SubSection label="Last 7 Days"  calls={last7Group}/>
+                    <SubSection label="Last 30 Days" calls={last30Group}/>
+                  </section>
+                </>
+              );
+            })()}
           </>
         );
       })()}
@@ -605,7 +695,7 @@ function RevenueView({data}:{data:DashboardData}){
   const sh=data.sheets.connected?data.sheets:null;
   const whop=data.whop;
   const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
-  const kpiGrid=mobile?"repeat(2,1fr)":"repeat(4,1fr)";
+  const kpiGrid=mobile?"repeat(2,1fr)":"repeat(auto-fit,minmax(155px,1fr))";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
 
@@ -615,6 +705,7 @@ function RevenueView({data}:{data:DashboardData}){
         <div style={{display:"grid",gridTemplateColumns:kpiGrid,gap:10,marginBottom:14}}>
           <KpiCard label="Total Contracted"  value={sh?fmt$(sh.totalContracted)   :"—"} accent sub="All planned payments"/>
           <KpiCard label="Cash Collected"    value={sh?fmt$(sh.cashCollected)     :"—"} green sub="Received to date"/>
+          <KpiCard label="Revenue Today"     value={sh?fmt$Exact(sh.htCashCollectedToday):"—"} green sub="HT collected today"/>
           <KpiCard label="Uncollected"       value={sh?fmt$(sh.uncollectedRevenue):"—"} sub="Future scheduled"/>
           <KpiCard label="Still Due This Month" value={sh?fmt$(sh.revenueStillDueThisMonth):"—"} sub="Tomorrow → end of month"/>
         </div>
@@ -624,13 +715,13 @@ function RevenueView({data}:{data:DashboardData}){
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>PIF vs Financed</p>
             {sh&&(sh.pifContracted>0||sh.financedContracted>0)?(
               <DonutChart segments={[{label:"PIF",value:sh.pifContracted,color:"#A07830"},{label:"Financed",value:sh.financedContracted,color:"#C9A84C"}]}/>
-            ):<p style={{color:"#555",fontSize:12}}>No data</p>}
+            ):<p style={{color:"#777",fontSize:12}}>No data</p>}
           </Card>
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Revenue by Program</p>
             {sh?.revenueByProgram.length?(
               <DonutChart segments={sh.revenueByProgram.map((p,i)=>({label:p.program,value:p.contracted,color:PROG_COLORS[i%PROG_COLORS.length]}))}/>
-            ):<p style={{color:"#555",fontSize:12}}>No data</p>}
+            ):<p style={{color:"#777",fontSize:12}}>No data</p>}
           </Card>
         </div>
       </section>
@@ -662,7 +753,7 @@ function RevenueView({data}:{data:DashboardData}){
                   <span style={{fontFamily:"var(--font-display)",fontSize:20,color:"#E05252"}}>{fmt$(sh.churnedRevenue)}</span>
                 </div>
                 {sh.voidedLeads.length===0?(
-                  <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",fontStyle:"italic"}}>No voids recorded</p>
+                  <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777",fontStyle:"italic"}}>No voids recorded</p>
                 ):(
                   <div style={{border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,overflow:"hidden"}}>
                     {sh.voidedLeads.map((v,i)=>(
@@ -723,21 +814,20 @@ function FunnelView({data}:{data:DashboardData}){
             {(()=>{
               const sRows = sh?.setterEod.rows ?? [];
               const cRows = sh?.closerEod.rows ?? [];
-              const contacted   = sRows.reduce((s,r)=>s+r.contacted,   0);
-              const booked      = sRows.reduce((s,r)=>s+r.callsBooked,  0);
               const scheduled   = cRows.reduce((s,r)=>s+r.callsScheduled,0);
               const noShows     = cRows.reduce((s,r)=>s+r.noShows,      0);
               const dealsClosed = cRows.reduce((s,r)=>s+r.dealsClosed,  0);
-              const convRate = contacted > 0 ? Math.round((booked    / contacted) * 100) : null;
+              const apps        = tf?.totalInRange ?? 0;
+              const convRate = apps > 0 ? Math.round((dealsClosed / apps) * 100) : null;
               const closeRt  = scheduled > 0 ? Math.round((dealsClosed / scheduled) * 100) : null;
               const showRt   = scheduled > 0 ? Math.round(((scheduled - noShows) / scheduled) * 100) : null;
               return [
-                {label:"Conversion Rate", value:convRate!==null?fmtPct(convRate):"—", sub:"Contacted → Booked (Setter EOD)"},
-                {label:"Close Rate",      value:closeRt!==null ?fmtPct(closeRt) :"—", sub:"Calls → Deals (Closer EOD)"},
-                {label:"Show Rate",       value:showRt!==null  ?fmtPct(showRt)  :"—", sub:`${noShows} no shows (Closer EOD)`},
+                {label:"Conversion Rate", value:convRate!==null?fmtPct(convRate):"—", sub:"Applications → Closed"},
+                {label:"Close Rate",      value:closeRt!==null ?fmtPct(closeRt) :"—", sub:"Calls → Deals"},
+                {label:"Show Rate",       value:showRt!==null  ?fmtPct(showRt)  :"—", sub:`${noShows} no shows`},
               ].map(r=>(
                 <div key={r.label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#CCC",margin:0}}>{r.label}</p><p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:0}}>{r.sub}</p></div>
+                  <div><p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#CCC",margin:0}}>{r.label}</p><p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888",margin:0}}>{r.sub}</p></div>
                   <span style={{fontFamily:"var(--font-display)",fontSize:26,color:"#C9A84C",lineHeight:1}}>{r.value}</span>
                 </div>
               ));
@@ -749,7 +839,7 @@ function FunnelView({data}:{data:DashboardData}){
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {filteredSources.map(s=><BarRow key={s.source} label={s.source} value={s.count} total={srcMax}/>)}
               </div>
-            ):<p style={{color:"#555",fontSize:12}}>No data</p>}
+            ):<p style={{color:"#777",fontSize:12}}>No data</p>}
           </Card>
         </div>
       </section>
@@ -766,7 +856,7 @@ function CommissionsView({data}:{data:DashboardData}){
       <section>
         <SectionLabel>Commissions</SectionLabel>
         {!sh?(
-          <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>Google Sheets not connected.</p>
+          <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#888"}}>Google Sheets not connected.</p>
         ):(
           <div style={{display:"flex",flexDirection:"column",gap:28}}>
 
@@ -839,7 +929,7 @@ function dedupeByName<T extends {name:string}>(rows:T[]):T[]{
 function EodView({data}:{data:DashboardData}){
   const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
-  if(!sh) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>Google Sheets not connected.</p>;
+  if(!sh) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#888"}}>Google Sheets not connected.</p>;
 
   // Deduplicate — one row per person (latest submission wins)
   const setterRows = dedupeByName(sh.setterEod.rows).map(r=>({
@@ -872,8 +962,8 @@ function EodView({data}:{data:DashboardData}){
 
 function OverheadView({data}:{data:DashboardData}){
   const sh=data.sheets.connected?data.sheets:null;
-  if(!sh) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>Google Sheets not connected.</p>;
-  if(sh.subscriptions.length===0) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>No subscription data found.</p>;
+  if(!sh) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#888"}}>Google Sheets not connected.</p>;
+  if(sh.subscriptions.length===0) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#888"}}>No subscription data found.</p>;
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
@@ -882,7 +972,7 @@ function OverheadView({data}:{data:DashboardData}){
           <Card>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",margin:0}}>Tool Subscriptions</p>
-              <span style={{fontFamily:"var(--font-display)",fontSize:20,color:"#C9A84C"}}>{fmt$(sh.totalMonthlyOverhead)}<span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555"}}>/mo</span></span>
+              <span style={{fontFamily:"var(--font-display)",fontSize:20,color:"#C9A84C"}}>{fmt$(sh.totalMonthlyOverhead)}<span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888"}}>/mo</span></span>
             </div>
             <div style={{border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,overflow:"hidden"}}>
               {sh.subscriptions.map((s,i)=>(

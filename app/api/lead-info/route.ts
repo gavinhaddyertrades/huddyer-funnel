@@ -22,7 +22,7 @@ export async function GET(req: Request) {
       `https://api.close.com/api/v1/lead/?query=${encodeURIComponent("email:" + email)}`,
       { headers, cache: "no-store" }
     );
-    const searchJson = await searchRes.json() as { data?: Array<{ id: string; display_name: string }> };
+    const searchJson = await searchRes.json() as { data?: Array<{ id: string; display_name: string; status_label?: string }> };
     const lead = searchJson.data?.[0];
     if (!lead) return NextResponse.json({ found: false });
 
@@ -35,11 +35,12 @@ export async function GET(req: Request) {
     const activity = actJson.data?.[0];
 
     return NextResponse.json({
-      found:    true,
-      leadName: lead.display_name,
-      age:      (activity?.[FIELD_AGE]    as string) ?? null,
-      budget:   (activity?.[FIELD_BUDGET] as string) ?? null,
-      credit:   (activity?.[FIELD_CREDIT] as string) ?? null,
+      found:       true,
+      leadName:    lead.display_name,
+      statusLabel: lead.status_label ?? null,
+      age:         (activity?.[FIELD_AGE]    as string) ?? null,
+      budget:      (activity?.[FIELD_BUDGET] as string) ?? null,
+      credit:      (activity?.[FIELD_CREDIT] as string) ?? null,
     });
   } catch (e) {
     console.error("lead-info error:", (e as Error).message);
