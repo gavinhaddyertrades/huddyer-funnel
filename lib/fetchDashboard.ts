@@ -684,11 +684,14 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
       })
     );
 
+    const INVITEE_EXCLUDE = new Set(["gavin van jaarsveldt", "gavin"]);
+
     const upcomingCalls: UpcomingCall[] = [];
     for (const result of inviteeResults) {
       if (result.status !== "fulfilled") continue;
       const { event, invitees } = result.value;
       for (const inv of invitees) {
+        if (INVITEE_EXCLUDE.has((inv.name || "").toLowerCase().trim())) continue;
         upcomingCalls.push({
           inviteeName:  inv.name  || "Unknown",
           inviteeEmail: inv.email || "",
