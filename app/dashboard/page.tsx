@@ -417,7 +417,7 @@ function DashboardView({data}:{data:DashboardData}){
           <KpiCard label="Uncollected Rev"   value={sh?fmt$(sh.uncollectedRevenue)     :"—"} sub="Future scheduled payments"/>
           <KpiCard label="This Month"        value={sh?fmt$(sh.revenueThisMonth)       :"—"} sub="Due in current month"/>
           <KpiCard label="High Ticket"       value={sh?fmt$(sh.totalContracted)        :"—"} accent sub="Deals sheet contracts"/>
-          <KpiCard label="Low Ticket / MRR"  value={whop?fmt$(whop.mrr)               :"—"} sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
+          <KpiCard label="Low Ticket / MRR"  value={whop?fmt$(whop.mrr)               :"—"} sub={whop?`${whop.activeMemberCount} total members`:undefined}/>
           <KpiCard label="Churned Revenue"   value={sh?fmt$(sh.churnedRevenue)         :"—"} warn={!!sh&&sh.churnedRevenue>0} sub={sh&&sh.voidedLeads.length>0?`${sh.voidedLeads.length} voided`:undefined}/>
           <KpiCard label="Net Collected"     value={sh?fmt$(sh.netCashCollected)       :"—"} green sub="Cash − churned"/>
         </div>

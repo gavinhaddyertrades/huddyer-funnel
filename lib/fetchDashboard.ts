@@ -457,27 +457,94 @@ export type WhopData = {
   failedPayments:      number;
 };
 
+type WhopPayment = {
+  membership:      string;
+  status:          string;
+  paid_at:         number | null;
+  final_amount:    number;
+  billing_reason:  string;
+  payments_failed: number;
+};
+type WhopMembership = {
+  id:         string;
+  status:     string;
+  plan:       string;
+  created_at: number;
+  valid:      boolean;
+};
+type WhopPlan = { id: string; renewal_price: string | number | null; initial_price: string | number | null };
+
 async function fetchWhopData(): Promise<WhopData | null> {
   try {
     const headers    = { Authorization: "Bearer " + WHOP_API_KEY };
     const monthStart = Math.floor(startOfMonth().getTime()  / 1000);
     const todayStart = Math.floor(startOfTodayUS().getTime() / 1000);
-    const [membRes, payRes] = await Promise.all([
-      fetch("https://api.whop.com/api/v2/memberships?status=active&limit=1", { headers }),
-      fetch("https://api.whop.com/api/v2/payments?limit=100",                { headers }),
-    ]);
-    const membData = await membRes.json() as { pagination?: { total_count?: number } };
-    const payments  = ((await payRes.json()).data ?? []) as Array<{
-      status: string; paid_at: number; final_amount: number;
-      billing_reason: string; payments_failed: number;
-    }>;
-    const paidMonth = payments.filter(p => p.status === "paid" && p.paid_at >= monthStart);
+
+    // ── 1. Plan prices (single page, few records) ──────────────────────────────
+    const planRes = await fetch("https://api.whop.com/api/v2/plans?limit=20", { headers });
+    const planJson = await planRes.json() as { data?: WhopPlan[] };
+    const planPrice = new Map<string, number>();
+    for (const p of planJson.data ?? []) {
+      const price = parseFloat(String(p.renewal_price ?? p.initial_price ?? "0")) || 0;
+      planPrice.set(p.id, price);
+    }
+
+    // ── 2. All payments — paginate all pages ──────────────────────────────────
+    const allPayments: WhopPayment[] = [];
+    for (let page = 1; ; page++) {
+      const r = await fetch(`https://api.whop.com/api/v2/payments?limit=50&page=${page}`, { headers });
+      const d = await r.json() as { data?: WhopPayment[]; pagination?: { total_page: number } };
+      const batch = d.data ?? [];
+      if (!batch.length) break;
+      allPayments.push(...batch);
+      if (page >= (d.pagination?.total_page ?? 1)) break;
+    }
+
+    // Most recent paid amount per membership (API returns newest-first)
+    const lastPaid = new Map<string, number>();
+    for (const p of allPayments) {
+      if (p.status === "paid" && p.paid_at !== null && !lastPaid.has(p.membership)) {
+        lastPaid.set(p.membership, p.final_amount);
+      }
+    }
+
+    // ── 3. All memberships — paginate all pages ────────────────────────────────
+    //    total_count (no status filter) = all-time community size shown in Whop UI
+    let totalMembers     = 0;
+    let newMembersThisMonth = 0;
+    let mrr              = 0;
+    for (let page = 1; ; page++) {
+      const r = await fetch(`https://api.whop.com/api/v2/memberships?limit=50&page=${page}`, { headers });
+      const d = await r.json() as { data?: WhopMembership[]; pagination?: { total_page: number; total_count: number } };
+      const batch = d.data ?? [];
+      if (!batch.length) break;
+      if (page === 1) totalMembers = d.pagination?.total_count ?? 0;
+      for (const m of batch) {
+        // MRR: active + trialing (paying or about to pay)
+        if (m.status === "active" || m.status === "trialing") {
+          // Use actual last-paid amount to capture promo-code discounts;
+          // fall back to plan's renewal price for trial members not yet charged
+          const amt = lastPaid.get(m.id) ?? planPrice.get(m.plan) ?? 0;
+          mrr += amt;
+        }
+        if (m.created_at >= monthStart) newMembersThisMonth++;
+      }
+      if (page >= (d.pagination?.total_page ?? 1)) break;
+    }
+
+    // ── 4. Derived payment metrics ─────────────────────────────────────────────
+    const revenueToday  = round2(allPayments
+      .filter(p => p.status === "paid" && p.paid_at !== null && p.paid_at >= todayStart)
+      .reduce((s, p) => s + p.final_amount, 0));
+    const failedPayments = allPayments
+      .filter(p => p.status === "open" && p.payments_failed > 0).length;
+
     return {
-      activeMemberCount:   membData.pagination?.total_count ?? 0,
-      mrr:                 round2(paidMonth.reduce((s, p) => s + (p.final_amount ?? 0), 0)),
-      newMembersThisMonth: paidMonth.filter(p => p.billing_reason === "subscription_create").length,
-      revenueToday:        round2(payments.filter(p => p.status === "paid" && p.paid_at >= todayStart).reduce((s, p) => s + (p.final_amount ?? 0), 0)),
-      failedPayments:      payments.filter(p => p.status === "open" && p.payments_failed > 0).length,
+      activeMemberCount:   totalMembers,
+      mrr:                 round2(mrr),
+      newMembersThisMonth,
+      revenueToday,
+      failedPayments,
     };
   } catch (e) {
     console.error("Whop error:", (e as Error).message);
