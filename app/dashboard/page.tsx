@@ -363,6 +363,8 @@ function BottomNav({current,onChange}:{current:PageKey;onChange:(k:PageKey)=>voi
 // ── Page views ────────────────────────────────────────────────────────────────
 const PROG_COLORS=["#A07830","#C9A84C","#D4AF37","#8B6914","#E8C878","#7A5C1E"];
 
+type LeadInfo = { found: boolean; age?: string|null; budget?: string|null; credit?: string|null };
+
 function DashboardView({data}:{data:DashboardData}){
   const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
@@ -374,6 +376,26 @@ function DashboardView({data}:{data:DashboardData}){
   const showRate   = cal?.showRate ?? 0;
   const expectedShows = upcoming.length > 0 && showRate > 0
     ? Math.round(upcoming.length * showRate / 100) : null;
+
+  // Expandable lead info state
+  const [openRows,    setOpenRows]    = useState<Set<number>>(new Set());
+  const [leadInfoMap, setLeadInfoMap] = useState<Map<number, LeadInfo | "loading">>(new Map());
+
+  function toggleRow(i: number, email: string) {
+    setOpenRows(prev => {
+      const next = new Set(prev);
+      if (next.has(i)) { next.delete(i); return next; }
+      next.add(i);
+      return next;
+    });
+    if (!leadInfoMap.has(i)) {
+      setLeadInfoMap(prev => new Map(prev).set(i, "loading"));
+      fetch(`/api/lead-info?email=${encodeURIComponent(email)}`)
+        .then(r => r.json())
+        .then((info: LeadInfo) => setLeadInfoMap(prev => new Map(prev).set(i, info)))
+        .catch(() => setLeadInfoMap(prev => new Map(prev).set(i, { found: false })));
+    }
+  }
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
@@ -420,25 +442,55 @@ function DashboardView({data}:{data:DashboardData}){
           <Card style={{padding:0,overflow:"hidden"}}>
             {upcoming.map((call,i)=>{
               const {when,fromNow,isToday,isSoon}=fmtCallTime(call.startTime);
+              const isOpen = openRows.has(i);
+              const info   = leadInfoMap.get(i);
               return(
-                <div key={i} style={{
-                  display:"flex",alignItems:"center",gap:14,
-                  padding:"13px 20px",
-                  borderBottom:i<upcoming.length-1?"1px solid rgba(255,255,255,0.05)":"none",
-                  background:isToday?"rgba(201,168,76,0.04)":"transparent",
-                }}>
-                  {/* Left: name + email */}
-                  <div style={{flex:1,minWidth:0}}>
-                    <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",margin:0,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeName}</p>
-                    {call.inviteeEmail&&(
-                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeEmail}</p>
-                    )}
+                <div key={i} style={{borderBottom:i<upcoming.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
+                  {/* Main row */}
+                  <div style={{
+                    display:"flex",alignItems:"center",gap:14,
+                    padding:"13px 20px",
+                    background:isToday?"rgba(201,168,76,0.04)":"transparent",
+                    cursor:"pointer",
+                  }} onClick={()=>call.inviteeEmail&&toggleRow(i,call.inviteeEmail)}>
+                    {/* Chevron */}
+                    <span style={{flexShrink:0,color:"#444",fontSize:11,transition:"transform 0.2s",display:"inline-block",transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>▶</span>
+                    {/* Left: name + email */}
+                    <div style={{flex:1,minWidth:0}}>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",margin:0,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeName}</p>
+                      {call.inviteeEmail&&(
+                        <p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeEmail}</p>
+                      )}
+                    </div>
+                    {/* Right: when + countdown */}
+                    <div style={{textAlign:"right",flexShrink:0}}>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday?600:400}}>{when}</p>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isSoon?700:400}}>{fromNow}</p>
+                    </div>
                   </div>
-                  {/* Right: when + countdown */}
-                  <div style={{textAlign:"right",flexShrink:0}}>
-                    <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday?600:400}}>{when}</p>
-                    <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isSoon?700:400}}>{fromNow}</p>
-                  </div>
+                  {/* Expanded: Typeform answers */}
+                  {isOpen&&(
+                    <div style={{padding:"10px 20px 14px 48px",background:"rgba(255,255,255,0.02)",borderTop:"1px solid rgba(255,255,255,0.04)"}}>
+                      {info==="loading"?(
+                        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",margin:0,fontStyle:"italic"}}>Loading…</p>
+                      ):!info||!info.found?(
+                        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#333",margin:0,fontStyle:"italic"}}>No Typeform response found in Close</p>
+                      ):(
+                        <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
+                          {[
+                            {label:"Age",    value:info.age},
+                            {label:"Budget", value:info.budget},
+                            {label:"Credit", value:info.credit},
+                          ].map(({label,value})=>(
+                            <div key={label}>
+                              <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>{label}</p>
+                              <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#C9A84C",margin:0,fontWeight:600}}>{value??"—"}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
