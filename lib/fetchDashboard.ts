@@ -643,16 +643,16 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
     const org     = encodeURIComponent(CALENDLY_ORG);
     const min     = start.toISOString();
     const max     = end.toISOString();
-    // Look back 3 hours so live/recently-ended calls still appear in the list
-    const past3h  = new Date(Date.now() - 3 * 3_600_000).toISOString();
-    const future30= new Date(Date.now() + 30 * 24 * 3600_000).toISOString();
+    // Look back to start of today (US) so all of today's calls appear
+    const todayStartISO = startOfTodayUS().toISOString();
+    const future30      = new Date(Date.now() + 30 * 24 * 3600_000).toISOString();
     const headers = { Authorization: "Bearer " + CALENDLY_TOKEN };
 
     const [activeRes, cancelRes, upcomingRes, upcomingCancelRes] = await Promise.all([
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`,    { headers, cache: "no-store" }),
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=canceled&count=100`,  { headers, cache: "no-store" }),
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${past3h}&max_start_time=${future30}&status=active&count=50`,   { headers, cache: "no-store" }),
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${past3h}&max_start_time=${future30}&status=canceled&count=50`, { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${todayStartISO}&max_start_time=${future30}&status=active&count=100`,   { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${todayStartISO}&max_start_time=${future30}&status=canceled&count=100`, { headers, cache: "no-store" }),
     ]);
 
     const active    = ((await activeRes.json()).collection ?? []) as unknown[];

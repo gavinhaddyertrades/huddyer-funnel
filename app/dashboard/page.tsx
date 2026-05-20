@@ -446,24 +446,19 @@ function DashboardView({data}:{data:DashboardData}){
   const cal=data.calendly;
   const grid1=mobile?"repeat(2,1fr)":"repeat(4,1fr)";
 
-  const upcoming = cal?.upcomingCalls ?? [];
-
-  // Compute completed today vs remaining from the upcoming list
+  const allCalls = cal?.upcomingCalls ?? [];
   const _now = new Date();
-  const _todayStart = new Date(_now); _todayStart.setHours(0,0,0,0);
-  const _tomorrowStart = new Date(_todayStart); _tomorrowStart.setDate(_todayStart.getDate()+1);
-  const completedToday = upcoming.filter(c => {
-    if (c.cancelled) return false;
+
+  // Split into previous (fully ended) and upcoming (live or future)
+  const indexedCalls  = allCalls.map((call, idx) => ({ call, idx }));
+  const prevCalls     = indexedCalls.filter(({ call: c }) => {
     const end = c.endTime ? new Date(c.endTime) : null;
-    return end && _now >= end && new Date(c.startTime) >= _todayStart && new Date(c.startTime) < _tomorrowStart;
-  }).length;
-  const remaining = upcoming.filter(c => {
-    if (c.cancelled) return false;
-    const start = new Date(c.startTime);
-    const end   = c.endTime ? new Date(c.endTime) : null;
-    const isTodayCall = start >= _todayStart && start < _tomorrowStart;
-    return isTodayCall && (end ? _now < end : _now < start);
-  }).length;
+    return end && _now >= end;
+  }).reverse(); // most recent first
+  const futureCalls   = indexedCalls.filter(({ call: c }) => {
+    const end = c.endTime ? new Date(c.endTime) : null;
+    return !end || _now < end;
+  });
 
   // Expandable lead info state
   const [openRows,    setOpenRows]    = useState<Set<number>>(new Set());
@@ -501,99 +496,106 @@ function DashboardView({data}:{data:DashboardData}){
 
       <GoldDivider/>
 
-      {/* ── Upcoming calls ── */}
-      <section>
-        <SectionLabel>Upcoming</SectionLabel>
-
-        {/* Summary header */}
-        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:18,flexWrap:"wrap"}}>
-          <span style={{fontFamily:"var(--font-display)",fontSize:36,color:"#C9A84C",lineHeight:1}}>{upcoming.length}</span>
-          <div>
-            <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#CCC",margin:0}}>
-              call{upcoming.length!==1?"s":""} booked in the next 30 days
-            </p>
-            <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#555",margin:"3px 0 0"}}>
-              {completedToday} completed today&nbsp;&nbsp;·&nbsp;&nbsp;{remaining} remaining
-            </p>
-          </div>
-        </div>
-
-        {upcoming.length===0?(
-          <Card>
-            <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#444",fontStyle:"italic"}}>No upcoming calls scheduled in the next 30 days</p>
-          </Card>
-        ):(
-          <Card style={{padding:0,overflow:"hidden"}}>
-            {upcoming.map((call,i)=>{
-              const {when,fromNow,isToday,isSoon,isLive,isPast}=fmtCallTime(call.startTime, call.endTime);
-              const isCancelled = call.cancelled;
-              const isOpen = openRows.has(i);
-              const info   = leadInfoMap.get(i);
-              return(
-                <div key={i} style={{borderBottom:i<upcoming.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
-                  {/* Main row */}
-                  <div style={{
-                    display:"flex",alignItems:"center",gap:14,
-                    padding:"13px 20px",
-                    background:isCancelled?"rgba(224,82,82,0.04)":isPast?"rgba(255,255,255,0.01)":isLive?"rgba(76,175,80,0.04)":isToday?"rgba(201,168,76,0.04)":"transparent",
-                    opacity:isCancelled||isPast?0.6:1,
-                    cursor:"pointer",
-                  }} onClick={()=>call.inviteeEmail&&toggleRow(i,call.inviteeEmail)}>
-                    {/* Chevron */}
-                    <span style={{flexShrink:0,color:"#444",transition:"transform 0.2s",display:"inline-flex",alignItems:"center",transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>
-                      <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M2 1l5 3-5 3V1z"/></svg>
-                    </span>
-                    {/* Left: name + email */}
-                    <div style={{flex:1,minWidth:0}}>
-                      <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",margin:0,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeName}</p>
-                      {call.inviteeEmail&&(
-                        <p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeEmail}</p>
-                      )}
+      {/* ── Shared call row renderer ── */}
+      {(()=>{
+        const renderRow = (call: typeof allCalls[0], idx: number, isLast: boolean) => {
+          const {when,fromNow,isToday,isSoon,isLive,isPast}=fmtCallTime(call.startTime, call.endTime);
+          const isCancelled = call.cancelled;
+          const isOpen = openRows.has(idx);
+          const info   = leadInfoMap.get(idx);
+          return(
+            <div key={idx} style={{borderBottom:!isLast?"1px solid rgba(255,255,255,0.05)":"none"}}>
+              <div style={{
+                display:"flex",alignItems:"center",gap:14,padding:"13px 20px",
+                background:isCancelled?"rgba(224,82,82,0.04)":isLive?"rgba(76,175,80,0.04)":isToday?"rgba(201,168,76,0.04)":"transparent",
+                opacity:isCancelled||isPast?0.6:1,
+                cursor:"pointer",
+              }} onClick={()=>call.inviteeEmail&&toggleRow(idx,call.inviteeEmail)}>
+                <span style={{flexShrink:0,color:"#444",transition:"transform 0.2s",display:"inline-flex",alignItems:"center",transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M2 1l5 3-5 3V1z"/></svg>
+                </span>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",margin:0,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeName}</p>
+                  {call.inviteeEmail&&<p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeEmail}</p>}
+                </div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isCancelled?"#666":isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday&&!isCancelled?600:400}}>{when}</p>
+                  <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isCancelled?"#E05252":isLive?"#4CAF50":isPast?"#444":isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isCancelled||isLive||isSoon?700:400,letterSpacing:isLive?"0.08em":undefined}}>
+                    {isCancelled?"Cancelled":fromNow}
+                  </p>
+                </div>
+              </div>
+              {isOpen&&(
+                <div style={{padding:"10px 20px 14px 48px",background:"rgba(255,255,255,0.02)",borderTop:"1px solid rgba(255,255,255,0.04)"}}>
+                  {info==="loading"?(
+                    <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",margin:0,fontStyle:"italic"}}>Loading…</p>
+                  ):!info||!info.found?(
+                    <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
+                      <div>
+                        <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>Closer</p>
+                        <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0,fontWeight:600}}>{call.hostName||"—"}</p>
+                      </div>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#333",margin:"auto 0",fontStyle:"italic"}}>No Typeform data in Close</p>
                     </div>
-                    {/* Right: when + countdown */}
-                    <div style={{textAlign:"right",flexShrink:0}}>
-                      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isCancelled?"#666":isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday&&!isCancelled?600:400}}>{when}</p>
-                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isCancelled?"#E05252":isLive?"#4CAF50":isPast?"#444":isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isCancelled||isLive||isSoon?700:400,letterSpacing:isLive?"0.08em":undefined}}>
-                        {isCancelled?"Cancelled":fromNow}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Expanded: Typeform answers */}
-                  {isOpen&&(
-                    <div style={{padding:"10px 20px 14px 48px",background:"rgba(255,255,255,0.02)",borderTop:"1px solid rgba(255,255,255,0.04)"}}>
-                      {info==="loading"?(
-                        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",margin:0,fontStyle:"italic"}}>Loading…</p>
-                      ):!info||!info.found?(
-                        <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
-                          <div>
-                            <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>Closer</p>
-                            <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0,fontWeight:600}}>{call.hostName||"—"}</p>
-                          </div>
-                          <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#333",margin:"auto 0",fontStyle:"italic"}}>No Typeform data in Close</p>
+                  ):(
+                    <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
+                      {[
+                        {label:"Closer", value:call.hostName||"—", gold:false},
+                        {label:"Age",    value:info.age,           gold:true},
+                        {label:"Budget", value:info.budget,        gold:true},
+                        {label:"Credit", value:info.credit,        gold:true},
+                      ].map(({label,value,gold})=>(
+                        <div key={label}>
+                          <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>{label}</p>
+                          <p style={{fontFamily:"var(--font-body)",fontSize:13,color:gold?"#C9A84C":"#F2EDE6",margin:0,fontWeight:600}}>{value??"—"}</p>
                         </div>
-                      ):(
-                        <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
-                          {[
-                            {label:"Closer", value:call.hostName||"—",  gold:false},
-                            {label:"Age",    value:info.age,            gold:true},
-                            {label:"Budget", value:info.budget,         gold:true},
-                            {label:"Credit", value:info.credit,         gold:true},
-                          ].map(({label,value,gold})=>(
-                            <div key={label}>
-                              <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>{label}</p>
-                              <p style={{fontFamily:"var(--font-body)",fontSize:13,color:gold?"#C9A84C":"#F2EDE6",margin:0,fontWeight:600}}>{value??"—"}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      ))}
                     </div>
                   )}
                 </div>
-              );
-            })}
-          </Card>
-        )}
-      </section>
+              )}
+            </div>
+          );
+        };
+
+        return(
+          <>
+            {/* ── Previous calls ── */}
+            {prevCalls.length>0&&(
+              <section>
+                <SectionLabel>Previous</SectionLabel>
+                <Card style={{padding:0,overflow:"hidden"}}>
+                  {prevCalls.map(({call,idx},pos)=>renderRow(call,idx,pos===prevCalls.length-1))}
+                </Card>
+              </section>
+            )}
+
+            <GoldDivider/>
+
+            {/* ── Upcoming calls ── */}
+            <section>
+              <SectionLabel>Upcoming</SectionLabel>
+              <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:18,flexWrap:"wrap"}}>
+                <span style={{fontFamily:"var(--font-display)",fontSize:36,color:"#C9A84C",lineHeight:1}}>{futureCalls.length}</span>
+                <div>
+                  <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#CCC",margin:0}}>
+                    call{futureCalls.length!==1?"s":""} booked in the next 30 days
+                  </p>
+                </div>
+              </div>
+              {futureCalls.length===0?(
+                <Card>
+                  <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#444",fontStyle:"italic"}}>No upcoming calls scheduled</p>
+                </Card>
+              ):(
+                <Card style={{padding:0,overflow:"hidden"}}>
+                  {futureCalls.map(({call,idx},pos)=>renderRow(call,idx,pos===futureCalls.length-1))}
+                </Card>
+              )}
+            </section>
+          </>
+        );
+      })()}
     </div>
   );
 }
