@@ -395,7 +395,7 @@ function RevenueView({data}:{data:DashboardData}){
           <KpiCard label="Total Contracted"  value={sh?fmt$(sh.totalContracted)   :"—"} accent sub="All planned payments"/>
           <KpiCard label="Cash Collected"    value={sh?fmt$(sh.cashCollected)     :"—"} green sub="Received to date"/>
           <KpiCard label="Uncollected"       value={sh?fmt$(sh.uncollectedRevenue):"—"} sub="Future scheduled"/>
-          <KpiCard label="This Month"        value={sh?fmt$(sh.revenueThisMonth)  :"—"} sub="Due in current month"/>
+          <KpiCard label="Still Due This Month" value={sh?fmt$(sh.revenueStillDueThisMonth):"—"} sub="Tomorrow → end of month"/>
         </div>
         <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
           <Card>

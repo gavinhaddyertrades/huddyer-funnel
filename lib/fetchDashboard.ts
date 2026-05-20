@@ -197,7 +197,9 @@ export type SheetsData =
       /** paymentDate > today → scheduled future payments */
       uncollectedRevenue: number;
       /** Payments due in the current calendar month */
-      revenueThisMonth:   number;
+      revenueThisMonth:      number;
+      /** Payments still due from tomorrow → end of month (not yet collected) */
+      revenueStillDueThisMonth: number;
 
       // ── Date-range filtered ──
       dealsClosed:        number;    // distinct lead names where dateClosed in range
@@ -265,12 +267,14 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
   const today      = new Date(); today.setHours(23, 59, 59, 999);
   const monthStart = startOfMonth();
   const monthEnd   = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59);
+  const tomorrowStart = new Date(); tomorrowStart.setHours(0, 0, 0, 0); tomorrowStart.setDate(tomorrowStart.getDate() + 1);
 
   // ── All-time metrics ────────────────────────────────────────────────────────
-  const totalContracted    = round2(allDealRows.reduce((s, r) => s + r.cashCollected, 0));
-  const cashCollected      = round2(allDealRows.filter(r => r.paymentDate <= today).reduce((s, r) => s + r.cashCollected, 0));
-  const uncollectedRevenue = round2(allDealRows.filter(r => r.paymentDate > today).reduce((s, r) => s + r.cashCollected, 0));
-  const revenueThisMonth   = round2(allDealRows.filter(r => r.paymentDate >= monthStart && r.paymentDate <= monthEnd).reduce((s, r) => s + r.cashCollected, 0));
+  const totalContracted          = round2(allDealRows.reduce((s, r) => s + r.cashCollected, 0));
+  const cashCollected            = round2(allDealRows.filter(r => r.paymentDate <= today).reduce((s, r) => s + r.cashCollected, 0));
+  const uncollectedRevenue       = round2(allDealRows.filter(r => r.paymentDate > today).reduce((s, r) => s + r.cashCollected, 0));
+  const revenueThisMonth         = round2(allDealRows.filter(r => r.paymentDate >= monthStart && r.paymentDate <= monthEnd).reduce((s, r) => s + r.cashCollected, 0));
+  const revenueStillDueThisMonth = round2(allDealRows.filter(r => r.paymentDate >= tomorrowStart && r.paymentDate <= monthEnd).reduce((s, r) => s + r.cashCollected, 0));
 
   // ── Date-range filtered ─────────────────────────────────────────────────────
   const dealsInRange  = allDealRows.filter(r => r.dateClosed >= start && r.dateClosed <= end);
@@ -425,6 +429,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     cashCollected,
     uncollectedRevenue,
     revenueThisMonth,
+    revenueStillDueThisMonth,
     dealsClosed,
     avgDealValue,
     pifContracted:        round2(pif),
