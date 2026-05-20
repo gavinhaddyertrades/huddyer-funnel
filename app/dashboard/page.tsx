@@ -273,8 +273,8 @@ function DashboardView({data}:{data:DashboardData}){
       <section>
         <SectionLabel>Revenue Overview</SectionLabel>
         <div style={{display:"grid",gridTemplateColumns:grid1,gap:10}}>
-          <KpiCard label="Total Contracted"  value={sh?fmt$(sh.combinedTotalContracted):"—"} accent sub="High ticket + low ticket"/>
-          <KpiCard label="Cash Collected"    value={sh?fmt$(sh.combinedCashCollected)  :"—"} green sub="HT + LT received to date"/>
+          <KpiCard label="Total Contracted"  value={sh?fmt$(sh.combinedTotalContracted):"—"} accent/>
+          <KpiCard label="Cash Collected"    value={sh?fmt$(sh.combinedCashCollected)  :"—"} green/>
           <KpiCard label="Uncollected Rev"   value={sh?fmt$(sh.combinedUncollected)    :"—"} sub="Deals future installments"/>
           <KpiCard label="This Month"        value={sh?fmt$(sh.revenueThisMonth)       :"—"} sub="High ticket due this month"/>
           <KpiCard label="MRR"               value={whop?fmt$(whop.mrr)               :"—"} sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
