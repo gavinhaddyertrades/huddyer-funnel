@@ -714,15 +714,20 @@ function FunnelView({data}:{data:DashboardData}){
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:14}}>Key Rates</p>
             {(()=>{
-              const eodBooked=(sh?.setterEod.rows??[]).reduce((s,r)=>s+r.callsBooked,0);
-              const apps=tf?.totalInRange??0;
-              const deals=sh?.dealsClosed??0;
-              const convRate=apps>0?Math.round((eodBooked/apps)*100):null;
-              const closeRt=eodBooked>0?Math.round((deals/eodBooked)*100):null;
+              const sRows = sh?.setterEod.rows ?? [];
+              const cRows = sh?.closerEod.rows ?? [];
+              const contacted   = sRows.reduce((s,r)=>s+r.contacted,   0);
+              const booked      = sRows.reduce((s,r)=>s+r.callsBooked,  0);
+              const scheduled   = cRows.reduce((s,r)=>s+r.callsScheduled,0);
+              const noShows     = cRows.reduce((s,r)=>s+r.noShows,      0);
+              const dealsClosed = cRows.reduce((s,r)=>s+r.dealsClosed,  0);
+              const convRate = contacted > 0 ? Math.round((booked    / contacted) * 100) : null;
+              const closeRt  = scheduled > 0 ? Math.round((dealsClosed / scheduled) * 100) : null;
+              const showRt   = scheduled > 0 ? Math.round(((scheduled - noShows) / scheduled) * 100) : null;
               return [
-                {label:"Conversion Rate",value:convRate!==null?fmtPct(convRate):"—",sub:"Applications → Calls"},
-                {label:"Close Rate",     value:closeRt!==null?fmtPct(closeRt):"—",sub:"Calls → Deals"},
-                {label:"Show Rate",      value:cal?fmtPct(cal.showRate):"—",sub:`${cal?.cancelledInRange??0} cancelled`},
+                {label:"Conversion Rate", value:convRate!==null?fmtPct(convRate):"—", sub:"Contacted → Booked (Setter EOD)"},
+                {label:"Close Rate",      value:closeRt!==null ?fmtPct(closeRt) :"—", sub:"Calls → Deals (Closer EOD)"},
+                {label:"Show Rate",       value:showRt!==null  ?fmtPct(showRt)  :"—", sub:`${noShows} no shows (Closer EOD)`},
               ].map(r=>(
                 <div key={r.label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
                   <div><p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#CCC",margin:0}}>{r.label}</p><p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:0}}>{r.sub}</p></div>
