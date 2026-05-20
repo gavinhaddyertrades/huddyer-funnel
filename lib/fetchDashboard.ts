@@ -476,8 +476,8 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
     const max     = end.toISOString();
     const headers = { Authorization: "Bearer " + CALENDLY_TOKEN };
     const [activeRes, cancelRes] = await Promise.all([
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`,   { headers }),
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=canceled&count=100`, { headers }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`,   { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=canceled&count=100`, { headers, cache: "no-store" }),
     ]);
     const active    = ((await activeRes.json()).collection ?? []) as unknown[];
     const cancelled = ((await cancelRes.json()).collection ?? []) as Array<{ cancellation?: { reason?: string } }>;
@@ -518,7 +518,7 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
 
       const res = await fetch(
         `https://api.typeform.com/forms/${TYPEFORM_FORM_ID}/responses?${params}`,
-        { headers: { Authorization: "Bearer " + TYPEFORM_TOKEN } }
+        { headers: { Authorization: "Bearer " + TYPEFORM_TOKEN }, cache: "no-store" }
       );
       const json = await res.json() as { items?: TfItem[] };
       const items = json.items ?? [];
@@ -583,7 +583,7 @@ async function fetchWhopData(): Promise<WhopData | null> {
     const todayStart = Math.floor(startOfTodayUS().getTime() / 1000);
 
     // ── 1. Plan prices (single page, few records) ──────────────────────────────
-    const planRes = await fetch("https://api.whop.com/api/v2/plans?limit=20", { headers });
+    const planRes = await fetch("https://api.whop.com/api/v2/plans?limit=20", { headers, cache: "no-store" });
     const planJson = await planRes.json() as { data?: WhopPlan[] };
     const planPrice = new Map<string, number>();
     for (const p of planJson.data ?? []) {
@@ -594,7 +594,7 @@ async function fetchWhopData(): Promise<WhopData | null> {
     // ── 2. All payments — paginate all pages ──────────────────────────────────
     const allPayments: WhopPayment[] = [];
     for (let page = 1; ; page++) {
-      const r = await fetch(`https://api.whop.com/api/v2/payments?limit=50&page=${page}`, { headers });
+      const r = await fetch(`https://api.whop.com/api/v2/payments?limit=50&page=${page}`, { headers, cache: "no-store" });
       const d = await r.json() as { data?: WhopPayment[]; pagination?: { total_page: number } };
       const batch = d.data ?? [];
       if (!batch.length) break;
@@ -617,7 +617,7 @@ async function fetchWhopData(): Promise<WhopData | null> {
     let newMembersThisMonth = 0;
     let mrr              = 0;
     for (let page = 1; ; page++) {
-      const r = await fetch(`https://api.whop.com/api/v2/memberships?limit=50&page=${page}`, { headers });
+      const r = await fetch(`https://api.whop.com/api/v2/memberships?limit=50&page=${page}`, { headers, cache: "no-store" });
       const d = await r.json() as { data?: WhopMembership[]; pagination?: { total_page: number; total_count: number } };
       const batch = d.data ?? [];
       if (!batch.length) break;
