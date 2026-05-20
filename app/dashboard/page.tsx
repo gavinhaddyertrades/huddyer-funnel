@@ -516,24 +516,40 @@ function FunnelView({data}:{data:DashboardData}){
         <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Applications → Calls → Deals</p>
-            <FunnelViz steps={[
-              {label:"Applications (Typeform)",value:tf?.totalInRange??0},
-              {label:"Calls Booked (active)",  value:cal?.bookedInRange??0,pct:data.conversionRate??0},
-              {label:"Deals Closed",           value:sh?.dealsClosed??0,pct:data.closeRate??0},
-            ]}/>
+            {(()=>{
+              const eodBooked=(sh?.setterEod.rows??[]).reduce((s,r)=>s+r.callsBooked,0);
+              const apps=tf?.totalInRange??0;
+              const deals=sh?.dealsClosed??0;
+              const convRate=apps>0?Math.round((eodBooked/apps)*100):0;
+              const closeRt=eodBooked>0?Math.round((deals/eodBooked)*100):0;
+              return(
+                <FunnelViz steps={[
+                  {label:"Applications (Typeform)",value:apps},
+                  {label:"Calls Booked (EOD)",     value:eodBooked,pct:convRate},
+                  {label:"Deals Closed",            value:deals,pct:closeRt},
+                ]}/>
+              );
+            })()}
           </Card>
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:14}}>Key Rates</p>
-            {[
-              {label:"Conversion Rate",value:data.conversionRate!==null?fmtPct(data.conversionRate):"—",sub:"Applications → Calls"},
-              {label:"Close Rate",     value:data.closeRate!==null?fmtPct(data.closeRate):"—",sub:"Calls → Deals"},
-              {label:"Show Rate",      value:cal?fmtPct(cal.showRate):"—",sub:`${cal?.cancelledInRange??0} cancelled`},
-            ].map(r=>(
-              <div key={r.label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                <div><p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#CCC",margin:0}}>{r.label}</p><p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:0}}>{r.sub}</p></div>
-                <span style={{fontFamily:"var(--font-display)",fontSize:26,color:"#C9A84C",lineHeight:1}}>{r.value}</span>
-              </div>
-            ))}
+            {(()=>{
+              const eodBooked=(sh?.setterEod.rows??[]).reduce((s,r)=>s+r.callsBooked,0);
+              const apps=tf?.totalInRange??0;
+              const deals=sh?.dealsClosed??0;
+              const convRate=apps>0?Math.round((eodBooked/apps)*100):null;
+              const closeRt=eodBooked>0?Math.round((deals/eodBooked)*100):null;
+              return [
+                {label:"Conversion Rate",value:convRate!==null?fmtPct(convRate):"—",sub:"Applications → Calls"},
+                {label:"Close Rate",     value:closeRt!==null?fmtPct(closeRt):"—",sub:"Calls → Deals"},
+                {label:"Show Rate",      value:cal?fmtPct(cal.showRate):"—",sub:`${cal?.cancelledInRange??0} cancelled`},
+              ].map(r=>(
+                <div key={r.label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                  <div><p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#CCC",margin:0}}>{r.label}</p><p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:0}}>{r.sub}</p></div>
+                  <span style={{fontFamily:"var(--font-display)",fontSize:26,color:"#C9A84C",lineHeight:1}}>{r.value}</span>
+                </div>
+              ));
+            })()}
           </Card>
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Lead Sources</p>
