@@ -138,50 +138,53 @@ function DonutChart({segments,size=130}:{segments:{label:string;value:number;col
 // ── Monthly bar chart ─────────────────────────────────────────────────────────
 function MonthlyBarChart({ data, title }: { data: { month: string; amount: number }[]; title: string }) {
   const [hovered, setHovered] = useState<number | null>(null);
-  const mobile = useMobile();
-  const max = Math.max(...data.map(d => d.amount), 1);
-  const chartH = 150;
-  const barW   = mobile ? 16 : 26;
-  const gap    = mobile ? 4  : 10;
-  const padL   = 44;
-  const padB   = 26;
-  const padT   = 10;
-  const svgW   = padL + data.length * (barW + gap) + gap;
-  const svgH   = chartH + padB + padT;
+  const max     = Math.max(...data.map(d => d.amount), 1);
+  const chartH  = 150;
+  const padL    = 44;
+  const padB    = 26;
+  const padT    = 10;
+  // Fixed viewBox width — SVG scales to 100% container width
+  const VBW     = 600;
+  const svgH    = chartH + padB + padT;
+  const gap     = 6;
+  const barW    = (VBW - padL - (data.length + 1) * gap) / data.length;
   const niceMax = Math.ceil(max / 1000) * 1000 || 1000;
   const yTicks  = [0, 0.25, 0.5, 0.75, 1].map(f => Math.round(niceMax * f));
 
   return (
     <Card>
       <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:14}}>{title}</p>
-      <div style={{overflowX:"auto",position:"relative"}}>
-        {/* Tooltip */}
+      <div style={{position:"relative"}}>
+        {/* Tooltip — positioned in SVG coordinate space, scaled via % */}
         {hovered !== null && data[hovered].amount > 0 && (()=>{
-          const d   = data[hovered];
-          const cx  = padL + gap + hovered * (barW + gap) + barW / 2;
+          const d    = data[hovered];
+          const cx   = padL + gap + hovered * (barW + gap) + barW / 2;
           const barH = Math.max((d.amount / niceMax) * chartH, 2);
           const tipY = padT + chartH - barH - 34;
+          // Convert SVG coords → % of viewBox for the absolutely positioned div
+          const leftPct = (cx / VBW) * 100;
+          const topPct  = (tipY / svgH) * 100;
           return(
-            <div style={{position:"absolute",left:cx,top:tipY,transform:"translateX(-50%)",background:"rgba(13,13,13,0.97)",border:"1px solid rgba(201,168,76,0.4)",borderRadius:6,padding:"4px 10px",pointerEvents:"none",zIndex:10,whiteSpace:"nowrap"}}>
+            <div style={{position:"absolute",left:`${leftPct}%`,top:`${topPct}%`,transform:"translateX(-50%)",background:"rgba(13,13,13,0.97)",border:"1px solid rgba(201,168,76,0.4)",borderRadius:6,padding:"4px 10px",pointerEvents:"none",zIndex:10,whiteSpace:"nowrap"}}>
               <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#C9A84C",margin:0,fontWeight:700}}>{fmt$(d.amount)}</p>
             </div>
           );
         })()}
-        <svg width={svgW} height={svgH} style={{display:"block"}}>
+        <svg width="100%" viewBox={`0 0 ${VBW} ${svgH}`} preserveAspectRatio="none" style={{display:"block"}}>
           {/* Grid lines + Y labels */}
           {yTicks.map(tick=>{
             const y=padT+chartH-(tick/niceMax)*chartH;
             return(
               <g key={tick}>
-                <line x1={padL} x2={svgW} y1={y} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth={1}/>
-                <text x={padL-6} y={y+4} textAnchor="end" fontSize={9} fill="#444" fontFamily="sans-serif">
+                <line x1={padL} x2={VBW} y1={y} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth={1}/>
+                <text x={padL-6} y={y+4} textAnchor="end" fontSize={11} fill="#444" fontFamily="sans-serif">
                   {tick===0?"0":tick>=1000?`${tick/1000}K`:tick}
                 </text>
               </g>
             );
           })}
           {/* X axis */}
-          <line x1={padL} x2={svgW} y1={padT+chartH} y2={padT+chartH} stroke="rgba(255,255,255,0.1)" strokeWidth={1}/>
+          <line x1={padL} x2={VBW} y1={padT+chartH} y2={padT+chartH} stroke="rgba(255,255,255,0.1)" strokeWidth={1}/>
           {/* Bars */}
           {data.map((d,i)=>{
             const barH  = d.amount>0?Math.max((d.amount/niceMax)*chartH,2):0;
@@ -192,7 +195,7 @@ function MonthlyBarChart({ data, title }: { data: { month: string; amount: numbe
               <g key={d.month} onMouseEnter={()=>setHovered(i)} onMouseLeave={()=>setHovered(null)} style={{cursor:d.amount>0?"pointer":"default"}}>
                 <rect x={x} y={d.amount>0?y:padT+chartH-1} width={barW} height={d.amount>0?barH:1}
                   fill={d.amount>0?(isHov?"#D4AF37":"#C9A84C"):"rgba(255,255,255,0.04)"} rx={2}/>
-                <text x={x+barW/2} y={padT+chartH+17} textAnchor="middle" fontSize={9} fill={isHov?"#888":"#444"} fontFamily="sans-serif">{d.month}</text>
+                <text x={x+barW/2} y={padT+chartH+17} textAnchor="middle" fontSize={11} fill={isHov?"#888":"#444"} fontFamily="sans-serif">{d.month}</text>
               </g>
             );
           })}
