@@ -443,15 +443,6 @@ function DashboardView({data}:{data:DashboardData}){
 function RevenueView({data}:{data:DashboardData}){
   const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
-  const tf=data.typeform;
-  const LEAD_SOURCE_KEYS=["youtube","linktree","manychat","meta","instagram"];
-  const LEAD_SOURCE_LABEL:Record<string,string>={youtube:"Youtube",linktree:"Linktree",manychat:"Manychat",meta:"Meta",instagram:"Instagram"};
-  const srcCountMap=new Map((tf?.trafficSources??[]).map(s=>[s.source.toLowerCase(),s.count]));
-  const filteredSources=LEAD_SOURCE_KEYS
-    .map(k=>({source:LEAD_SOURCE_LABEL[k],count:srcCountMap.get(k)??0}))
-    .filter(s=>s.count>0)
-    .sort((a,b)=>b.count-a.count);
-  const srcMax=Math.max(...(filteredSources.map(s=>s.count)),1);
   const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
@@ -468,14 +459,6 @@ function RevenueView({data}:{data:DashboardData}){
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Revenue by Program</p>
             {sh?.revenueByProgram.length?(
               <DonutChart segments={sh.revenueByProgram.map((p,i)=>({label:p.program,value:p.contracted,color:PROG_COLORS[i%PROG_COLORS.length]}))}/>
-            ):<p style={{color:"#555",fontSize:12}}>No data</p>}
-          </Card>
-          <Card>
-            <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Lead Sources</p>
-            {filteredSources.length?(
-              <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                {filteredSources.map(s=><BarRow key={s.source} label={s.source} value={s.count} total={srcMax}/>)}
-              </div>
             ):<p style={{color:"#555",fontSize:12}}>No data</p>}
           </Card>
         </div>
@@ -517,6 +500,14 @@ function FunnelView({data}:{data:DashboardData}){
   const sh=data.sheets.connected?data.sheets:null;
   const cal=data.calendly;
   const tf=data.typeform;
+  const LEAD_SOURCE_KEYS=["youtube","linktree","manychat","meta","instagram"];
+  const LEAD_SOURCE_LABEL:Record<string,string>={youtube:"Youtube",linktree:"Linktree",manychat:"Manychat",meta:"Meta",instagram:"Instagram"};
+  const srcCountMap=new Map((tf?.trafficSources??[]).map(s=>[s.source.toLowerCase(),s.count]));
+  const filteredSources=LEAD_SOURCE_KEYS
+    .map(k=>({source:LEAD_SOURCE_LABEL[k],count:srcCountMap.get(k)??0}))
+    .filter(s=>s.count>0)
+    .sort((a,b)=>b.count-a.count);
+  const srcMax=Math.max(...filteredSources.map(s=>s.count),1);
   const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
@@ -543,6 +534,14 @@ function FunnelView({data}:{data:DashboardData}){
                 <span style={{fontFamily:"var(--font-display)",fontSize:26,color:"#C9A84C",lineHeight:1}}>{r.value}</span>
               </div>
             ))}
+          </Card>
+          <Card>
+            <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Lead Sources</p>
+            {filteredSources.length?(
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {filteredSources.map(s=><BarRow key={s.source} label={s.source} value={s.count} total={srcMax}/>)}
+              </div>
+            ):<p style={{color:"#555",fontSize:12}}>No data</p>}
           </Card>
         </div>
       </section>
@@ -578,19 +577,45 @@ function CommissionsView({data}:{data:DashboardData}){
   );
 }
 
+function dedupeByName<T extends {name:string}>(rows:T[]):T[]{
+  // Sheet appends newest at bottom — iterate in reverse so first-seen = latest
+  const seen=new Set<string>();
+  const out:T[]=[];
+  for(let i=rows.length-1;i>=0;i--){
+    const key=rows[i].name.trim().toLowerCase();
+    if(!seen.has(key)){seen.add(key);out.unshift(rows[i]);}
+  }
+  return out;
+}
+
 function EodView({data}:{data:DashboardData}){
   const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
   if(!sh) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>Google Sheets not connected.</p>;
+
+  // Deduplicate — one row per person (latest submission wins)
+  const setterRows = dedupeByName(sh.setterEod.rows).map(r=>({
+    name:      r.name,
+    contacted: r.contacted,
+    booked:    r.callsBooked,
+    bookRate:  r.contacted>0?Math.round((r.callsBooked/r.contacted)*100)+"%":"—",
+  }));
+  const closerRows = dedupeByName(sh.closerEod.rows).map(r=>({
+    name:      r.name,
+    scheduled: r.callsScheduled,
+    closed:    r.dealsClosed,
+    closeRate: r.callsScheduled>0?Math.round((r.dealsClosed/r.callsScheduled)*100)+"%":"—",
+  }));
+
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
         <SectionLabel>EOD Reports</SectionLabel>
         <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
-          <EodTable title="Setter EOD" rows={sh.setterEod.rows as Record<string,string|number>[]} emptyMsg="No setter reports yet"
-            columns={[{key:"timestamp",label:"Date"},{key:"name",label:"Setter"},{key:"contacted",label:"Contacted"},{key:"callsBooked",label:"Booked"},{key:"liveCalls",label:"Live"},{key:"noShows",label:"No-Shows"}]}/>
-          <EodTable title="Closer EOD" rows={sh.closerEod.rows as Record<string,string|number>[]} emptyMsg="No closer reports yet"
-            columns={[{key:"timestamp",label:"Date"},{key:"name",label:"Closer"},{key:"callsScheduled",label:"Scheduled"},{key:"noShows",label:"No-Shows"},{key:"reschedules",label:"Reschedules"},{key:"cancellations",label:"Cancels"},{key:"dealsClosed",label:"Closed"}]}/>
+          <EodTable title="Setter EOD" rows={setterRows as Record<string,string|number>[]} emptyMsg="No setter reports yet"
+            columns={[{key:"name",label:"Setter"},{key:"contacted",label:"Contacted"},{key:"booked",label:"Calls Booked"},{key:"bookRate",label:"Book Rate"}]}/>
+          <EodTable title="Closer EOD" rows={closerRows as Record<string,string|number>[]} emptyMsg="No closer reports yet"
+            columns={[{key:"name",label:"Closer"},{key:"scheduled",label:"Calls Scheduled"},{key:"closed",label:"Calls Closed"},{key:"closeRate",label:"Close Rate"}]}/>
         </div>
       </section>
     </div>
