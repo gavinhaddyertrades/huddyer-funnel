@@ -537,7 +537,9 @@ function DashboardView({data}:{data:DashboardData}){
                     cursor:"pointer",
                   }} onClick={()=>call.inviteeEmail&&toggleRow(i,call.inviteeEmail)}>
                     {/* Chevron */}
-                    <span style={{flexShrink:0,color:"#444",fontSize:11,transition:"transform 0.2s",display:"inline-block",transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>▶</span>
+                    <span style={{flexShrink:0,color:"#444",transition:"transform 0.2s",display:"inline-flex",alignItems:"center",transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>
+                      <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M2 1l5 3-5 3V1z"/></svg>
+                    </span>
                     {/* Left: name + email */}
                     <div style={{flex:1,minWidth:0}}>
                       <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",margin:0,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeName}</p>
