@@ -10,6 +10,8 @@ const useMobile  = () => useContext(MobileCtx);
 // ── Format helpers ─────────────────────────────────────────────────────────────
 const fmt$ = (n: number) =>
   "$" + n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const fmt$Exact = (n: number) =>
+  "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n: number) => n + "%";
 
 // ── Page types ────────────────────────────────────────────────────────────────
@@ -277,8 +279,8 @@ function DashboardView({data}:{data:DashboardData}){
           <KpiCard label="Cash Collected"    value={sh?fmt$(sh.combinedCashCollected)  :"—"} green/>
           <KpiCard label="Uncollected Rev"   value={sh?fmt$(sh.combinedUncollected)    :"—"} sub="Deals future installments"/>
           <KpiCard label="This Month"        value={sh?fmt$(sh.revenueThisMonth)       :"—"} sub="High ticket due this month"/>
-          <KpiCard label="MRR"               value={whop?fmt$(whop.mrr)               :"—"} sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
-          <KpiCard label="Whop Today"        value={whop?fmt$(whop.revenueToday)       :"—"} green sub="Whop payments today"/>
+          <KpiCard label="MRR"               value={whop?fmt$Exact(whop.mrr)               :"—"} sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
+          <KpiCard label="Whop Today"        value={whop?fmt$Exact(whop.revenueToday)       :"—"} green sub="Whop payments today"/>
           <KpiCard label="Churned Revenue"   value={sh?fmt$(sh.churnedRevenue)         :"—"} warn={!!sh&&sh.churnedRevenue>0} sub={sh&&sh.voidedLeads.length>0?`${sh.voidedLeads.length} voided`:undefined}/>
           <KpiCard label="Net Collected"     value={sh?fmt$(sh.combinedNetCollected)   :"—"} green sub="Cash collected − churned"/>
         </div>
@@ -349,9 +351,9 @@ function RevenueView({data}:{data:DashboardData}){
         </div>
         {/* Whop API live data */}
         <div style={{display:"grid",gridTemplateColumns:kpiGrid,gap:10}}>
-          <KpiCard label="MRR"               value={whop?fmt$(whop.mrr)              :"—"} accent sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
+          <KpiCard label="MRR"               value={whop?fmt$Exact(whop.mrr)              :"—"} accent sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
           <KpiCard label="New This Month"     value={whop?whop.newMembersThisMonth    :"—"} sub="New subscribers (Whop API)"/>
-          <KpiCard label="Today (Whop API)"   value={whop?fmt$(whop.revenueToday)     :"—"} green sub="Payments today"/>
+          <KpiCard label="Today (Whop API)"   value={whop?fmt$Exact(whop.revenueToday)     :"—"} green sub="Payments today"/>
           <KpiCard label="Failed Payments"    value={whop?whop.failedPayments         :"—"} warn={!!whop?.failedPayments} sub={whop?.failedPayments?"Needs attention":"All clear"}/>
         </div>
       </section>
