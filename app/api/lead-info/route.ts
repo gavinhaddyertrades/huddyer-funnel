@@ -26,21 +26,38 @@ export async function GET(req: Request) {
     const lead = searchJson.data?.[0];
     if (!lead) return NextResponse.json({ found: false });
 
-    // 2. Fetch Typeform Responses custom activity for this lead
-    const actRes = await fetch(
-      `https://api.close.com/api/v1/activity/custom/?lead_id=${lead.id}&custom_activity_type_id=${TYPEFORM_ACT_TYPE}`,
-      { headers, cache: "no-store" }
-    );
-    const actJson = await actRes.json() as { data?: Record<string, unknown>[] };
+    // 2. Fetch opportunities + Typeform activity in parallel
+    const [oppRes, actRes] = await Promise.all([
+      fetch(
+        `https://api.close.com/api/v1/opportunity/?lead_id=${lead.id}&_fields=value,value_period,status_type&_limit=10`,
+        { headers, cache: "no-store" }
+      ),
+      fetch(
+        `https://api.close.com/api/v1/activity/custom/?lead_id=${lead.id}&custom_activity_type_id=${TYPEFORM_ACT_TYPE}`,
+        { headers, cache: "no-store" }
+      ),
+    ]);
+
+    const oppJson  = await oppRes.json()  as { data?: Array<{ value?: number; value_period?: string; status_type?: string }> };
+    const actJson  = await actRes.json()  as { data?: Record<string, unknown>[] };
     const activity = actJson.data?.[0];
 
+    // Pick the won opportunity with the highest value; fall back to any opportunity
+    const opps = oppJson.data ?? [];
+    const wonOpps = opps.filter(o => o.status_type === "won");
+    const bestOpp = wonOpps.length ? wonOpps : opps;
+    const topOpp  = bestOpp.sort((a, b) => (b.value ?? 0) - (a.value ?? 0))[0];
+    // Close stores value in cents
+    const opportunityValue = topOpp?.value != null ? Math.round(topOpp.value / 100) : null;
+
     return NextResponse.json({
-      found:       true,
-      leadName:    lead.display_name,
-      statusLabel: lead.status_label ?? null,
-      age:         (activity?.[FIELD_AGE]    as string) ?? null,
-      budget:      (activity?.[FIELD_BUDGET] as string) ?? null,
-      credit:      (activity?.[FIELD_CREDIT] as string) ?? null,
+      found:            true,
+      leadName:         lead.display_name,
+      statusLabel:      lead.status_label ?? null,
+      opportunityValue,
+      age:              (activity?.[FIELD_AGE]    as string) ?? null,
+      budget:           (activity?.[FIELD_BUDGET] as string) ?? null,
+      credit:           (activity?.[FIELD_CREDIT] as string) ?? null,
     });
   } catch (e) {
     console.error("lead-info error:", (e as Error).message);

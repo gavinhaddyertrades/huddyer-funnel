@@ -438,7 +438,7 @@ function BottomNav({current,onChange}:{current:PageKey;onChange:(k:PageKey)=>voi
 // ── Page views ────────────────────────────────────────────────────────────────
 const PROG_COLORS=["#A07830","#C9A84C","#D4AF37","#8B6914","#E8C878","#7A5C1E"];
 
-type LeadInfo = { found: boolean; statusLabel?: string|null; age?: string|null; budget?: string|null; credit?: string|null };
+type LeadInfo = { found: boolean; statusLabel?: string|null; opportunityValue?: number|null; age?: string|null; budget?: string|null; credit?: string|null };
 
 function DashboardView({data}:{data:DashboardData}){
   const mobile=useMobile();
@@ -549,10 +549,12 @@ function DashboardView({data}:{data:DashboardData}){
                   const isPitched   = closeStatus.includes("pitched");
                   const isClosedWon = closeStatus.includes("closed");
 
+                  const oppVal = isClosedWon && info && info !== "loading" && info.opportunityValue
+                    ? " · " + fmt$(info.opportunityValue) : "";
                   const statusLabel = isCancelled
                     ? (hasNewCall ? "Rescheduled" : reschedActive ? "Rescheduling" : call.noShow ? "No Show" : "Cancelled")
                     : isPitched   ? "Pitched"
-                    : isClosedWon ? "Closed"
+                    : isClosedWon ? "Closed" + oppVal
                     : fromNow;
                   const statusColor = isCancelled
                     ? (hasNewCall ? "#4CAF50" : reschedActive ? "#C9A84C" : "#E05252")
