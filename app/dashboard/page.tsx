@@ -444,7 +444,14 @@ function RevenueView({data}:{data:DashboardData}){
   const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
   const tf=data.typeform;
-  const srcMax=Math.max(...(tf?.trafficSources.map(s=>s.count)??[1]));
+  const LEAD_SOURCE_KEYS=["youtube","linktree","manychat","meta","instagram"];
+  const LEAD_SOURCE_LABEL:Record<string,string>={youtube:"Youtube",linktree:"Linktree",manychat:"Manychat",meta:"Meta",instagram:"Instagram"};
+  const srcCountMap=new Map((tf?.trafficSources??[]).map(s=>[s.source.toLowerCase(),s.count]));
+  const filteredSources=LEAD_SOURCE_KEYS
+    .map(k=>({source:LEAD_SOURCE_LABEL[k],count:srcCountMap.get(k)??0}))
+    .filter(s=>s.count>0)
+    .sort((a,b)=>b.count-a.count);
+  const srcMax=Math.max(...(filteredSources.map(s=>s.count)),1);
   const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
@@ -464,10 +471,10 @@ function RevenueView({data}:{data:DashboardData}){
             ):<p style={{color:"#555",fontSize:12}}>No data</p>}
           </Card>
           <Card>
-            <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Lead Sources (UTM)</p>
-            {tf?.trafficSources.length?(
+            <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Lead Sources</p>
+            {filteredSources.length?(
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                {tf.trafficSources.slice(0,8).map(s=><BarRow key={s.source} label={s.source} value={s.count} total={srcMax}/>)}
+                {filteredSources.map(s=><BarRow key={s.source} label={s.source} value={s.count} total={srcMax}/>)}
               </div>
             ):<p style={{color:"#555",fontSize:12}}>No data</p>}
           </Card>
