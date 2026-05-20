@@ -495,8 +495,9 @@ function DashboardView({data}:{data:DashboardData}){
       const end    = c.endTime ? new Date(c.endTime) : null;
       const isLive = end && !c.cancelled ? now2 >= start && now2 < end : false;
       const inPrev = !isLive && (c.rescheduled || (c.cancelled && start < now2) || (!!end && now2 >= end));
-      // For live calls: always re-fetch so "LIVE → Closed" updates on each 120s refresh
-      if (isLive) fetchInitiatedRef.current.delete(c.inviteeEmail);
+      // Always re-fetch for live AND previous calls on each 120s refresh so
+      // status changes in Close (e.g. closer marks Closed after the call) show up
+      if (isLive || inPrev) fetchInitiatedRef.current.delete(c.inviteeEmail);
       if (inPrev || isLive) fetchLeadInfo(c.inviteeEmail);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
