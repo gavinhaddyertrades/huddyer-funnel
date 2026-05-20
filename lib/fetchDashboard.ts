@@ -623,8 +623,8 @@ async function fetchWhopData(): Promise<WhopData | null> {
       if (!batch.length) break;
       for (const m of batch) {
         if (m.status === "active" && !m.cancel_at_period_end) activeMembers++;
-        // MRR: active + trialing (paying or about to pay)
-        if (m.status === "active" || m.status === "trialing") {
+        // MRR: active + trialing, but exclude cancel_at_period_end (they won't renew)
+        if ((m.status === "active" || m.status === "trialing") && !m.cancel_at_period_end) {
           // Use actual last-paid amount to capture promo-code discounts;
           // fall back to plan's renewal price for trial members not yet charged
           const amt = lastPaid.get(m.id) ?? planPrice.get(m.plan) ?? 0;
