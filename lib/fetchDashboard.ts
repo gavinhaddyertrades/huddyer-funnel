@@ -327,9 +327,11 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     setterPaidMap.set(r.setterName, (setterPaidMap.get(r.setterName) ?? 0) + r.setterCommission);
     closerPaidMap.set(r.closerName, (closerPaidMap.get(r.closerName) ?? 0) + r.closerCommission);
   }
+  // Names to exclude from setter/closer commission tables (owners, not sales reps)
+  const COMM_EXCLUDE = new Set(["hudson", "gavin van jaarsveldt", "gavin"]);
   const toLines = (m: Map<string, number>) =>
     Array.from(m.entries())
-      .filter(([n]) => n)
+      .filter(([n]) => n && !COMM_EXCLUDE.has(n.toLowerCase().trim()))
       .map(([name, amount]) => ({ name, amount: round2(amount) }))
       .sort((a, b) => b.amount - a.amount);
 
