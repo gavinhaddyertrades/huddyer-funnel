@@ -9,12 +9,19 @@ const AIRTABLE_TOKEN    = process.env.AIRTABLE_TOKEN!;
 const AIRTABLE_BASE     = "appGdPah6zld6kEvo";
 const AIRTABLE_TABLE    = "tbl06n4myW5mzZkDR";
 
+// Sheet tab GIDs (same spreadsheet)
+const GID_DEALS         = "0";
+const GID_SETTER_EOD    = "1563702048";
+const GID_CLOSER_EOD    = "510891243";
+const GID_VOIDED        = "918414758";
+const GID_SUBSCRIPTIONS = "193482418";
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const startOfMonth = () => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; };
 const startOfToday = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
 function round2(n: number) { return Math.round(n * 100) / 100; }
 
-// ── Airtable (primary deal source) ───────────────────────────────────────────
+// ── Airtable (deal structure + commissions owed) ──────────────────────────────
 
 type AirtableRow = {
   id:               string;
@@ -23,13 +30,13 @@ type AirtableRow = {
   setterName:       string;
   closerName:       string;
   program:          string;
-  saleType:         string;  // "PIF" | "Financed" | ""
-  cashCollected:    number;  // initial/recorded payment
+  saleType:         string;
+  cashCollected:    number;
   monthlyInstall:   number;
-  duration:         number;  // months
+  duration:         number;
   setterCommission: number;
   closerCommission: number;
-  earnings:         number;  // Cash Collected Earnings
+  earnings:         number;
 };
 
 async function fetchAirtableRows(): Promise<AirtableRow[] | null> {
@@ -44,7 +51,10 @@ async function fetchAirtableRows(): Promise<AirtableRow[] | null> {
       if (offset) url.searchParams.set("offset", offset);
       const res = await fetch(url.toString(), { headers });
       if (!res.ok) return null;
-      const data = await res.json() as { records: Array<{ id: string; fields: Record<string, unknown> }>; offset?: string };
+      const data = await res.json() as {
+        records: Array<{ id: string; fields: Record<string, unknown> }>;
+        offset?: string;
+      };
       for (const rec of data.records) {
         const f = rec.fields;
         const dateStr = f["Date Closed"] as string | undefined;
@@ -54,17 +64,17 @@ async function fetchAirtableRows(): Promise<AirtableRow[] | null> {
         rows.push({
           id:               rec.id,
           dateClosed,
-          leadName:         ((f["Lead Name"] as string) ?? "").trim(),
-          setterName:       ((f["Setter Name"] as string) ?? "").trim(),
-          closerName:       ((f["Closer Name"] as string) ?? "").trim(),
-          program:          ((f["Program Purchased"] as string) ?? "").trim(),
-          saleType:         ((f["Sale Type"] as string) ?? "").trim(),
-          cashCollected:    (f["Cash Collected"] as number) ?? 0,
-          monthlyInstall:   (f["Monthly Installment Amount"] as number) ?? 0,
-          duration:         parseInt(String(f["In-house Duration"] ?? "0"), 10) || 0,
-          setterCommission: (f["Setter Commission"] as number) ?? 0,
-          closerCommission: (f["Closer Commission"] as number) ?? 0,
-          earnings:         (f["Cash Collected Earnings"] as number) ?? 0,
+          leadName:         ((f["Lead Name"]                   as string) ?? "").trim(),
+          setterName:       ((f["Setter Name"]                 as string) ?? "").trim(),
+          closerName:       ((f["Closer Name"]                 as string) ?? "").trim(),
+          program:          ((f["Program Purchased"]           as string) ?? "").trim(),
+          saleType:         ((f["Sale Type"]                   as string) ?? "").trim(),
+          cashCollected:     (f["Cash Collected"]              as number)  ?? 0,
+          monthlyInstall:    (f["Monthly Installment Amount"]  as number)  ?? 0,
+          duration:          parseInt(String(f["In-house Duration"] ?? "0"), 10) || 0,
+          setterCommission:  (f["Setter Commission"]           as number)  ?? 0,
+          closerCommission:  (f["Closer Commission"]           as number)  ?? 0,
+          earnings:          (f["Cash Collected Earnings"]     as number)  ?? 0,
         });
       }
       offset = data.offset;
@@ -79,20 +89,14 @@ async function fetchAirtableRows(): Promise<AirtableRow[] | null> {
 
 export type CommissionLine = { name: string; amount: number };
 
+/** Airtable is used ONLY for deal-structure breakdown charts + commissions owed.
+ *  Main revenue KPIs (contracted, collected, deals closed) come from Google Sheets. */
 export type AirtableData =
   | {
-      connected: true;
-      // Revenue
-      totalContracted:    number;
-      dealsClosed:        number;
-      avgDealValue:       number;
-      highTicketRevenue:  number;
-      lowTicketRevenue:   number;
-      // Breakdown
+      connected:          true;
       pifContracted:      number;
       financedContracted: number;
       revenueByProgram:   { program: string; contracted: number }[];
-      // Commissions (total owed per person)
       setterCommissions:  CommissionLine[];
       closerCommissions:  CommissionLine[];
       totalEarnings:      number;
@@ -105,62 +109,90 @@ export async function fetchAirtableData(start: Date, end: Date): Promise<Airtabl
 
   const rows = allRows.filter(r => r.dateClosed >= start && r.dateClosed <= end);
 
-  let contracted     = 0;
-  let highTicket     = 0;
-  let lowTicket      = 0;
-  let pif            = 0;
-  let financed       = 0;
-  let totalEarnings  = 0;
-
-  const programMap  = new Map<string, number>();
-  const setterMap   = new Map<string, number>();
-  const closerMap   = new Map<string, number>();
+  let pif = 0, financed = 0, totalEarnings = 0;
+  const programMap = new Map<string, number>();
+  const setterMap  = new Map<string, number>();
+  const closerMap  = new Map<string, number>();
 
   for (const r of rows) {
-    // Total contract value
     const contractVal = r.saleType === "PIF" || r.duration === 0
       ? r.cashCollected
       : r.monthlyInstall * r.duration;
 
-    contracted += contractVal;
+    if (r.saleType === "PIF" || r.duration === 0) pif      += contractVal;
+    else                                           financed += contractVal;
 
-    if (r.program === "1:1 Mentorship") highTicket += contractVal;
-    else lowTicket += contractVal;
-
-    if (r.saleType === "PIF" || r.duration === 0) pif += contractVal;
-    else financed += contractVal;
-
-    programMap.set(r.program, (programMap.get(r.program) ?? 0) + contractVal);
+    programMap.set(r.program,    (programMap.get(r.program)    ?? 0) + contractVal);
     setterMap.set(r.setterName,  (setterMap.get(r.setterName)  ?? 0) + r.setterCommission);
     closerMap.set(r.closerName,  (closerMap.get(r.closerName)  ?? 0) + r.closerCommission);
     totalEarnings += r.earnings;
   }
 
   return {
-    connected:         true,
-    totalContracted:   round2(contracted),
-    dealsClosed:       rows.length,
-    avgDealValue:      rows.length > 0 ? round2(contracted / rows.length) : 0,
-    highTicketRevenue: round2(highTicket),
-    lowTicketRevenue:  round2(lowTicket),
-    pifContracted:     round2(pif),
+    connected:          true,
+    pifContracted:      round2(pif),
     financedContracted: round2(financed),
-    revenueByProgram:  Array.from(programMap.entries())
+    revenueByProgram:   Array.from(programMap.entries())
       .map(([program, amount]) => ({ program, contracted: round2(amount) }))
       .sort((a, b) => b.contracted - a.contracted),
-    setterCommissions: Array.from(setterMap.entries())
+    setterCommissions:  Array.from(setterMap.entries())
       .map(([name, amount]) => ({ name, amount: round2(amount) }))
       .sort((a, b) => b.amount - a.amount),
-    closerCommissions: Array.from(closerMap.entries())
+    closerCommissions:  Array.from(closerMap.entries())
       .map(([name, amount]) => ({ name, amount: round2(amount) }))
       .sort((a, b) => b.amount - a.amount),
-    totalEarnings: round2(totalEarnings),
+    totalEarnings:      round2(totalEarnings),
   };
 }
 
-// ── Google Sheets (payment log — cash collected tracking) ─────────────────────
+// ── Google Sheets helpers ─────────────────────────────────────────────────────
 
-type SheetRow = {
+function parseGvizDate(v: unknown): Date | null {
+  if (!v || typeof v !== "string") return null;
+  const m = v.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (!m) return null;
+  return new Date(parseInt(m[1]), parseInt(m[2]), parseInt(m[3]));
+}
+
+/** Parses a gviz datetime value into a human-readable string */
+function parseGvizDatetime(v: unknown): string {
+  if (!v || typeof v !== "string") return String(v ?? "");
+  const m = v.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+)/);
+  if (m) {
+    const d = new Date(
+      parseInt(m[1]), parseInt(m[2]), parseInt(m[3]),
+      parseInt(m[4]), parseInt(m[5])
+    );
+    return d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+  const plain = parseGvizDate(v);
+  return plain ? plain.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : String(v);
+}
+
+async function fetchGviz(gid: string): Promise<unknown[][] | null> {
+  try {
+    const url  = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json&gid=${gid}`;
+    const res  = await fetch(url, { next: { revalidate: 0 } });
+    if (!res.ok) return null;
+    const text = await res.text();
+    const json = text
+      .replace(/^\/\*O_o\*\/\s*google\.visualization\.Query\.setResponse\(/, "")
+      .replace(/\);\s*$/, "");
+    const data = JSON.parse(json) as {
+      table?: { rows?: Array<{ c?: Array<{ v?: unknown; f?: string } | null> }> }
+    };
+    return (data.table?.rows ?? []).map(row =>
+      (row.c ?? []).map(cell => cell?.v ?? null)
+    );
+  } catch (e) {
+    console.error(`Sheets gid=${gid} error:`, (e as Error).message);
+    return null;
+  }
+}
+
+// ── Sheet: Deals (payment log rows) ──────────────────────────────────────────
+
+type DealRow = {
   dateClosed:       Date;
   paymentDate:      Date;
   leadName:         string;
@@ -173,105 +205,208 @@ type SheetRow = {
   earnings:         number;
 };
 
-function parseGvizDate(v: unknown): Date | null {
-  if (!v || typeof v !== "string") return null;
-  const m = v.match(/Date\((\d+),(\d+),(\d+)\)/);
-  if (!m) return null;
-  return new Date(parseInt(m[1]), parseInt(m[2]), parseInt(m[3]));
+async function fetchDealRows(gid = GID_DEALS): Promise<DealRow[] | null> {
+  const raw = await fetchGviz(gid);
+  if (!raw) return null;
+  const rows: DealRow[] = [];
+  for (const c of raw) {
+    const dateClosed  = parseGvizDate(c[0]);
+    const paymentDate = parseGvizDate(c[1]);
+    if (!dateClosed || !paymentDate) continue;
+    const cashCollected = (c[10] as number) ?? 0;
+    if (cashCollected <= 0) continue;
+    rows.push({
+      dateClosed,
+      paymentDate,
+      leadName:         ((c[2]  as string) ?? "").trim(),
+      setterName:       ((c[3]  as string) ?? "").trim(),
+      setterCommission:  (c[4]  as number) ?? 0,
+      closerName:       ((c[5]  as string) ?? "").trim(),
+      closerCommission:  (c[6]  as number) ?? 0,
+      program:          ((c[7]  as string) ?? "").trim(),
+      cashCollected,
+      earnings:          (c[11] as number) ?? 0,
+    });
+  }
+  return rows;
 }
 
-async function fetchSheetRows(): Promise<SheetRow[] | null> {
-  try {
-    const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
-    const res = await fetch(url, { next: { revalidate: 0 } });
-    if (!res.ok) return null;
-    const text = await res.text();
-    const json = text
-      .replace(/^\/\*O_o\*\/\s*google\.visualization\.Query\.setResponse\(/, "")
-      .replace(/\);\s*$/, "");
-    const data = JSON.parse(json);
-    const rows: SheetRow[] = [];
-    for (const row of data.table?.rows ?? []) {
-      const c = (row.c ?? []) as Array<{ v?: unknown } | null>;
-      const get = (i: number) => c[i]?.v ?? null;
-      const dateClosed  = parseGvizDate(get(0));
-      const paymentDate = parseGvizDate(get(1));
-      if (!dateClosed || !paymentDate) continue;
-      const cashCollected = (get(10) as number) ?? 0;
-      if (cashCollected <= 0) continue;
-      rows.push({
-        dateClosed,
-        paymentDate,
-        leadName:         ((get(2) as string) ?? "").trim(),
-        setterName:       ((get(3) as string) ?? "").trim(),
-        setterCommission: (get(4) as number) ?? 0,
-        closerName:       ((get(5) as string) ?? "").trim(),
-        closerCommission: (get(6) as number) ?? 0,
-        program:          ((get(7) as string) ?? "").trim(),
-        cashCollected,
-        earnings:         (get(11) as number) ?? 0,
-      });
-    }
-    return rows;
-  } catch (e) {
-    console.error("Sheets error:", (e as Error).message);
-    return null;
-  }
-}
+export type EodRow = {
+  timestamp:   string;
+  name:        string;
+  contacted:   number;
+  callsBooked: number;
+  liveCalls:   number;
+  noShows:     number;
+};
+
+export type CloserEodRow = {
+  timestamp:      string;
+  name:           string;
+  callsScheduled: number;
+  noShows:        number;
+  reschedules:    number;
+  cancellations:  number;
+  dealsClosed:    number;
+};
 
 export type SheetsData =
   | {
       connected: true;
-      cashCollected:       number;   // payments already received (paymentDate ≤ today)
-      revenueThisMonth:    number;   // payments due/made in current calendar month
-      setterCommPaid:      CommissionLine[];
-      closerCommPaid:      CommissionLine[];
-      totalNetEarnings:    number;
+
+      // ── All-time metrics (NOT filtered by date range) ──
+      /** Sum of ALL cashCollected rows in Deals sheet (= total contract value) */
+      totalContracted:    number;
+      /** Sum where paymentDate <= today (actual cash received) */
+      cashCollected:      number;
+      /** Sum where paymentDate > today (scheduled future payments) */
+      uncollectedRevenue: number;
+      /** Payments due in the current calendar month */
+      revenueThisMonth:   number;
+
+      // ── Date-range filtered ──
+      /** Distinct lead names where dateClosed falls within selected range */
+      dealsClosed:        number;
+      /** Average total contract value per deal closed in range */
+      avgDealValue:       number;
+      /** From Voided Payments tab, filtered by range */
+      churnedRevenue:     number;
+      /** cashCollected − churnedRevenue */
+      netCashCollected:   number;
+      setterCommPaid:     CommissionLine[];
+      closerCommPaid:     CommissionLine[];
+      totalNetEarnings:   number;
+      voidedLeads:        { leadName: string; amount: number }[];
+
+      // ── EOD reports ──
+      setterEod:          { submitted: boolean; rows: EodRow[] };
+      closerEod:          { submitted: boolean; rows: CloserEodRow[] };
+
+      // ── Subscriptions ──
+      subscriptions:      { tool: string; monthlyCost: number }[];
+      totalMonthlyOverhead: number;
     }
   | { connected: false; error: string };
 
 export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsData> {
-  const allRows = await fetchSheetRows();
-  if (!allRows) return { connected: false, error: "Failed to fetch sheet" };
+  const [allDealRows, voidedRows, setterEodRaw, closerEodRaw, subRaw] = await Promise.all([
+    fetchDealRows(GID_DEALS),
+    fetchDealRows(GID_VOIDED),
+    fetchGviz(GID_SETTER_EOD),
+    fetchGviz(GID_CLOSER_EOD),
+    fetchGviz(GID_SUBSCRIPTIONS),
+  ]);
 
-  const today       = new Date(); today.setHours(23, 59, 59, 999);
-  const monthStart  = startOfMonth();
-  const monthEnd    = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59);
+  if (!allDealRows) return { connected: false, error: "Failed to fetch Deals sheet" };
 
-  // Rows for deals closed in range where payment has already been made
-  const rangeRows = allRows.filter(r => r.dateClosed >= start && r.dateClosed <= end);
-  const paidRows  = rangeRows.filter(r => r.paymentDate <= today);
+  const today      = new Date(); today.setHours(23, 59, 59, 999);
+  const monthStart = startOfMonth();
+  const monthEnd   = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59);
 
-  let cashCollected  = 0;
-  let netEarnings    = 0;
-  const setterMap    = new Map<string, number>();
-  const closerMap    = new Map<string, number>();
+  // ── All-time metrics ────────────────────────────────────────────────────────
+  const totalContracted    = round2(allDealRows.reduce((s, r) => s + r.cashCollected, 0));
+  const cashCollected      = round2(allDealRows.filter(r => r.paymentDate <= today).reduce((s, r) => s + r.cashCollected, 0));
+  const uncollectedRevenue = round2(allDealRows.filter(r => r.paymentDate > today).reduce((s, r) => s + r.cashCollected, 0));
+  const revenueThisMonth   = round2(allDealRows.filter(r => r.paymentDate >= monthStart && r.paymentDate <= monthEnd).reduce((s, r) => s + r.cashCollected, 0));
 
+  // ── Date-range filtered ─────────────────────────────────────────────────────
+  const dealsInRange  = allDealRows.filter(r => r.dateClosed >= start && r.dateClosed <= end);
+  const distinctLeads = new Set(dealsInRange.map(r => r.leadName).filter(Boolean));
+  const dealsClosed   = distinctLeads.size;
+
+  // Avg deal value = total of all installments for leads signed in range ÷ deals
+  const totalValueForLeads = allDealRows
+    .filter(r => distinctLeads.has(r.leadName))
+    .reduce((s, r) => s + r.cashCollected, 0);
+  const avgDealValue = dealsClosed > 0 ? round2(totalValueForLeads / dealsClosed) : 0;
+
+  // Commissions paid (deals signed in range that have been paid already)
+  const paidRows = dealsInRange.filter(r => r.paymentDate <= today);
+  let netEarnings = 0;
+  const setterMap = new Map<string, number>();
+  const closerMap = new Map<string, number>();
   for (const r of paidRows) {
-    cashCollected  += r.cashCollected;
-    netEarnings    += r.earnings;
+    netEarnings += r.earnings;
     setterMap.set(r.setterName, (setterMap.get(r.setterName) ?? 0) + r.setterCommission);
     closerMap.set(r.closerName, (closerMap.get(r.closerName) ?? 0) + r.closerCommission);
   }
 
-  // Revenue this month = all deals (any date), payments in current calendar month
-  const revenueThisMonth = allRows
-    .filter(r => r.paymentDate >= monthStart && r.paymentDate <= monthEnd)
-    .reduce((s, r) => s + r.cashCollected, 0);
+  // Voided / churned
+  const voidedInRange  = (voidedRows ?? []).filter(r => r.dateClosed >= start && r.dateClosed <= end);
+  const churnedRevenue = round2(voidedInRange.reduce((s, r) => s + r.cashCollected, 0));
+  const voidedByLead   = new Map<string, number>();
+  for (const r of voidedInRange)
+    voidedByLead.set(r.leadName, (voidedByLead.get(r.leadName) ?? 0) + r.cashCollected);
+  const voidedLeads = Array.from(voidedByLead.entries())
+    .map(([leadName, amount]) => ({ leadName, amount: round2(amount) }))
+    .sort((a, b) => b.amount - a.amount);
+
+  // EOD — setter
+  const setterEodRows: EodRow[] = [];
+  for (const c of (setterEodRaw ?? []).slice(1)) {
+    if (!c[0]) continue;
+    setterEodRows.push({
+      timestamp:   parseGvizDatetime(c[0]),
+      name:        String(c[1] ?? ""),
+      contacted:   Number(c[2] ?? 0),
+      callsBooked: Number(c[3] ?? 0),
+      liveCalls:   Number(c[4] ?? 0),
+      noShows:     Number(c[5] ?? 0),
+    });
+  }
+
+  // EOD — closer
+  const closerEodRows: CloserEodRow[] = [];
+  for (const c of (closerEodRaw ?? []).slice(1)) {
+    if (!c[0]) continue;
+    closerEodRows.push({
+      timestamp:      parseGvizDatetime(c[0]),
+      name:           String(c[1] ?? ""),
+      callsScheduled: Number(c[2] ?? 0),
+      noShows:        Number(c[3] ?? 0),
+      reschedules:    Number(c[4] ?? 0),
+      cancellations:  Number(c[5] ?? 0),
+      dealsClosed:    Number(c[6] ?? 0),
+    });
+  }
+
+  // Subscriptions — last entry per tool = most recent price
+  const subMap = new Map<string, number>();
+  for (const c of (subRaw ?? [])) {
+    const tool = String(c[1] ?? "").trim();
+    const cost = Number(c[2] ?? 0);
+    if (tool && cost > 0) subMap.set(tool, cost);
+  }
+  const subscriptions = Array.from(subMap.entries())
+    .map(([tool, monthlyCost]) => ({ tool, monthlyCost: round2(monthlyCost) }))
+    .sort((a, b) => b.monthlyCost - a.monthlyCost);
+  const totalMonthlyOverhead = round2(subscriptions.reduce((s, x) => s + x.monthlyCost, 0));
 
   return {
-    connected:         true,
-    cashCollected:     round2(cashCollected),
-    revenueThisMonth:  round2(revenueThisMonth),
-    setterCommPaid:    Array.from(setterMap.entries()).map(([name, amount]) => ({ name, amount: round2(amount) })).sort((a,b) => b.amount - a.amount),
-    closerCommPaid:    Array.from(closerMap.entries()).map(([name, amount]) => ({ name, amount: round2(amount) })).sort((a,b) => b.amount - a.amount),
-    totalNetEarnings:  round2(netEarnings),
+    connected:            true,
+    totalContracted,
+    cashCollected,
+    uncollectedRevenue,
+    revenueThisMonth,
+    dealsClosed,
+    avgDealValue,
+    churnedRevenue,
+    netCashCollected:     round2(cashCollected - churnedRevenue),
+    setterCommPaid:       Array.from(setterMap.entries()).map(([name, amount]) => ({ name, amount: round2(amount) })).sort((a,b) => b.amount - a.amount),
+    closerCommPaid:       Array.from(closerMap.entries()).map(([name, amount]) => ({ name, amount: round2(amount) })).sort((a,b) => b.amount - a.amount),
+    totalNetEarnings:     round2(netEarnings),
+    voidedLeads,
+    setterEod:  { submitted: setterEodRows.length  > 0, rows: setterEodRows  },
+    closerEod:  { submitted: closerEodRows.length  > 0, rows: closerEodRows  },
+    subscriptions,
+    totalMonthlyOverhead,
   };
 }
 
 // ── Calendly ──────────────────────────────────────────────────────────────────
 
 export type CalendlyData = {
+  /** Active (non-cancelled, non-rescheduled) calls booked in range */
   bookedInRange:    number;
   cancelledInRange: number;
   showRate:         number;
@@ -285,14 +420,16 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
     const max     = end.toISOString();
     const headers = { Authorization: "Bearer " + CALENDLY_TOKEN };
     const [activeRes, cancelRes] = await Promise.all([
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`, { headers }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`,   { headers }),
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=canceled&count=100`, { headers }),
     ]);
-    const active    = ((await activeRes.json()).collection    ?? []) as unknown[];
-    const cancelled = ((await cancelRes.json()).collection    ?? []) as Array<{ cancellation?: { reason?: string } }>;
+    const active    = ((await activeRes.json()).collection  ?? []) as unknown[];
+    const cancelled = ((await cancelRes.json()).collection  ?? []) as Array<{ cancellation?: { reason?: string } }>;
+
+    // Only count ACTIVE calls as "booked" — cancelled/rescheduled originals don't count
     const total = active.length + cancelled.length;
     return {
-      bookedInRange:    total,
+      bookedInRange:    active.length,
       cancelledInRange: cancelled.length,
       showRate: total > 0 ? Math.round((active.length / total) * 100) : 0,
       cancelReasons: cancelled
@@ -341,10 +478,11 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
   }
 }
 
-// ── Whop ──────────────────────────────────────────────────────────────────────
+// ── Whop (low-ticket / community) ────────────────────────────────────────────
 
 export type WhopData = {
   activeMemberCount:   number;
+  /** Monthly recurring revenue from Whop (low-ticket community) */
   mrr:                 number;
   newMembersThisMonth: number;
   revenueToday:        number;
@@ -354,14 +492,14 @@ export type WhopData = {
 async function fetchWhopData(): Promise<WhopData | null> {
   try {
     const headers    = { Authorization: "Bearer " + WHOP_API_KEY };
-    const monthStart = Math.floor(startOfMonth().getTime() / 1000);
-    const todayStart = Math.floor(startOfToday().getTime() / 1000);
+    const monthStart = Math.floor(startOfMonth().getTime()  / 1000);
+    const todayStart = Math.floor(startOfToday().getTime()  / 1000);
     const [membRes, payRes] = await Promise.all([
-      fetch("https://api.whop.com/api/v2/memberships?status=active&limit=1", { headers }),
-      fetch("https://api.whop.com/api/v2/payments?limit=100", { headers }),
+      fetch("https://api.whop.com/api/v2/memberships?status=active&limit=1",  { headers }),
+      fetch("https://api.whop.com/api/v2/payments?limit=100",                  { headers }),
     ]);
     const membData = await membRes.json() as { pagination?: { total_count?: number } };
-    const payments = ((await payRes.json()).data ?? []) as Array<{
+    const payments  = ((await payRes.json()).data ?? []) as Array<{
       status: string; paid_at: number; final_amount: number;
       billing_reason: string; payments_failed: number;
     }>;
@@ -387,10 +525,8 @@ export type DashboardData = {
   calendly:       CalendlyData | null;
   typeform:       TypeformData | null;
   whop:           WhopData | null;
-  // Computed
-  uncollected:    number | null;   // airtable.contracted - sheets.cashCollected
-  conversionRate: number | null;
-  closeRate:      number | null;
+  conversionRate: number | null;   // applications → calls booked
+  closeRate:      number | null;   // calls booked → deals closed
   lastUpdated:    string;
 };
 
@@ -403,21 +539,15 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
     fetchWhopData(),
   ]);
 
-  const airtable = at.status    === "fulfilled" ? at.value    : ({ connected: false, error: "rejected" } as AirtableData);
-  const sheets   = sh.status    === "fulfilled" ? sh.value    : ({ connected: false, error: "rejected" } as SheetsData);
-  const calendly = cal.status   === "fulfilled" ? cal.value   : null;
-  const typeform = tf.status    === "fulfilled" ? tf.value    : null;
-  const whopVal  = whop.status  === "fulfilled" ? whop.value  : null;
-
-  const contracted = airtable.connected ? airtable.totalContracted : null;
-  const collected  = sheets.connected   ? sheets.cashCollected     : null;
-  const uncollected = contracted !== null && collected !== null
-    ? round2(contracted - collected)
-    : null;
+  const airtable = at.status   === "fulfilled" ? at.value   : ({ connected: false, error: "rejected" } as AirtableData);
+  const sheets   = sh.status   === "fulfilled" ? sh.value   : ({ connected: false, error: "rejected" } as SheetsData);
+  const calendly = cal.status  === "fulfilled" ? cal.value  : null;
+  const typeform = tf.status   === "fulfilled" ? tf.value   : null;
+  const whopVal  = whop.status === "fulfilled" ? whop.value : null;
 
   const apps   = typeform?.totalInRange ?? 0;
   const booked = calendly?.bookedInRange ?? 0;
-  const closed = airtable.connected ? airtable.dealsClosed : 0;
+  const closed = sheets.connected ? sheets.dealsClosed : 0;
 
   return {
     airtable,
@@ -425,7 +555,6 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
     calendly,
     typeform,
     whop:           whopVal,
-    uncollected,
     conversionRate: apps   > 0 ? Math.round((booked / apps)   * 100) : null,
     closeRate:      booked > 0 ? Math.round((closed / booked) * 100) : null,
     lastUpdated:    new Date().toISOString(),
