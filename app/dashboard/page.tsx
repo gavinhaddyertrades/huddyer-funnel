@@ -24,145 +24,6 @@ const NAV: { key: PageKey; label: string }[] = [
   { key: "overhead",    label: "Overhead"    },
 ];
 
-// ── Date range picker ─────────────────────────────────────────────────────────
-const SHORT_MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
-const DOW_LABELS   = ["S","M","T","W","T","F","S"];
-
-const RANGE_PRESETS = [
-  { label: "Today",             fn: (): {start:Date;end:Date} => { const d=new Date(); d.setHours(0,0,0,0); const e=new Date(); e.setHours(23,59,59,999); return {start:d,end:e}; } },
-  { label: "This week",         fn: (): {start:Date;end:Date} => { const n=new Date(); const d=new Date(n); d.setDate(n.getDate()-n.getDay()); d.setHours(0,0,0,0); const e=new Date(); e.setHours(23,59,59,999); return {start:d,end:e}; } },
-  { label: "This month",        fn: (): {start:Date;end:Date} => { const n=new Date(); const e=new Date(); e.setHours(23,59,59,999); return {start:new Date(n.getFullYear(),n.getMonth(),1),end:e}; } },
-  { label: "Last month",        fn: (): {start:Date;end:Date} => { const n=new Date(); const m=n.getMonth()-1<0?11:n.getMonth()-1; const y=n.getMonth()-1<0?n.getFullYear()-1:n.getFullYear(); return {start:new Date(y,m,1),end:new Date(y,m+1,0,23,59,59)}; } },
-  { label: "This quarter",      fn: (): {start:Date;end:Date} => { const n=new Date(); const q=Math.floor(n.getMonth()/3); const e=new Date(); e.setHours(23,59,59,999); return {start:new Date(n.getFullYear(),q*3,1),end:e}; } },
-  { label: "This year to date", fn: (): {start:Date;end:Date} => { const n=new Date(); const e=new Date(); e.setHours(23,59,59,999); return {start:new Date(n.getFullYear(),0,1),end:e}; } },
-  { label: "Last year",         fn: (): {start:Date;end:Date} => { const y=new Date().getFullYear()-1; return {start:new Date(y,0,1),end:new Date(y,11,31,23,59,59)}; } },
-  { label: "All time",          fn: (): {start:Date;end:Date} => { const e=new Date(); e.setHours(23,59,59,999); return {start:new Date("2020-01-01"),end:e}; } },
-];
-
-function sameDay(a:Date,b:Date){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
-function fmtRangeLabel(s:Date,e:Date){const o:Intl.DateTimeFormatOptions={month:"short",day:"numeric",year:"numeric"};return `${s.toLocaleDateString("en-US",o)} – ${e.toLocaleDateString("en-US",o)}`;}
-function fmtRangeLabelShort(s:Date,e:Date){const o:Intl.DateTimeFormatOptions={month:"short",day:"numeric"};return `${s.toLocaleDateString("en-US",o)} – ${e.toLocaleDateString("en-US",o)}`;}
-
-function CalGrid({year,month,label,rStart,rEnd,hover,onClick,onHover,onPrev,onNext}:{
-  year:number;month:number;label:string;
-  rStart:Date|null;rEnd:Date|null;hover:Date|null;
-  onClick:(d:Date)=>void;onHover:(d:Date|null)=>void;
-  onPrev:()=>void;onNext:()=>void;
-}) {
-  const today=new Date();
-  const daysInMonth=new Date(year,month+1,0).getDate();
-  const firstDow=new Date(year,month,1).getDay();
-  const cells:(Date|null)[]=Array(firstDow).fill(null);
-  for(let d=1;d<=daysInMonth;d++) cells.push(new Date(year,month,d));
-  const effEnd=rStart&&!rEnd&&hover?hover:rEnd;
-  return (
-    <div style={{minWidth:204}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-        <button onClick={onPrev} style={{background:"none",border:"none",color:"#666",cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 6px"}}>‹</button>
-        <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:600,color:"#F2EDE6"}}>{SHORT_MONTHS[month]} {year}</span>
-        <button onClick={onNext} style={{background:"none",border:"none",color:"#666",cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 6px"}}>›</button>
-      </div>
-      <p style={{fontFamily:"var(--font-body)",fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"#444",textAlign:"center",marginBottom:6}}>{label}</p>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(7,28px)",gap:1,marginBottom:3}}>
-        {DOW_LABELS.map((d,i)=><span key={i} style={{fontFamily:"var(--font-body)",fontSize:10,color:"#444",textAlign:"center",display:"block",height:20,lineHeight:"20px"}}>{d}</span>)}
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(7,28px)",gap:1}}>
-        {cells.map((d,i)=>{
-          if(!d) return <div key={i} style={{width:28,height:28}}/>;
-          const isToday=sameDay(d,today);
-          const isSt=rStart&&sameDay(d,rStart);
-          const isEn=effEnd&&sameDay(d,effEnd);
-          const inR=rStart&&effEnd&&d>rStart&&d<effEnd;
-          const sel=isSt||isEn;
-          return (
-            <button key={i} onClick={()=>onClick(d)} onMouseEnter={()=>onHover(d)} onMouseLeave={()=>onHover(null)}
-              style={{width:28,height:28,borderRadius:sel?"50%":inR?"0":"50%",background:sel?"#1976D2":inR?"rgba(25,118,210,0.18)":"transparent",color:sel?"white":isToday?"#1976D2":"#CCC",fontWeight:isToday?700:400,border:"none",cursor:"pointer",fontFamily:"var(--font-body)",fontSize:12,outline:"none"}}
-            >{d.getDate()}</button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function DateRangePicker({value,onChange}:{value:{start:Date;end:Date};onChange:(r:{start:Date;end:Date})=>void;}) {
-  const mobile=useMobile();
-  const [open,setOpen]=useState(false);
-  const [tStart,setTStart]=useState<Date|null>(value.start);
-  const [tEnd,setTEnd]=useState<Date|null>(value.end);
-  const [hover,setHover]=useState<Date|null>(null);
-  const [preset,setPreset]=useState("All time");
-  const [lYear,setLYear]=useState(value.start.getFullYear());
-  const [lMonth,setLMonth]=useState(value.start.getMonth());
-  const wrapRef=useRef<HTMLDivElement>(null);
-  const rYear=lMonth===11?lYear+1:lYear;
-  const rMonth=lMonth===11?0:lMonth+1;
-  useEffect(()=>{
-    const h=(e:MouseEvent)=>{if(wrapRef.current&&!wrapRef.current.contains(e.target as Node))setOpen(false);};
-    if(open) document.addEventListener("mousedown",h);
-    return()=>document.removeEventListener("mousedown",h);
-  },[open]);
-  const handleClick=(d:Date)=>{
-    if(!tStart||(tStart&&tEnd)){setTStart(d);setTEnd(null);}
-    else{if(d<tStart){setTStart(d);setTEnd(tStart);}else{setTEnd(d);}}
-    setPreset("Custom");
-  };
-  const handlePreset=(p:typeof RANGE_PRESETS[0])=>{
-    const{start,end}=p.fn();setTStart(start);setTEnd(end);setPreset(p.label);
-    setLYear(start.getFullYear());setLMonth(start.getMonth());
-  };
-  const prevM=()=>{if(lMonth===0){setLYear(y=>y-1);setLMonth(11);}else setLMonth(m=>m-1);};
-  const nextM=()=>{if(lMonth===11){setLYear(y=>y+1);setLMonth(0);}else setLMonth(m=>m+1);};
-  const handleApply=()=>{
-    if(tStart&&tEnd){const s=new Date(tStart);s.setHours(0,0,0,0);const e=new Date(tEnd);e.setHours(23,59,59,999);onChange({start:s,end:e});}
-    setOpen(false);
-  };
-  const dropdownStyle:React.CSSProperties=mobile?{
-    position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:2000,
-    background:"#161616",border:"none",borderRadius:0,
-    padding:"16px",boxShadow:"none",
-    display:"flex",flexDirection:"column",overflowY:"auto",
-  }:{
-    position:"absolute",top:"calc(100% + 6px)",right:0,zIndex:1000,
-    background:"#161616",border:"1px solid rgba(255,255,255,0.1)",
-    borderRadius:12,padding:"16px 18px",boxShadow:"0 12px 40px rgba(0,0,0,0.7)",
-    minWidth:500,
-  };
-  return (
-    <div ref={wrapRef} style={{position:"relative",display:"inline-block"}}>
-      <button onClick={()=>{setOpen(o=>!o);setTStart(value.start);setTEnd(value.end);}}
-        style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 12px",background:"#161616",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,color:"#F2EDE6",fontFamily:"var(--font-body)",fontSize:mobile?11:13,cursor:"pointer",outline:"none",whiteSpace:"nowrap"}}>
-        {mobile?fmtRangeLabelShort(value.start,value.end):fmtRangeLabel(value.start,value.end)}
-        <span style={{color:"#555",fontSize:9,marginLeft:2}}>▼</span>
-      </button>
-      {open&&(
-        <div style={dropdownStyle}>
-          {mobile&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-            <span style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",fontWeight:600}}>Select Date Range</span>
-            <button onClick={()=>setOpen(false)} style={{background:"none",border:"none",color:"#888",fontSize:22,cursor:"pointer",lineHeight:1}}>×</button>
-          </div>}
-          <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
-            {RANGE_PRESETS.map(p=>(
-              <button key={p.label} onClick={()=>handlePreset(p)} style={{fontFamily:"var(--font-body)",fontSize:11,padding:"4px 10px",borderRadius:6,background:preset===p.label?"rgba(201,168,76,0.15)":"rgba(255,255,255,0.04)",border:`1px solid ${preset===p.label?"rgba(201,168,76,0.4)":"rgba(255,255,255,0.07)"}`,color:preset===p.label?"#C9A84C":"#555",cursor:"pointer",whiteSpace:"nowrap"}}>{p.label}</button>
-            ))}
-          </div>
-          <div style={{display:"flex",gap:16,marginBottom:14,alignItems:"flex-start",flexWrap:mobile?"wrap":"nowrap",justifyContent:"center"}}>
-            <CalGrid year={lYear} month={lMonth} label="Start Date" rStart={tStart} rEnd={tEnd} hover={hover} onClick={handleClick} onHover={setHover} onPrev={prevM} onNext={nextM}/>
-            <div style={{width:1,background:"rgba(255,255,255,0.07)",alignSelf:"stretch",display:mobile?"none":"block"}}/>
-            <CalGrid year={rYear} month={rMonth} label="End Date" rStart={tStart} rEnd={tEnd} hover={hover} onClick={handleClick} onHover={setHover} onPrev={prevM} onNext={nextM}/>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:12,marginTop:"auto"}}>
-            <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#555"}}>
-              {tStart&&tEnd?fmtRangeLabel(tStart,tEnd):tStart?`${tStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} → select end`:"Select start date"}
-            </span>
-            <button onClick={handleApply} disabled={!tStart||!tEnd} style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:600,padding:"8px 20px",borderRadius:7,background:tStart&&tEnd?"#161616":"rgba(255,255,255,0.04)",border:`1px solid ${tStart&&tEnd?"#C9A84C":"rgba(255,255,255,0.08)"}`,color:tStart&&tEnd?"#C9A84C":"#555",cursor:tStart&&tEnd?"pointer":"not-allowed"}}>Apply</button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Atoms ─────────────────────────────────────────────────────────────────────
 function GoldDivider(){return <div style={{height:1,background:"linear-gradient(90deg,rgba(201,168,76,0.3),transparent)",margin:"0 0 28px"}}/>;}
 function SectionLabel({children}:{children:React.ReactNode}){return <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"#444",marginBottom:14}}>{children}</p>;}
@@ -412,28 +273,28 @@ function DashboardView({data}:{data:DashboardData}){
       <section>
         <SectionLabel>Revenue Overview</SectionLabel>
         <div style={{display:"grid",gridTemplateColumns:grid1,gap:10}}>
-          <KpiCard label="Total Contracted"  value={sh?fmt$(sh.totalContracted)       :"—"} accent sub="All planned payments"/>
-          <KpiCard label="Cash Collected"    value={sh?fmt$(sh.cashCollected)          :"—"} green sub="Received up to today"/>
-          <KpiCard label="Uncollected Rev"   value={sh?fmt$(sh.uncollectedRevenue)     :"—"} sub="Future scheduled payments"/>
-          <KpiCard label="This Month"        value={sh?fmt$(sh.revenueThisMonth)       :"—"} sub="Due in current month"/>
-          <KpiCard label="High Ticket"       value={sh?fmt$(sh.totalContracted)        :"—"} accent sub="Deals sheet contracts"/>
-          <KpiCard label="MRR"  value={whop?fmt$(whop.mrr)               :"—"} sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
+          <KpiCard label="Total Contracted"  value={sh?fmt$(sh.combinedTotalContracted):"—"} accent sub="High ticket + low ticket"/>
+          <KpiCard label="Cash Collected"    value={sh?fmt$(sh.combinedCashCollected)  :"—"} green sub="HT + LT received to date"/>
+          <KpiCard label="Uncollected Rev"   value={sh?fmt$(sh.combinedUncollected)    :"—"} sub="Deals future installments"/>
+          <KpiCard label="This Month"        value={sh?fmt$(sh.revenueThisMonth)       :"—"} sub="High ticket due this month"/>
+          <KpiCard label="MRR"               value={whop?fmt$(whop.mrr)               :"—"} sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
+          <KpiCard label="Whop Today"        value={whop?fmt$(whop.revenueToday)       :"—"} green sub="Whop payments today"/>
           <KpiCard label="Churned Revenue"   value={sh?fmt$(sh.churnedRevenue)         :"—"} warn={!!sh&&sh.churnedRevenue>0} sub={sh&&sh.voidedLeads.length>0?`${sh.voidedLeads.length} voided`:undefined}/>
-          <KpiCard label="Net Collected"     value={sh?fmt$(sh.netCashCollected)       :"—"} green sub="Cash − churned"/>
+          <KpiCard label="Net Collected"     value={sh?fmt$(sh.combinedNetCollected)   :"—"} green sub="Cash collected − churned"/>
         </div>
       </section>
       <GoldDivider/>
       <section>
         <SectionLabel>Sales Performance</SectionLabel>
         <div style={{display:"grid",gridTemplateColumns:grid1,gap:10}}>
-          <KpiCard label="Deals Closed"    value={sh?.dealsClosed??"—"} accent sub="Distinct leads in range"/>
-          <KpiCard label="Avg Deal Value"  value={sh?fmt$(sh.avgDealValue):"—"}/>
-          <KpiCard label="Applications"    value={tf?.totalInRange??"—"} sub="Typeform"/>
-          <KpiCard label="Calls Booked"    value={cal?.bookedInRange??"—"} sub="Active Calendly calls"/>
+          <KpiCard label="Deals Closed"    value={sh?.dealsClosed??"—"} accent sub="All time"/>
+          <KpiCard label="Avg Deal Value"  value={sh?fmt$(sh.avgDealValue):"—"} sub="All time"/>
+          <KpiCard label="Applications"    value={tf?.totalInRange??"—"} sub="Typeform all time"/>
+          <KpiCard label="Calls Booked"    value={cal?.bookedInRange??"—"} sub="Calendly all time"/>
           <KpiCard label="Conversion Rate" value={data.conversionRate!==null?fmtPct(data.conversionRate):"—"} sub="Applications → Calls" accent={!!data.conversionRate&&data.conversionRate>=15} warn={data.conversionRate!==null&&data.conversionRate<8}/>
           <KpiCard label="Close Rate"      value={data.closeRate!==null?fmtPct(data.closeRate):"—"} sub="Calls → Deals" accent={!!data.closeRate&&data.closeRate>=30} warn={data.closeRate!==null&&data.closeRate<15}/>
           <KpiCard label="Show Rate"       value={cal?fmtPct(cal.showRate):"—"} sub={cal?`${cal.cancelledInRange} cancelled`:undefined} accent={!!cal&&cal.showRate>=70} warn={!!cal&&cal.showRate<50}/>
-          <KpiCard label="Whop Today"      value={whop?fmt$(whop.revenueToday):"—"} warn={!!whop?.failedPayments} sub={whop?.failedPayments?`${whop.failedPayments} failed`:undefined}/>
+          <KpiCard label="Failed Payments" value={whop?.failedPayments??"—"} warn={!!whop?.failedPayments} sub={whop?.failedPayments?"Whop — needs attention":"Whop — all clear"}/>
         </div>
       </section>
     </div>
@@ -443,11 +304,21 @@ function DashboardView({data}:{data:DashboardData}){
 function RevenueView({data}:{data:DashboardData}){
   const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
+  const whop=data.whop;
   const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
+  const kpiGrid=mobile?"repeat(2,1fr)":"repeat(auto-fill,minmax(150px,1fr))";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
+
+      {/* ── HIGH TICKET ── */}
       <section>
-        <SectionLabel>Revenue Breakdown</SectionLabel>
+        <SectionLabel>High Ticket Revenue</SectionLabel>
+        <div style={{display:"grid",gridTemplateColumns:kpiGrid,gap:10,marginBottom:14}}>
+          <KpiCard label="Total Contracted"  value={sh?fmt$(sh.totalContracted)   :"—"} accent sub="All planned payments"/>
+          <KpiCard label="Cash Collected"    value={sh?fmt$(sh.cashCollected)     :"—"} green sub="Received to date"/>
+          <KpiCard label="Uncollected"       value={sh?fmt$(sh.uncollectedRevenue):"—"} sub="Future scheduled"/>
+          <KpiCard label="This Month"        value={sh?fmt$(sh.revenueThisMonth)  :"—"} sub="Due in current month"/>
+        </div>
         <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>PIF vs Financed</p>
@@ -463,7 +334,30 @@ function RevenueView({data}:{data:DashboardData}){
           </Card>
         </div>
       </section>
-      {sh&&(sh.churnedRevenue>0||sh.voidedLeads.length>0)&&(
+
+      <GoldDivider/>
+
+      {/* ── LOW TICKET (WHOP) ── */}
+      <section>
+        <SectionLabel>Low Ticket Revenue (Whop)</SectionLabel>
+        {/* Sheet-based totals */}
+        <div style={{display:"grid",gridTemplateColumns:kpiGrid,gap:10,marginBottom:14}}>
+          <KpiCard label="All-Time Revenue"   value={sh?fmt$(sh.lowTicketRevenue)    :"—"} accent sub={sh?`${sh.lowTicketPaymentCount} payments`:undefined}/>
+          <KpiCard label="All-Time Earnings"  value={sh?fmt$(sh.lowTicketEarnings)   :"—"} green sub="Revana's cut (net of fees)"/>
+          <KpiCard label="This Month"         value={sh?fmt$(sh.lowTicketThisMonth)  :"—"} sub="Sheet payments this month"/>
+          <KpiCard label="Today (Sheet)"      value={sh?fmt$(sh.lowTicketToday)      :"—"} sub="Sheet payments today"/>
+        </div>
+        {/* Whop API live data */}
+        <div style={{display:"grid",gridTemplateColumns:kpiGrid,gap:10}}>
+          <KpiCard label="MRR"               value={whop?fmt$(whop.mrr)              :"—"} accent sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
+          <KpiCard label="New This Month"     value={whop?whop.newMembersThisMonth    :"—"} sub="New subscribers (Whop API)"/>
+          <KpiCard label="Today (Whop API)"   value={whop?fmt$(whop.revenueToday)     :"—"} green sub="Payments today"/>
+          <KpiCard label="Failed Payments"    value={whop?whop.failedPayments         :"—"} warn={!!whop?.failedPayments} sub={whop?.failedPayments?"Needs attention":"All clear"}/>
+        </div>
+      </section>
+
+      {/* ── CHURNED / VOIDED ── */}
+      {sh&&sh.churnedRevenue>0&&(
         <>
           <GoldDivider/>
           <section>
@@ -475,7 +369,7 @@ function RevenueView({data}:{data:DashboardData}){
                   <span style={{fontFamily:"var(--font-display)",fontSize:20,color:"#E05252"}}>{fmt$(sh.churnedRevenue)}</span>
                 </div>
                 {sh.voidedLeads.length===0?(
-                  <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",fontStyle:"italic"}}>No voids in selected range</p>
+                  <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",fontStyle:"italic"}}>No voids recorded</p>
                 ):(
                   <div style={{border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,overflow:"hidden"}}>
                     {sh.voidedLeads.map((v,i)=>(
@@ -800,7 +694,6 @@ function PasswordGate({ children }: { children: React.ReactNode }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 const PAGE_TITLES:Record<PageKey,string>={dashboard:"Dashboard",revenue:"Revenue",funnel:"Funnel",commissions:"Commissions",eod:"EOD Reports",overhead:"Overhead"};
-function toIso(d:Date){return d.toISOString().split("T")[0];}
 
 function DashboardPage(){
   const [data,       setData]       = useState<DashboardData|null>(null);
@@ -809,7 +702,6 @@ function DashboardPage(){
   const [refreshing, setRefreshing] = useState(false);
   const [page,       setPage]       = useState<PageKey>("dashboard");
   const [mobile,     setMobile]     = useState(false);
-  const [range,setRange]=useState<{start:Date;end:Date}>(()=>{const e=new Date();e.setHours(23,59,59,999);return{start:new Date("2020-01-01"),end:e};});
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
 
   // Detect mobile
@@ -820,16 +712,16 @@ function DashboardPage(){
     return()=>window.removeEventListener("resize",check);
   },[]);
 
-  const load=useCallback(async(silent=false,r=range)=>{
+  const load=useCallback(async(silent=false)=>{
     if(!silent)setLoading(true);else setRefreshing(true);
     setError(false);
     try{
-      const res=await fetch(`/api/dashboard?start=${toIso(r.start)}&end=${toIso(r.end)}`,{cache:"no-store"});
+      const res=await fetch("/api/dashboard",{cache:"no-store"});
       if(!res.ok) throw new Error();
       setData(await res.json());
     }catch{setError(true);}
     finally{setLoading(false);setRefreshing(false);}
-  },[range]);
+  },[]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(()=>{load();},[]);
@@ -839,7 +731,6 @@ function DashboardPage(){
     return()=>{if(timerRef.current) clearInterval(timerRef.current);};
   },[load]);
 
-  const handleRangeChange=(r:{start:Date;end:Date})=>{setRange(r);load(false,r);};
   const updated=data?.lastUpdated?new Date(data.lastUpdated).toLocaleTimeString():"—";
 
   return(
@@ -867,10 +758,7 @@ function DashboardPage(){
             <h2 style={{fontFamily:"var(--font-display)",fontSize:mobile?16:22,color:"#F2EDE6",margin:0,lineHeight:1}}>{PAGE_TITLES[page]}</h2>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               {refreshing&&<Spinner/>}
-              <DateRangePicker value={range} onChange={handleRangeChange}/>
-              {mobile&&(
-                <button onClick={()=>load(true)} disabled={refreshing} style={{padding:"6px 10px",borderRadius:6,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",color:"#555",fontSize:16,cursor:"pointer",lineHeight:1}}>↻</button>
-              )}
+              <button onClick={()=>load(true)} disabled={refreshing} style={{padding:"6px 10px",borderRadius:6,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",color:"#555",fontSize:16,cursor:"pointer",lineHeight:1}}>↻</button>
             </div>
           </div>
 

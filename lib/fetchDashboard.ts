@@ -6,12 +6,14 @@ const TYPEFORM_TOKEN    = process.env.TYPEFORM_TOKEN!;
 const TYPEFORM_FORM_ID  = process.env.TYPEFORM_FORM_ID!;
 const GOOGLE_SHEETS_ID  = process.env.GOOGLE_SHEETS_ID!;
 
-// Sheet tab GIDs (same spreadsheet)
-const GID_DEALS         = "0";
-const GID_SETTER_EOD    = "1563702048";
-const GID_CLOSER_EOD    = "510891243";
-const GID_VOIDED        = "918414758";
-const GID_SUBSCRIPTIONS = "193482418";
+// Sheet tab names (same spreadsheet)
+const SHEET_DEALS         = "Deals";
+const SHEET_SETTER_EOD    = "Setter EOD";
+const SHEET_CLOSER_EOD    = "Closer EOD";
+const SHEET_VOIDED        = "Voided Payments";
+const SHEET_SUBSCRIPTIONS = "Subscriptions";
+const SHEET_ADDONS        = "Add ons";
+const SHEET_LOW_TICKET    = "Low Ticket";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const startOfMonth = () => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; };
@@ -35,7 +37,8 @@ function startOfTodayUS(): Date {
 
 function round2(n: number) { return Math.round(n * 100) / 100; }
 
-// ── Google Sheets helpers ─────────────────────────────────────────────────────
+// ── Google Sheets gviz helpers ────────────────────────────────────────────────
+// Fetches by sheet name: ?sheet=NAME (no GID needed, no auth required).
 
 function parseGvizDate(v: unknown): Date | null {
   if (!v || typeof v !== "string") return null;
@@ -45,35 +48,35 @@ function parseGvizDate(v: unknown): Date | null {
 }
 
 function parseGvizDatetime(v: unknown): string {
-  if (!v || typeof v !== "string") return String(v ?? "");
+  if (!v) return String(v ?? "");
+  // gviz may return a pre-formatted string (e.g. "May 19, 2026 at 10:11 PM") for datetime cells
+  if (typeof v !== "string") return String(v);
   const m = v.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+)/);
   if (m) {
     const d = new Date(
       parseInt(m[1]), parseInt(m[2]), parseInt(m[3]),
       parseInt(m[4]), parseInt(m[5])
     );
-    return d.toLocaleString("en-US", { month:"short", day:"numeric", year:"numeric", hour:"numeric", minute:"2-digit" });
+    return d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
   }
   const plain = parseGvizDate(v);
   return plain
-    ? plain.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
-    : String(v);
+    ? plain.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : v; // already a readable string — return as-is
 }
 
-async function fetchGviz(gid: string): Promise<unknown[][] | null> {
+async function fetchGviz(sheet: string): Promise<unknown[][] | null> {
   try {
-    const id  = GOOGLE_SHEETS_ID;
-    const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&gid=${gid}`;
+    const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
-      console.error(`Sheets gid=${gid}: HTTP ${res.status}`);
+      console.error(`Sheets sheet="${sheet}": HTTP ${res.status}`);
       return null;
     }
     const text = await res.text();
-    // Strip the JSONP wrapper: /*O_o*/ google.visualization.Query.setResponse({...});
     const json = text
-      .replace(/^[^{]*/, "")   // remove everything before the first {
-      .replace(/\);\s*$/, ""); // remove trailing );
+      .replace(/^[^{]*/, "")   // strip /*O_o*/ google.visualization.Query.setResponse(
+      .replace(/\);\s*$/, ""); // strip trailing );
     const data = JSON.parse(json) as {
       table?: { rows?: Array<{ c?: Array<{ v?: unknown } | null> }> }
     };
@@ -81,7 +84,7 @@ async function fetchGviz(gid: string): Promise<unknown[][] | null> {
       (row.c ?? []).map(cell => cell?.v ?? null)
     );
   } catch (e) {
-    console.error(`Sheets gid=${gid} error:`, (e as Error).message);
+    console.error(`Sheets sheet="${sheet}" error:`, (e as Error).message);
     return null;
   }
 }
@@ -116,11 +119,11 @@ type DealRow = {
   earnings:         number;
 };
 
-async function fetchDealRows(gid = GID_DEALS): Promise<DealRow[] | null> {
-  const raw = await fetchGviz(gid);
+async function fetchDealRows(sheet = SHEET_DEALS): Promise<DealRow[] | null> {
+  const raw = await fetchGviz(sheet);
   if (!raw) return null;
   const rows: DealRow[] = [];
-  for (const c of raw) {
+  for (const c of raw) {  // gviz puts header in cols; every row here is data
     const dateClosed  = parseGvizDate(c[0]);
     const paymentDate = parseGvizDate(c[1]);
     if (!dateClosed || !paymentDate) continue;
@@ -146,6 +149,22 @@ async function fetchDealRows(gid = GID_DEALS): Promise<DealRow[] | null> {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type CommissionLine = { name: string; amount: number };
+
+export type AddOnRow = {
+  date:        Date;
+  description: string;
+  totalOwed:   number;
+};
+
+// Low Ticket sheet columns: Payment Date | Amount Paid | Earnings | Customer Email | Payment ID | Processor
+export type LowTicketRow = {
+  paymentDate:   Date;
+  amountPaid:    number;
+  earnings:      number;
+  customerEmail: string;
+  paymentId:     string;
+  processor:     string;
+};
 
 export type EodRow = {
   timestamp:   string;
@@ -202,6 +221,26 @@ export type SheetsData =
       setterEod:          { submitted: boolean; rows: EodRow[] };
       closerEod:          { submitted: boolean; rows: CloserEodRow[] };
 
+      // ── Add ons ──
+      addOns:             AddOnRow[];   // all rows (not range-filtered)
+      addOnTotal:         number;       // sum of totalOwed for all add-ons
+
+      // ── Low Ticket sheet ──
+      lowTicketRevenue:      number;    // all-time sum of amountPaid (paid rows only)
+      lowTicketEarnings:     number;    // all-time Revana earnings cut
+      lowTicketThisMonth:    number;    // amountPaid in current calendar month
+      lowTicketToday:        number;    // amountPaid today (US calendar date)
+      lowTicketPaymentCount: number;    // total count of paid transactions
+      lowTicketRows:         LowTicketRow[];
+
+      // ── Combined totals (High Ticket Deals + Low Ticket sheet) ──
+      // Total Contracted: all Deals rows + all LT rows (no date filter)
+      combinedTotalContracted: number;
+      // Cash Collected: Deals paymentDate ≤ today + LT paymentDate ≤ today
+      combinedCashCollected:   number;
+      combinedUncollected:     number;  // Deals future installments only (LT has none)
+      combinedNetCollected:    number;  // combinedCashCollected − churnedRevenue
+
       // ── Overhead ──
       subscriptions:      { tool: string; monthlyCost: number }[];
       totalMonthlyOverhead: number;
@@ -211,12 +250,14 @@ export type SheetsData =
 // ── Main fetch ────────────────────────────────────────────────────────────────
 
 export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsData> {
-  const [allDealRows, voidedRows, setterEodRaw, closerEodRaw, subRaw] = await Promise.all([
-    fetchDealRows(GID_DEALS),
-    fetchDealRows(GID_VOIDED),
-    fetchGviz(GID_SETTER_EOD),
-    fetchGviz(GID_CLOSER_EOD),
-    fetchGviz(GID_SUBSCRIPTIONS),
+  const [allDealRows, voidedRows, setterEodRaw, closerEodRaw, subRaw, addOnsRaw, lowTicketRaw] = await Promise.all([
+    fetchDealRows(SHEET_DEALS),
+    fetchDealRows(SHEET_VOIDED),
+    fetchGviz(SHEET_SETTER_EOD),
+    fetchGviz(SHEET_CLOSER_EOD),
+    fetchGviz(SHEET_SUBSCRIPTIONS),
+    fetchGviz(SHEET_ADDONS),
+    fetchGviz(SHEET_LOW_TICKET),
   ]);
 
   if (!allDealRows) return { connected: false, error: "Failed to fetch Deals sheet" };
@@ -290,7 +331,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     .map(([leadName, amount]) => ({ leadName, amount: round2(amount) }))
     .sort((a, b) => b.amount - a.amount);
 
-  // EOD — setter
+  // EOD — setter: gviz returns generic A/B/C cols → header text is ROW 0 → skip it
   const setterEodRows: EodRow[] = [];
   for (const c of (setterEodRaw ?? []).slice(1)) {
     if (!c[0]) continue;
@@ -304,7 +345,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     });
   }
 
-  // EOD — closer (gviz already strips the header row for this sheet)
+  // EOD — closer: gviz recognizes header row → ROW 0 is already data → no slice
   const closerEodRows: CloserEodRow[] = [];
   for (const c of (closerEodRaw ?? [])) {
     if (!c[0]) continue;
@@ -319,7 +360,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     });
   }
 
-  // Subscriptions
+  // Subscriptions: gviz recognizes header → ROW 0 is data → no slice
   const subMap = new Map<string, number>();
   for (const c of (subRaw ?? [])) {
     const tool = String(c[1] ?? "").trim();
@@ -329,6 +370,54 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
   const subscriptions = Array.from(subMap.entries())
     .map(([tool, monthlyCost]) => ({ tool, monthlyCost: round2(monthlyCost) }))
     .sort((a, b) => b.monthlyCost - a.monthlyCost);
+
+  // Add ons: gviz returns generic A/B/C cols → header text is ROW 0 → skip it
+  // Columns: 0=Date, 1=Description, 2=Total Owed
+  const addOns: AddOnRow[] = [];
+  for (const c of (addOnsRaw ?? []).slice(1)) {
+    const date = parseGvizDate(c[0]);
+    if (!date) continue;
+    const totalOwed = Number(c[2] ?? 0);
+    if (totalOwed <= 0) continue;
+    addOns.push({
+      date,
+      description: String(c[1] ?? "").trim(),
+      totalOwed,
+    });
+  }
+  const addOnTotal = round2(addOns.reduce((s, r) => s + r.totalOwed, 0));
+
+  // Low Ticket sheet: gviz recognizes header → ROW 0 is data → no slice needed
+  // Columns: 0=Payment Date, 1=Amount Paid, 2=Earnings, 3=Customer Email, 4=Payment ID, 5=Processor
+  const ltTodayStart = startOfTodayUS();
+  const lowTicketRows: LowTicketRow[] = [];
+  for (const c of (lowTicketRaw ?? [])) {
+    const paymentDate = parseGvizDate(c[0]);
+    if (!paymentDate) continue;
+    lowTicketRows.push({
+      paymentDate,
+      amountPaid:    Number(c[1] ?? 0),
+      earnings:      Number(c[2] ?? 0),
+      customerEmail: String(c[3] ?? "").trim(),
+      paymentId:     String(c[4] ?? "").trim(),
+      processor:     String(c[5] ?? "").trim(),
+    });
+  }
+  const ltPaidRows            = lowTicketRows.filter(r => r.amountPaid > 0);
+  const lowTicketRevenue      = round2(ltPaidRows.reduce((s, r) => s + r.amountPaid, 0));
+  const lowTicketEarnings     = round2(ltPaidRows.reduce((s, r) => s + r.earnings, 0));
+  const lowTicketThisMonth    = round2(ltPaidRows.filter(r => r.paymentDate >= monthStart).reduce((s, r) => s + r.amountPaid, 0));
+  const lowTicketToday        = round2(ltPaidRows.filter(r => r.paymentDate >= ltTodayStart).reduce((s, r) => s + r.amountPaid, 0));
+  const lowTicketPaymentCount = ltPaidRows.length;
+
+  // ── Combined totals ────────────────────────────────────────────────────────
+  // LT payments are always historical (no future-dated rows) so ltCollected ≈ lowTicketRevenue,
+  // but we filter properly for correctness.
+  const ltCollected            = round2(ltPaidRows.filter(r => r.paymentDate <= today).reduce((s, r) => s + r.amountPaid, 0));
+  const combinedTotalContracted = round2(totalContracted + lowTicketRevenue);
+  const combinedCashCollected   = round2(cashCollected   + ltCollected);
+  const combinedUncollected     = uncollectedRevenue; // LT has no future installments
+  const combinedNetCollected    = round2(combinedCashCollected - churnedRevenue);
 
   return {
     connected:            true,
@@ -353,6 +442,18 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     voidedLeads,
     setterEod:  { submitted: setterEodRows.length  > 0, rows: setterEodRows  },
     closerEod:  { submitted: closerEodRows.length  > 0, rows: closerEodRows  },
+    addOns,
+    addOnTotal,
+    lowTicketRevenue,
+    lowTicketEarnings,
+    lowTicketThisMonth,
+    lowTicketToday,
+    lowTicketPaymentCount,
+    lowTicketRows,
+    combinedTotalContracted,
+    combinedCashCollected,
+    combinedUncollected,
+    combinedNetCollected,
     subscriptions,
     totalMonthlyOverhead: round2(subscriptions.reduce((s, x) => s + x.monthlyCost, 0)),
   };
