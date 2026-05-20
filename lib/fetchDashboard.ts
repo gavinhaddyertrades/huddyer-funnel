@@ -398,7 +398,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     closerPaidMap.set(r.closerName, (closerPaidMap.get(r.closerName) ?? 0) + r.closerCommission);
   }
   // Names to exclude from setter/closer commission tables (owners, not sales reps)
-  const COMM_EXCLUDE = new Set(["hudson", "hudson shaffer", "gavin van jaarsveldt", "gavin"]);
+  const COMM_EXCLUDE = new Set(["hudson", "hudson shaffer"]);
   const toLines = (m: Map<string, number>) =>
     Array.from(m.entries())
       .filter(([n]) => n && !COMM_EXCLUDE.has(n.toLowerCase().trim()))
