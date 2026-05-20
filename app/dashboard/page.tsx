@@ -456,7 +456,12 @@ function DashboardView({data}:{data:DashboardData}){
     const start = new Date(c.startTime);
     const end   = c.endTime ? new Date(c.endTime) : null;
     const isLive = end && !c.cancelled ? _now >= start && _now < end : false;
-    if (isLive) return false; // LIVE calls stay in Upcoming
+    if (isLive) {
+      // If Close CRM already marked the lead Closed during the call → move to Previous
+      const info = leadInfoMap.get(c.inviteeEmail);
+      if (info && info !== "loading" && (info.statusLabel ?? "").toLowerCase().includes("closed")) return true;
+      return false; // still live and not yet closed
+    }
     if (c.rescheduled) return true; // rescheduled always goes to Previous
     if (c.cancelled) return true;   // cancelled/no-show always goes to Previous
     if (end && _now >= end) return true; // fully ended
