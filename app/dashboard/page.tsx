@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, createContext, useContext } from "react";
 import type { DashboardData, CommissionLine } from "@/lib/fetchDashboard";
+
+// ── Mobile context ────────────────────────────────────────────────────────────
+const MobileCtx = createContext(false);
+const useMobile  = () => useContext(MobileCtx);
 
 // ── Format helpers ─────────────────────────────────────────────────────────────
 const fmt$ = (n: number) =>
@@ -37,6 +41,7 @@ const RANGE_PRESETS = [
 
 function sameDay(a:Date,b:Date){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
 function fmtRangeLabel(s:Date,e:Date){const o:Intl.DateTimeFormatOptions={month:"short",day:"numeric",year:"numeric"};return `${s.toLocaleDateString("en-US",o)} – ${e.toLocaleDateString("en-US",o)}`;}
+function fmtRangeLabelShort(s:Date,e:Date){const o:Intl.DateTimeFormatOptions={month:"short",day:"numeric"};return `${s.toLocaleDateString("en-US",o)} – ${e.toLocaleDateString("en-US",o)}`;}
 
 function CalGrid({year,month,label,rStart,rEnd,hover,onClick,onHover,onPrev,onNext}:{
   year:number;month:number;label:string;
@@ -81,6 +86,7 @@ function CalGrid({year,month,label,rStart,rEnd,hover,onClick,onHover,onPrev,onNe
 }
 
 function DateRangePicker({value,onChange}:{value:{start:Date;end:Date};onChange:(r:{start:Date;end:Date})=>void;}) {
+  const mobile=useMobile();
   const [open,setOpen]=useState(false);
   const [tStart,setTStart]=useState<Date|null>(value.start);
   const [tEnd,setTEnd]=useState<Date|null>(value.end);
@@ -111,30 +117,45 @@ function DateRangePicker({value,onChange}:{value:{start:Date;end:Date};onChange:
     if(tStart&&tEnd){const s=new Date(tStart);s.setHours(0,0,0,0);const e=new Date(tEnd);e.setHours(23,59,59,999);onChange({start:s,end:e});}
     setOpen(false);
   };
+  const dropdownStyle:React.CSSProperties=mobile?{
+    position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:2000,
+    background:"#161616",border:"none",borderRadius:0,
+    padding:"16px",boxShadow:"none",
+    display:"flex",flexDirection:"column",overflowY:"auto",
+  }:{
+    position:"absolute",top:"calc(100% + 6px)",right:0,zIndex:1000,
+    background:"#161616",border:"1px solid rgba(255,255,255,0.1)",
+    borderRadius:12,padding:"16px 18px",boxShadow:"0 12px 40px rgba(0,0,0,0.7)",
+    minWidth:500,
+  };
   return (
     <div ref={wrapRef} style={{position:"relative",display:"inline-block"}}>
       <button onClick={()=>{setOpen(o=>!o);setTStart(value.start);setTEnd(value.end);}}
-        style={{display:"inline-flex",alignItems:"center",gap:8,padding:"8px 14px",background:"#161616",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,color:"#F2EDE6",fontFamily:"var(--font-body)",fontSize:13,cursor:"pointer",outline:"none",whiteSpace:"nowrap"}}>
-        {fmtRangeLabel(value.start,value.end)}
+        style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 12px",background:"#161616",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,color:"#F2EDE6",fontFamily:"var(--font-body)",fontSize:mobile?11:13,cursor:"pointer",outline:"none",whiteSpace:"nowrap"}}>
+        {mobile?fmtRangeLabelShort(value.start,value.end):fmtRangeLabel(value.start,value.end)}
         <span style={{color:"#555",fontSize:9,marginLeft:2}}>▼</span>
       </button>
       {open&&(
-        <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,zIndex:1000,background:"#161616",border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"16px 18px",boxShadow:"0 12px 40px rgba(0,0,0,0.7)",minWidth:500}}>
+        <div style={dropdownStyle}>
+          {mobile&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <span style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",fontWeight:600}}>Select Date Range</span>
+            <button onClick={()=>setOpen(false)} style={{background:"none",border:"none",color:"#888",fontSize:22,cursor:"pointer",lineHeight:1}}>×</button>
+          </div>}
           <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
             {RANGE_PRESETS.map(p=>(
-              <button key={p.label} onClick={()=>handlePreset(p)} style={{fontFamily:"var(--font-body)",fontSize:11,padding:"3px 10px",borderRadius:6,background:preset===p.label?"rgba(201,168,76,0.15)":"rgba(255,255,255,0.04)",border:`1px solid ${preset===p.label?"rgba(201,168,76,0.4)":"rgba(255,255,255,0.07)"}`,color:preset===p.label?"#C9A84C":"#555",cursor:"pointer",whiteSpace:"nowrap"}}>{p.label}</button>
+              <button key={p.label} onClick={()=>handlePreset(p)} style={{fontFamily:"var(--font-body)",fontSize:11,padding:"4px 10px",borderRadius:6,background:preset===p.label?"rgba(201,168,76,0.15)":"rgba(255,255,255,0.04)",border:`1px solid ${preset===p.label?"rgba(201,168,76,0.4)":"rgba(255,255,255,0.07)"}`,color:preset===p.label?"#C9A84C":"#555",cursor:"pointer",whiteSpace:"nowrap"}}>{p.label}</button>
             ))}
           </div>
-          <div style={{display:"flex",gap:20,marginBottom:14,alignItems:"flex-start"}}>
+          <div style={{display:"flex",gap:16,marginBottom:14,alignItems:"flex-start",flexWrap:mobile?"wrap":"nowrap",justifyContent:"center"}}>
             <CalGrid year={lYear} month={lMonth} label="Start Date" rStart={tStart} rEnd={tEnd} hover={hover} onClick={handleClick} onHover={setHover} onPrev={prevM} onNext={nextM}/>
-            <div style={{width:1,background:"rgba(255,255,255,0.07)",alignSelf:"stretch"}}/>
+            <div style={{width:1,background:"rgba(255,255,255,0.07)",alignSelf:"stretch",display:mobile?"none":"block"}}/>
             <CalGrid year={rYear} month={rMonth} label="End Date" rStart={tStart} rEnd={tEnd} hover={hover} onClick={handleClick} onHover={setHover} onPrev={prevM} onNext={nextM}/>
           </div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:12,marginTop:"auto"}}>
             <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#555"}}>
               {tStart&&tEnd?fmtRangeLabel(tStart,tEnd):tStart?`${tStart.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} → select end`:"Select start date"}
             </span>
-            <button onClick={handleApply} disabled={!tStart||!tEnd} style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:600,padding:"6px 18px",borderRadius:7,background:tStart&&tEnd?"#161616":"rgba(255,255,255,0.04)",border:`1px solid ${tStart&&tEnd?"#C9A84C":"rgba(255,255,255,0.08)"}`,color:tStart&&tEnd?"#C9A84C":"#555",cursor:tStart&&tEnd?"pointer":"not-allowed"}}>Apply</button>
+            <button onClick={handleApply} disabled={!tStart||!tEnd} style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:600,padding:"8px 20px",borderRadius:7,background:tStart&&tEnd?"#161616":"rgba(255,255,255,0.04)",border:`1px solid ${tStart&&tEnd?"#C9A84C":"rgba(255,255,255,0.08)"}`,color:tStart&&tEnd?"#C9A84C":"#555",cursor:tStart&&tEnd?"pointer":"not-allowed"}}>Apply</button>
           </div>
         </div>
       )}
@@ -152,7 +173,7 @@ function KpiCard({label,value,sub,accent,warn,green}:{label:string;value:string|
   return(
     <Card>
       <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.13em",textTransform:"uppercase",color:"#555",marginBottom:8}}>{label}</p>
-      <p style={{fontFamily:"var(--font-display)",fontSize:"clamp(22px,3vw,32px)",color:col,lineHeight:1}}>{value}</p>
+      <p style={{fontFamily:"var(--font-display)",fontSize:"clamp(20px,3vw,30px)",color:col,lineHeight:1}}>{value}</p>
       {sub&&<p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",marginTop:6}}>{sub}</p>}
     </Card>
   );
@@ -171,11 +192,11 @@ function BarRow({label,value,total,color="#C9A84C",sub}:{label:string;value:numb
   const pct=total>0?Math.min(Math.round((value/total)*100),100):0;
   return(
     <div style={{display:"flex",alignItems:"center",gap:10}}>
-      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#888",minWidth:90,flexShrink:0}}>{label}</p>
+      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#888",minWidth:80,flexShrink:0}}>{label}</p>
       <div style={{flex:1,height:5,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
         <div style={{width:`${pct}%`,height:"100%",background:color,borderRadius:3,transition:"width 0.5s ease"}}/>
       </div>
-      <span style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",minWidth:30,textAlign:"right"}}>{sub??value}</span>
+      <span style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",minWidth:24,textAlign:"right"}}>{sub??value}</span>
     </div>
   );
 }
@@ -185,9 +206,11 @@ function Spinner(){return <div style={{width:14,height:14,border:"2px solid rgba
 
 // ── Donut chart ───────────────────────────────────────────────────────────────
 function DonutChart({segments,size=130}:{segments:{label:string;value:number;color:string}[];size?:number;}){
+  const mobile=useMobile();
+  const sz=mobile?110:size;
   const total=segments.reduce((s,seg)=>s+seg.value,0);
   if(total===0) return <p style={{color:"#555",fontSize:12}}>No data</p>;
-  const cx=size/2,cy=size/2,r=size*0.38,inner=size*0.22;
+  const cx=sz/2,cy=sz/2,r=sz*0.38,inner=sz*0.22;
   let angle=-Math.PI/2;
   const paths=segments.map(seg=>{
     const slice=(seg.value/total)*2*Math.PI;
@@ -199,8 +222,8 @@ function DonutChart({segments,size=130}:{segments:{label:string;value:number;col
     return {...seg,path,pct:Math.round((seg.value/total)*100)};
   });
   return(
-    <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
-      <svg width={size} height={size} style={{flexShrink:0}}>
+    <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+      <svg width={sz} height={sz} style={{flexShrink:0}}>
         {paths.map(p=><path key={p.label} d={p.path} fill={p.color} stroke="#0A0A0A" strokeWidth={2}/>)}
         <circle cx={cx} cy={cy} r={inner} fill="#0A0A0A"/>
       </svg>
@@ -254,7 +277,7 @@ function CommissionTable({title,rows,subRows,accent}:{title:string;rows:Commissi
           <div key={r.name} style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:10,padding:"9px 14px",alignItems:"center",borderBottom:i<rows.length-1?"1px solid rgba(255,255,255,0.05)":"none"}}>
             <span style={{fontFamily:"var(--font-body)",fontSize:13,color:"#CCC"}}>{r.name}</span>
             <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555"}}>{paidMap.has(r.name)?`${fmt$(paidMap.get(r.name)!)} paid`:""}</span>
-            <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:accent??"#C9A84C",minWidth:72,textAlign:"right"}}>{fmt$(r.amount)}</span>
+            <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:accent??"#C9A84C",minWidth:64,textAlign:"right"}}>{fmt$(r.amount)}</span>
           </div>
         ))}
       </div>
@@ -308,8 +331,8 @@ function EodTable({title,rows,columns,emptyMsg}:{title:string;rows:Record<string
       {rows.length===0?(
         <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#444",fontStyle:"italic"}}>{emptyMsg??"No reports yet"}</p>
       ):(
-        <div style={{overflowX:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"var(--font-body)",fontSize:12}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"var(--font-body)",fontSize:12,minWidth:420}}>
             <thead><tr>{columns.map(col=><th key={col.key} style={{textAlign:"left",color:"#555",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",fontSize:10,padding:"0 10px 8px 0",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>{col.label}</th>)}</tr></thead>
             <tbody>{rows.map((row,i)=><tr key={i}>{columns.map(col=><td key={col.key} style={{padding:"7px 10px 7px 0",color:"#AAA",borderBottom:"1px solid rgba(255,255,255,0.04)",whiteSpace:"nowrap"}}>{String(row[col.key]??"")}</td>)}</tr>)}</tbody>
           </table>
@@ -332,15 +355,15 @@ function NavIcon({k}:{k:PageKey}){
 
 function Logo(){return(<svg width="18" height="18" viewBox="0 0 40 40" fill="none"><rect x="2" y="22" width="6" height="14" rx="1.5" fill="#C9A84C"/><rect x="12" y="14" width="6" height="22" rx="1.5" fill="#D4AF37"/><rect x="22" y="8" width="6" height="28" rx="1.5" fill="#C9A84C"/><rect x="32" y="2" width="6" height="34" rx="1.5" fill="#D4AF37"/></svg>);}
 
-// ── Sidebar ───────────────────────────────────────────────────────────────────
+// ── Sidebar (desktop only) ────────────────────────────────────────────────────
 function Sidebar({current,onChange,refreshing,onRefresh,updated}:{current:PageKey;onChange:(k:PageKey)=>void;refreshing:boolean;onRefresh:()=>void;updated:string;}){
   return(
-    <aside style={{width:210,minHeight:"100vh",background:"#0D0D0D",borderRight:"1px solid rgba(255,255,255,0.06)",display:"flex",flexDirection:"column",position:"sticky",top:0,height:"100vh",flexShrink:0}}>
-      <div style={{padding:"22px 18px 18px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+    <aside style={{width:200,minHeight:"100vh",background:"#0D0D0D",borderRight:"1px solid rgba(255,255,255,0.06)",display:"flex",flexDirection:"column",position:"sticky",top:0,height:"100vh",flexShrink:0}}>
+      <div style={{padding:"22px 16px 16px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><Logo/><span style={{fontFamily:"var(--font-display)",fontSize:9,color:"#F2EDE6",letterSpacing:"0.16em"}}>HUDDYERTRADES</span></div>
         <p style={{fontFamily:"var(--font-display)",fontSize:11,color:"#C9A84C",letterSpacing:"0.12em",margin:0}}>OPS DASHBOARD</p>
       </div>
-      <nav style={{padding:"12px 10px",flex:1}}>
+      <nav style={{padding:"12px 8px",flex:1}}>
         {NAV.map(item=>(
           <button key={item.key} onClick={()=>onChange(item.key)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"9px 12px",borderRadius:8,marginBottom:2,background:current===item.key?"rgba(201,168,76,0.1)":"transparent",border:`1px solid ${current===item.key?"rgba(201,168,76,0.2)":"transparent"}`,color:current===item.key?"#C9A84C":"#555",fontFamily:"var(--font-body)",fontSize:13,cursor:"pointer",textAlign:"left",transition:"all 0.15s"}}>
             <NavIcon k={item.key}/>{item.label}
@@ -358,18 +381,37 @@ function Sidebar({current,onChange,refreshing,onRefresh,updated}:{current:PageKe
   );
 }
 
+// ── Bottom nav (mobile only) ──────────────────────────────────────────────────
+function BottomNav({current,onChange}:{current:PageKey;onChange:(k:PageKey)=>void;}){
+  return(
+    <nav style={{position:"fixed",bottom:0,left:0,right:0,zIndex:200,background:"rgba(13,13,13,0.96)",borderTop:"1px solid rgba(255,255,255,0.08)",display:"flex",alignItems:"stretch",backdropFilter:"blur(12px)"}}>
+      {NAV.map(item=>(
+        <button key={item.key} onClick={()=>onChange(item.key)}
+          style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,padding:"8px 2px",background:"transparent",border:"none",color:current===item.key?"#C9A84C":"#444",cursor:"pointer",transition:"color 0.15s",minHeight:54}}>
+          <NavIcon k={item.key}/>
+          <span style={{fontFamily:"var(--font-body)",fontSize:9,letterSpacing:"0.05em",lineHeight:1}}>{item.label.split(" ")[0]}</span>
+          {current===item.key&&<div style={{position:"absolute",bottom:0,width:24,height:2,background:"#C9A84C",borderRadius:1}}/>}
+        </button>
+      ))}
+    </nav>
+  );
+}
+
 // ── Page views ────────────────────────────────────────────────────────────────
+const PROG_COLORS=["#C9A84C","#4CAF6E","#5B8DD9","#E05252","#B07DDA","#E8924E"];
 
 function DashboardView({data}:{data:DashboardData}){
+  const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
   const whop=data.whop;
   const cal=data.calendly;
   const tf=data.typeform;
+  const grid1=mobile?"repeat(2,1fr)":"repeat(auto-fill,minmax(150px,1fr))";
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:32}}>
+    <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
         <SectionLabel>Revenue Overview</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:10}}>
+        <div style={{display:"grid",gridTemplateColumns:grid1,gap:10}}>
           <KpiCard label="Total Contracted"  value={sh?fmt$(sh.totalContracted)       :"—"} accent sub="All planned payments"/>
           <KpiCard label="Cash Collected"    value={sh?fmt$(sh.cashCollected)          :"—"} green sub="Received up to today"/>
           <KpiCard label="Uncollected Rev"   value={sh?fmt$(sh.uncollectedRevenue)     :"—"} sub="Future scheduled payments"/>
@@ -383,7 +425,7 @@ function DashboardView({data}:{data:DashboardData}){
       <GoldDivider/>
       <section>
         <SectionLabel>Sales Performance</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:10}}>
+        <div style={{display:"grid",gridTemplateColumns:grid1,gap:10}}>
           <KpiCard label="Deals Closed"    value={sh?.dealsClosed??"—"} accent sub="Distinct leads in range"/>
           <KpiCard label="Avg Deal Value"  value={sh?fmt$(sh.avgDealValue):"—"}/>
           <KpiCard label="Applications"    value={tf?.totalInRange??"—"} sub="Typeform"/>
@@ -398,17 +440,17 @@ function DashboardView({data}:{data:DashboardData}){
   );
 }
 
-const PROG_COLORS=["#C9A84C","#4CAF6E","#5B8DD9","#E05252","#B07DDA","#E8924E"];
-
 function RevenueView({data}:{data:DashboardData}){
+  const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
   const tf=data.typeform;
   const srcMax=Math.max(...(tf?.trafficSources.map(s=>s.count)??[1]));
+  const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:32}}>
+    <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
         <SectionLabel>Revenue Breakdown</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
+        <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>PIF vs Financed</p>
             {sh&&(sh.pifContracted>0||sh.financedContracted>0)?(
@@ -436,7 +478,7 @@ function RevenueView({data}:{data:DashboardData}){
           <GoldDivider/>
           <section>
             <SectionLabel>Churned / Voided</SectionLabel>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
+            <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
               <Card>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
                   <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",margin:0}}>Voided Payments</p>
@@ -464,14 +506,16 @@ function RevenueView({data}:{data:DashboardData}){
 }
 
 function FunnelView({data}:{data:DashboardData}){
+  const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
   const cal=data.calendly;
   const tf=data.typeform;
+  const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:32}}>
+    <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
         <SectionLabel>Funnel</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
+        <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Applications → Calls → Deals</p>
             <FunnelViz steps={[
@@ -500,17 +544,19 @@ function FunnelView({data}:{data:DashboardData}){
 }
 
 function CommissionsView({data}:{data:DashboardData}){
+  const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
   const setterTotal=sh?.setterCommPaid.reduce((s,r)=>s+r.amount,0)??0;
   const closerTotal=sh?.closerCommPaid.reduce((s,r)=>s+r.amount,0)??0;
+  const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:32}}>
+    <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
         <SectionLabel>Commissions</SectionLabel>
         {!sh?(
           <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>Google Sheets not connected.</p>
         ):(
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
+          <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
             <Card>
               <CommissionTable title="Setter Commissions (total owed)" rows={sh.setterCommOwed} subRows={sh.setterCommPaid}/>
               <div style={{height:1,background:"rgba(255,255,255,0.06)",margin:"16px 0"}}/>
@@ -526,13 +572,14 @@ function CommissionsView({data}:{data:DashboardData}){
 }
 
 function EodView({data}:{data:DashboardData}){
+  const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
   if(!sh) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>Google Sheets not connected.</p>;
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:32}}>
+    <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
         <SectionLabel>EOD Reports</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
+        <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
           <EodTable title="Setter EOD" rows={sh.setterEod.rows as Record<string,string|number>[]} emptyMsg="No setter reports yet"
             columns={[{key:"timestamp",label:"Date"},{key:"name",label:"Setter"},{key:"contacted",label:"Contacted"},{key:"callsBooked",label:"Booked"},{key:"liveCalls",label:"Live"},{key:"noShows",label:"No-Shows"}]}/>
           <EodTable title="Closer EOD" rows={sh.closerEod.rows as Record<string,string|number>[]} emptyMsg="No closer reports yet"
@@ -548,7 +595,7 @@ function OverheadView({data}:{data:DashboardData}){
   if(!sh) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>Google Sheets not connected.</p>;
   if(sh.subscriptions.length===0) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#555"}}>No subscription data found.</p>;
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:32}}>
+    <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
         <SectionLabel>Monthly Overhead</SectionLabel>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14}}>
@@ -582,8 +629,17 @@ export default function DashboardPage(){
   const [error,      setError]      = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page,       setPage]       = useState<PageKey>("dashboard");
+  const [mobile,     setMobile]     = useState(false);
   const [range,setRange]=useState<{start:Date;end:Date}>(()=>{const e=new Date();e.setHours(23,59,59,999);return{start:new Date("2020-01-01"),end:e};});
   const timerRef=useRef<ReturnType<typeof setInterval>|null>(null);
+
+  // Detect mobile
+  useEffect(()=>{
+    const check=()=>setMobile(window.innerWidth<768);
+    check();
+    window.addEventListener("resize",check);
+    return()=>window.removeEventListener("resize",check);
+  },[]);
 
   const load=useCallback(async(silent=false,r=range)=>{
     if(!silent)setLoading(true);else setRefreshing(true);
@@ -606,55 +662,78 @@ export default function DashboardPage(){
 
   const handleRangeChange=(r:{start:Date;end:Date})=>{setRange(r);load(false,r);};
   const updated=data?.lastUpdated?new Date(data.lastUpdated).toLocaleTimeString():"—";
-  const sh=data?.sheets.connected?data.sheets:null;
 
   return(
-    <div style={{display:"flex",height:"100vh",overflow:"hidden",backgroundColor:"#0A0A0A"}}>
-      <style>{`@keyframes pulse{0%,100%{opacity:.4}50%{opacity:.75}}@keyframes spin{to{transform:rotate(360deg)}}input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}input[type=number]{-moz-appearance:textfield}`}</style>
-      <Sidebar current={page} onChange={setPage} refreshing={refreshing} onRefresh={()=>load(true)} updated={updated}/>
-      <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column"}}>
-        {/* Top bar */}
-        <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(10,10,10,0.92)",backdropFilter:"blur(12px)",borderBottom:"1px solid rgba(255,255,255,0.06)",padding:"14px 28px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16,flexWrap:"wrap"}}>
-          <h2 style={{fontFamily:"var(--font-display)",fontSize:22,color:"#F2EDE6",margin:0,lineHeight:1}}>{PAGE_TITLES[page]}</h2>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            {refreshing&&<Spinner/>}
-            <DateRangePicker value={range} onChange={handleRangeChange}/>
+    <MobileCtx.Provider value={mobile}>
+      <div style={{display:"flex",height:"100vh",overflow:"hidden",backgroundColor:"#0A0A0A"}}>
+        <style>{`
+          @keyframes pulse{0%,100%{opacity:.4}50%{opacity:.75}}
+          @keyframes spin{to{transform:rotate(360deg)}}
+          input[type=number]::-webkit-inner-spin-button,
+          input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+          input[type=number]{-moz-appearance:textfield}
+          *{box-sizing:border-box}
+        `}</style>
+
+        {/* Sidebar — desktop only */}
+        {!mobile&&(
+          <Sidebar current={page} onChange={setPage} refreshing={refreshing} onRefresh={()=>load(true)} updated={updated}/>
+        )}
+
+        {/* Main */}
+        <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",minWidth:0}}>
+
+          {/* Top bar */}
+          <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(10,10,10,0.95)",backdropFilter:"blur(12px)",borderBottom:"1px solid rgba(255,255,255,0.06)",padding:mobile?"10px 14px":"14px 28px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+            <h2 style={{fontFamily:"var(--font-display)",fontSize:mobile?16:22,color:"#F2EDE6",margin:0,lineHeight:1}}>{PAGE_TITLES[page]}</h2>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              {refreshing&&<Spinner/>}
+              <DateRangePicker value={range} onChange={handleRangeChange}/>
+              {mobile&&(
+                <button onClick={()=>load(true)} disabled={refreshing} style={{padding:"6px 10px",borderRadius:6,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",color:"#555",fontSize:16,cursor:"pointer",lineHeight:1}}>↻</button>
+              )}
+            </div>
+          </div>
+
+          {/* Error pills — broken sources only */}
+          {data&&(()=>{
+            const errors:string[]=[];
+            if(!data.sheets.connected) errors.push(`Sheets: ${(data.sheets as {error:string}).error}`);
+            if(!data.calendly) errors.push("Calendly disconnected");
+            if(!data.typeform) errors.push("Typeform disconnected");
+            if(!data.whop)     errors.push("Whop disconnected");
+            if(!errors.length) return null;
+            return(
+              <div style={{padding:`8px ${mobile?"14px":"28px"} 0`,display:"flex",gap:6,flexWrap:"wrap"}}>
+                {errors.map(e=><Pill key={e} ok={false} label={e}/>)}
+              </div>
+            );
+          })()}
+
+          {/* Content */}
+          <div style={{flex:1,padding:mobile?"16px 14px 90px":"24px 28px 60px"}}>
+            {loading&&<div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>{[...Array(8)].map((_,i)=><Skeleton key={i}/>)}</div>}
+            {error&&!loading&&(
+              <div style={{textAlign:"center",padding:"60px 0"}}>
+                <p style={{color:"#E05252",fontFamily:"var(--font-body)",fontSize:14}}>Failed to load. <button onClick={()=>load()} style={{color:"#C9A84C",textDecoration:"underline",background:"none",border:"none",cursor:"pointer"}}>Retry</button></p>
+              </div>
+            )}
+            {data&&!loading&&(
+              <>
+                {page==="dashboard"   &&<DashboardView   data={data}/>}
+                {page==="revenue"     &&<RevenueView     data={data}/>}
+                {page==="funnel"      &&<FunnelView      data={data}/>}
+                {page==="commissions" &&<CommissionsView data={data}/>}
+                {page==="eod"         &&<EodView         data={data}/>}
+                {page==="overhead"    &&<OverheadView    data={data}/>}
+              </>
+            )}
           </div>
         </div>
-        {/* Connection pills — only show broken sources */}
-        {data&&(()=>{
-          const errors:string[]=[];
-          if(!data.sheets.connected) errors.push(`Sheets: ${(data.sheets as {error:string}).error}`);
-          if(!data.calendly) errors.push("Calendly disconnected");
-          if(!data.typeform) errors.push("Typeform disconnected");
-          if(!data.whop)     errors.push("Whop disconnected");
-          if(!errors.length) return null;
-          return(
-            <div style={{padding:"10px 28px 0",display:"flex",gap:6,flexWrap:"wrap"}}>
-              {errors.map(e=><Pill key={e} ok={false} label={e}/>)}
-            </div>
-          );
-        })()}
-        {/* Content */}
-        <div style={{flex:1,padding:"24px 28px 80px"}}>
-          {loading&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>{[...Array(8)].map((_,i)=><Skeleton key={i}/>)}</div>}
-          {error&&!loading&&(
-            <div style={{textAlign:"center",padding:"60px 0"}}>
-              <p style={{color:"#E05252",fontFamily:"var(--font-body)",fontSize:14}}>Failed to load. <button onClick={()=>load()} style={{color:"#C9A84C",textDecoration:"underline",background:"none",border:"none",cursor:"pointer"}}>Retry</button></p>
-            </div>
-          )}
-          {data&&!loading&&(
-            <>
-              {page==="dashboard"   &&<DashboardView   data={data}/>}
-              {page==="revenue"     &&<RevenueView     data={data}/>}
-              {page==="funnel"      &&<FunnelView      data={data}/>}
-              {page==="commissions" &&<CommissionsView data={data}/>}
-              {page==="eod"         &&<EodView         data={data}/>}
-              {page==="overhead"    &&<OverheadView    data={data}/>}
-            </>
-          )}
-        </div>
+
+        {/* Bottom nav — mobile only */}
+        {mobile&&<BottomNav current={page} onChange={setPage}/>}
       </div>
-    </div>
+    </MobileCtx.Provider>
   );
 }
