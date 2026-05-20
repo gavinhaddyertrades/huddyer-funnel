@@ -287,9 +287,9 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     });
   }
 
-  // EOD — closer
+  // EOD — closer (gviz already strips the header row for this sheet)
   const closerEodRows: CloserEodRow[] = [];
-  for (const c of (closerEodRaw ?? []).slice(1)) {
+  for (const c of (closerEodRaw ?? [])) {
     if (!c[0]) continue;
     closerEodRows.push({
       timestamp:      parseGvizDatetime(c[0]),
@@ -385,20 +385,43 @@ export type TypeformData = {
 
 async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData | null> {
   try {
-    const res = await fetch(
-      `https://api.typeform.com/forms/${TYPEFORM_FORM_ID}/responses?page_size=200&since=${start.toISOString()}&until=${end.toISOString()}`,
-      { headers: { Authorization: "Bearer " + TYPEFORM_TOKEN } }
-    );
-    const responses = ((await res.json()).items ?? []) as Array<{ metadata?: { referer?: string } }>;
+    type TfItem = { token?: string; metadata?: { referer?: string } };
+    const allResponses: TfItem[] = [];
+    let before: string | undefined = undefined;
+
+    // Paginate until we have all responses in range
+    while (true) {
+      const params = new URLSearchParams({
+        page_size: "1000",
+        since: start.toISOString(),
+        until: end.toISOString(),
+      });
+      if (before) params.set("before", before);
+
+      const res = await fetch(
+        `https://api.typeform.com/forms/${TYPEFORM_FORM_ID}/responses?${params}`,
+        { headers: { Authorization: "Bearer " + TYPEFORM_TOKEN } }
+      );
+      const json = await res.json() as { items?: TfItem[] };
+      const items = json.items ?? [];
+      allResponses.push(...items);
+
+      // Fewer than page_size means we have all of them
+      if (items.length < 1000) break;
+      const lastToken = items[items.length - 1]?.token;
+      if (!lastToken) break;
+      before = lastToken;
+    }
+
     const sourceMap = new Map<string, number>();
-    for (const r of responses) {
+    for (const r of allResponses) {
       const ref = r.metadata?.referer ?? "";
       const m   = ref.match(/utm_source=([^&]+)/);
       const src = m ? decodeURIComponent(m[1]) : "organic";
       sourceMap.set(src, (sourceMap.get(src) ?? 0) + 1);
     }
     return {
-      totalInRange: responses.length,
+      totalInRange: allResponses.length,
       trafficSources: Array.from(sourceMap.entries()).sort((a, b) => b[1] - a[1]).map(([source, count]) => ({ source, count })),
     };
   } catch (e) {

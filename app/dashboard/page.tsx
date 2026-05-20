@@ -398,10 +398,11 @@ function DashboardView({data}:{data:DashboardData}){
   );
 }
 
+const PROG_COLORS=["#C9A84C","#4CAF6E","#5B8DD9","#E05252","#B07DDA","#E8924E"];
+
 function RevenueView({data}:{data:DashboardData}){
   const sh=data.sheets.connected?data.sheets:null;
   const tf=data.typeform;
-  const progMax=Math.max(...(sh?.revenueByProgram.map(p=>p.contracted)??[1]));
   const srcMax=Math.max(...(tf?.trafficSources.map(s=>s.count)??[1]));
   return(
     <div style={{display:"flex",flexDirection:"column",gap:32}}>
@@ -411,25 +412,13 @@ function RevenueView({data}:{data:DashboardData}){
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>PIF vs Financed</p>
             {sh&&(sh.pifContracted>0||sh.financedContracted>0)?(
-              <DonutChart segments={[{label:"PIF",value:sh.pifContracted,color:"#C9A84C"},{label:"Financed",value:sh.financedContracted,color:"rgba(201,168,76,0.22)"}]}/>
+              <DonutChart segments={[{label:"PIF",value:sh.pifContracted,color:"#C9A84C"},{label:"Financed",value:sh.financedContracted,color:"#4CAF6E"}]}/>
             ):<p style={{color:"#555",fontSize:12}}>No data</p>}
           </Card>
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:16}}>Revenue by Program</p>
             {sh?.revenueByProgram.length?(
-              <div style={{display:"flex",flexDirection:"column",gap:14}}>
-                {sh.revenueByProgram.map(p=>(
-                  <div key={p.program}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-                      <span style={{fontFamily:"var(--font-body)",fontSize:12,color:"#888"}}>{p.program}</span>
-                      <span style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:700,color:"#F2EDE6"}}>{fmt$(p.contracted)}</span>
-                    </div>
-                    <div style={{height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
-                      <div style={{width:`${Math.round((p.contracted/progMax)*100)}%`,height:"100%",background:"#C9A84C",borderRadius:3,transition:"width 0.5s"}}/>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <DonutChart segments={sh.revenueByProgram.map((p,i)=>({label:p.program,value:p.contracted,color:PROG_COLORS[i%PROG_COLORS.length]}))}/>
             ):<p style={{color:"#555",fontSize:12}}>No data</p>}
           </Card>
           <Card>
@@ -504,14 +493,6 @@ function FunnelView({data}:{data:DashboardData}){
               </div>
             ))}
           </Card>
-          {cal&&cal.cancelReasons.length>0&&(
-            <Card>
-              <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:12}}>Cancel Reasons</p>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {cal.cancelReasons.map((r,i)=><p key={i} style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777",padding:"8px 12px",borderRadius:7,lineHeight:1.5,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)"}}>&ldquo;{r}&rdquo;</p>)}
-              </div>
-            </Card>
-          )}
         </div>
       </section>
     </div>
@@ -640,16 +621,20 @@ export default function DashboardPage(){
             <DateRangePicker value={range} onChange={handleRangeChange}/>
           </div>
         </div>
-        {/* Connection pills */}
-        {data&&(
-          <div style={{padding:"10px 28px 0",display:"flex",gap:6,flexWrap:"wrap"}}>
-            <Pill ok={data.sheets.connected} label={data.sheets.connected?"Google Sheets ✓":`Sheets: ${(data.sheets as {error:string}).error}`}/>
-            <Pill ok={!!data.calendly}       label={data.calendly?"Calendly ✓":"Calendly —"}/>
-            <Pill ok={!!data.typeform}        label={data.typeform?"Typeform ✓":"Typeform —"}/>
-            <Pill ok={!!data.whop}            label={data.whop?"Whop ✓":"Whop —"}/>
-            {sh&&<span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#444",display:"flex",alignItems:"center",gap:4,marginLeft:4}}>{sh.dealsClosed} deals · {sh.cashCollected>0?fmt$(sh.cashCollected):"$0"} collected</span>}
-          </div>
-        )}
+        {/* Connection pills — only show broken sources */}
+        {data&&(()=>{
+          const errors:string[]=[];
+          if(!data.sheets.connected) errors.push(`Sheets: ${(data.sheets as {error:string}).error}`);
+          if(!data.calendly) errors.push("Calendly disconnected");
+          if(!data.typeform) errors.push("Typeform disconnected");
+          if(!data.whop)     errors.push("Whop disconnected");
+          if(!errors.length) return null;
+          return(
+            <div style={{padding:"10px 28px 0",display:"flex",gap:6,flexWrap:"wrap"}}>
+              {errors.map(e=><Pill key={e} ok={false} label={e}/>)}
+            </div>
+          );
+        })()}
         {/* Content */}
         <div style={{flex:1,padding:"24px 28px 80px"}}>
           {loading&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>{[...Array(8)].map((_,i)=><Skeleton key={i}/>)}</div>}
