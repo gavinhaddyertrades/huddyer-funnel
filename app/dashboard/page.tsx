@@ -452,7 +452,6 @@ function DashboardView({data}:{data:DashboardData}){
 
   // Expandable lead info state — keyed by email for stability across refreshes
   // Must be declared before isInPrevious so the closure can read leadInfoMap
-  const [openRows,    setOpenRows]    = useState<Set<number>>(new Set());
   const [leadInfoMap, setLeadInfoMap] = useState<Map<string, LeadInfo | "loading">>(new Map());
   const fetchInitiatedRef = useRef<Set<string>>(new Set());
 
@@ -485,16 +484,6 @@ function DashboardView({data}:{data:DashboardData}){
       .then((info: LeadInfo) => setLeadInfoMap(prev => new Map(prev).set(email, info)))
       .catch(() => setLeadInfoMap(prev => new Map(prev).set(email, { found: false })));
   }, []);
-
-  function toggleRow(i: number, email: string) {
-    setOpenRows(prev => {
-      const next = new Set(prev);
-      if (next.has(i)) { next.delete(i); return next; }
-      next.add(i);
-      return next;
-    });
-    fetchLeadInfo(email);
-  }
 
   // Auto-fetch Close CRM status for previous AND live calls
   useEffect(() => {
@@ -537,88 +526,51 @@ function DashboardView({data}:{data:DashboardData}){
         const renderRow = (call: typeof allCalls[0], idx: number, isLast: boolean, isPrev = false) => {
           const {when,fromNow,isToday,isSoon,isLive,isPast}=fmtCallTime(call.startTime, call.endTime);
           const isCancelled = call.cancelled;
-          const isOpen = openRows.has(idx);
-          const info   = leadInfoMap.get(call.inviteeEmail);
+          const info = leadInfoMap.get(call.inviteeEmail);
           return(
-            <div key={idx} style={{borderBottom:!isLast?"1px solid rgba(255,255,255,0.05)":"none"}}>
-              <div style={{
-                display:"flex",alignItems:"center",gap:14,padding:"13px 20px",
-                background:isPrev?"transparent":isCancelled?"rgba(224,82,82,0.04)":isLive?"rgba(76,175,80,0.04)":isToday?"rgba(201,168,76,0.04)":"transparent",
-                opacity:isCancelled||isPast?0.6:1,
-                cursor:"pointer",
-              }} onClick={()=>call.inviteeEmail&&toggleRow(idx,call.inviteeEmail)}>
-                <span style={{flexShrink:0,color:"#777",transition:"transform 0.2s",display:"inline-flex",alignItems:"center",transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>
-                  <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M2 1l5 3-5 3V1z"/></svg>
-                </span>
-                <div style={{flex:1,minWidth:0}}>
-                  <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",margin:0,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeName}</p>
-                  {call.inviteeEmail&&<p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeEmail}</p>}
-                </div>
-                <div style={{textAlign:"right",flexShrink:0}}>
-                  <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isCancelled?"#666":isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday&&!isCancelled?600:400}}>{when}</p>
-                  {(()=>{
-                    // Rescheduling: check if new call booked → "Rescheduled" (green), else within 24h → "Rescheduling" (gold), else → "Cancelled"
-                    const hasNewCall    = call.rescheduled && futureEmailSet.has(call.inviteeEmail);
-                    const reschedActive = call.rescheduled && !hasNewCall && (_now.getTime()-new Date(call.startTime).getTime()) < 24*3600_000;
-
-                    // Close CRM outcome for non-cancelled previous AND live calls
-                    const closeStatus = (!isCancelled && (isPrev || isLive) && info && info !== "loading")
-                      ? (info.statusLabel ?? "").toLowerCase() : "";
-                    const isPitched   = closeStatus.includes("pitched");
-                    const isClosedWon = closeStatus.includes("closed");
-
-                    const statusLabel = isCancelled
-                      ? (hasNewCall ? "Rescheduled" : reschedActive ? "Rescheduling" : call.noShow ? "No Show" : "Cancelled")
-                      : isPitched   ? "Pitched"
-                      : isClosedWon ? "Closed"
-                      : fromNow;
-                    const statusColor = isCancelled
-                      ? (hasNewCall ? "#4CAF50" : reschedActive ? "#C9A84C" : "#E05252")
-                      : isPitched   ? "#E08020"
-                      : isClosedWon ? "#4CAF50"
-                      : isLive      ? "#4CAF50"
-                      : isPast      ? "#444"
-                      : isSoon      ? "#E05252"
-                      : isToday     ? "#C9A84C"
-                      : "#555";
-                    const isBold = isCancelled||isLive||isSoon||isPitched||isClosedWon||hasNewCall;
-                    return(
-                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:statusColor,margin:"2px 0 0",fontWeight:isBold?700:400,letterSpacing:isLive?"0.08em":undefined}}>
-                        {statusLabel}
-                      </p>
-                    );
-                  })()}
-                </div>
+            <div key={idx} style={{
+              display:"flex",alignItems:"center",gap:14,padding:"13px 20px",
+              borderBottom:!isLast?"1px solid rgba(255,255,255,0.05)":"none",
+              background:isPrev?"transparent":isCancelled?"rgba(224,82,82,0.04)":isLive?"rgba(76,175,80,0.04)":isToday?"rgba(201,168,76,0.04)":"transparent",
+              opacity:isCancelled||isPast?0.6:1,
+            }}>
+              <div style={{flex:1,minWidth:0}}>
+                <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",margin:0,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeName}</p>
+                {call.inviteeEmail&&<p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeEmail}</p>}
               </div>
-              {isOpen&&(
-                <div style={{padding:"10px 20px 14px 48px",background:"rgba(255,255,255,0.02)",borderTop:"1px solid rgba(255,255,255,0.04)"}}>
-                  {info==="loading"?(
-                    <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777",margin:0,fontStyle:"italic"}}>Loading…</p>
-                  ):!info||!info.found?(
-                    <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
-                      <div>
-                        <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",margin:"0 0 3px"}}>Closer</p>
-                        <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0,fontWeight:600}}>{call.hostName||"—"}</p>
-                      </div>
-                      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#666",margin:"auto 0",fontStyle:"italic"}}>No Typeform data in Close</p>
-                    </div>
-                  ):(
-                    <div style={{display:"flex",gap:28,flexWrap:"wrap"}}>
-                      {[
-                        {label:"Closer", value:call.hostName||"—", gold:false},
-                        {label:"Age",    value:info.age,           gold:true},
-                        {label:"Budget", value:info.budget,        gold:true},
-                        {label:"Credit", value:info.credit,        gold:true},
-                      ].map(({label,value,gold})=>(
-                        <div key={label}>
-                          <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#AAA",margin:"0 0 3px"}}>{label}</p>
-                          <p style={{fontFamily:"var(--font-body)",fontSize:13,color:gold?"#C9A84C":"#F2EDE6",margin:0,fontWeight:600}}>{value??"—"}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div style={{textAlign:"right",flexShrink:0}}>
+                <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isCancelled?"#666":isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday&&!isCancelled?600:400}}>{when}</p>
+                {(()=>{
+                  const hasNewCall    = call.rescheduled && futureEmailSet.has(call.inviteeEmail);
+                  const reschedActive = call.rescheduled && !hasNewCall && (_now.getTime()-new Date(call.startTime).getTime()) < 24*3600_000;
+
+                  const closeStatus = (!isCancelled && (isPrev || isLive) && info && info !== "loading")
+                    ? (info.statusLabel ?? "").toLowerCase() : "";
+                  const isPitched   = closeStatus.includes("pitched");
+                  const isClosedWon = closeStatus.includes("closed");
+
+                  const statusLabel = isCancelled
+                    ? (hasNewCall ? "Rescheduled" : reschedActive ? "Rescheduling" : call.noShow ? "No Show" : "Cancelled")
+                    : isPitched   ? "Pitched"
+                    : isClosedWon ? "Closed"
+                    : fromNow;
+                  const statusColor = isCancelled
+                    ? (hasNewCall ? "#4CAF50" : reschedActive ? "#C9A84C" : "#E05252")
+                    : isPitched   ? "#E08020"
+                    : isClosedWon ? "#4CAF50"
+                    : isLive      ? "#4CAF50"
+                    : isPast      ? "#444"
+                    : isSoon      ? "#E05252"
+                    : isToday     ? "#C9A84C"
+                    : "#555";
+                  const isBold = isCancelled||isLive||isSoon||isPitched||isClosedWon||hasNewCall;
+                  return(
+                    <p style={{fontFamily:"var(--font-body)",fontSize:11,color:statusColor,margin:"2px 0 0",fontWeight:isBold?700:400,letterSpacing:isLive?"0.08em":undefined}}>
+                      {statusLabel}
+                    </p>
+                  );
+                })()}
+              </div>
             </div>
           );
         };
