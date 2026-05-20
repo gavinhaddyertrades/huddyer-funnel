@@ -16,6 +16,23 @@ const GID_SUBSCRIPTIONS = "193482418";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const startOfMonth = () => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; };
 const startOfToday = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+
+/**
+ * Returns midnight UTC for the current US calendar date.
+ *
+ * Vercel runs in UTC, so naïve setHours(0,0,0,0) resets at midnight UTC —
+ * hours before midnight for US users. We subtract 8 h (covers Pacific through
+ * Eastern in both standard and daylight time) to find the correct US calendar
+ * date, then return midnight UTC of that date.
+ *
+ * Example: 4 AM UTC May 20 → subtract 8 h → May 19 20:00 UTC → date = May 19
+ *   → todayStart = midnight UTC May 19 (correct for all US zones at 4 AM UTC).
+ */
+function startOfTodayUS(): Date {
+  const shifted = new Date(Date.now() - 8 * 3_600_000);
+  return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()));
+}
+
 function round2(n: number) { return Math.round(n * 100) / 100; }
 
 // ── Google Sheets helpers ─────────────────────────────────────────────────────
@@ -444,7 +461,7 @@ async function fetchWhopData(): Promise<WhopData | null> {
   try {
     const headers    = { Authorization: "Bearer " + WHOP_API_KEY };
     const monthStart = Math.floor(startOfMonth().getTime()  / 1000);
-    const todayStart = Math.floor(startOfToday().getTime()  / 1000);
+    const todayStart = Math.floor(startOfTodayUS().getTime() / 1000);
     const [membRes, payRes] = await Promise.all([
       fetch("https://api.whop.com/api/v2/memberships?status=active&limit=1", { headers }),
       fetch("https://api.whop.com/api/v2/payments?limit=100",                { headers }),
