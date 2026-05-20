@@ -399,10 +399,20 @@ function DashboardView({data}:{data:DashboardData}){
   const cal=data.calendly;
   const grid1=mobile?"repeat(2,1fr)":"repeat(4,1fr)";
 
-  const upcoming   = cal?.upcomingCalls ?? [];
-  const showRate   = cal?.showRate ?? 0;
-  const expectedShows = upcoming.length > 0 && showRate > 0
-    ? Math.round(upcoming.length * showRate / 100) : null;
+  const upcoming = cal?.upcomingCalls ?? [];
+
+  // Compute completed today vs remaining from the upcoming list
+  const _now = new Date();
+  const _todayStart = new Date(_now); _todayStart.setHours(0,0,0,0);
+  const _tomorrowStart = new Date(_todayStart); _tomorrowStart.setDate(_todayStart.getDate()+1);
+  const completedToday = upcoming.filter(c => {
+    const end = c.endTime ? new Date(c.endTime) : null;
+    return end && _now >= end && new Date(c.startTime) >= _todayStart && new Date(c.startTime) < _tomorrowStart;
+  }).length;
+  const remaining = upcoming.filter(c => {
+    const end = c.endTime ? new Date(c.endTime) : null;
+    return end ? _now < end : _now < new Date(c.startTime);
+  }).length;
 
   // Expandable lead info state
   const [openRows,    setOpenRows]    = useState<Set<number>>(new Set());
@@ -451,13 +461,9 @@ function DashboardView({data}:{data:DashboardData}){
             <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#CCC",margin:0}}>
               call{upcoming.length!==1?"s":""} booked in the next 30 days
             </p>
-            {expectedShows!==null?(
-              <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#555",margin:"3px 0 0"}}>
-                ~{expectedShows} expected to show&nbsp;&nbsp;·&nbsp;&nbsp;{showRate}% historical show rate
-              </p>
-            ):showRate>0?(
-              <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#555",margin:"3px 0 0"}}>{showRate}% historical show rate</p>
-            ):null}
+            <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#555",margin:"3px 0 0"}}>
+              {completedToday} completed today&nbsp;&nbsp;·&nbsp;&nbsp;{remaining} remaining
+            </p>
           </div>
         </div>
 
