@@ -418,19 +418,12 @@ function RevenueView({data}:{data:DashboardData}){
       {/* ── LOW TICKET (WHOP) ── */}
       <section>
         <SectionLabel>Low Ticket Revenue (Whop)</SectionLabel>
-        {/* Sheet-based totals */}
-        <div style={{display:"grid",gridTemplateColumns:kpiGrid,gap:10,marginBottom:14}}>
-          <KpiCard label="All-Time Revenue"   value={sh?fmt$(sh.lowTicketRevenue)    :"—"} accent sub={sh?`${sh.lowTicketPaymentCount} payments`:undefined}/>
-          <KpiCard label="All-Time Earnings"  value={sh?fmt$(sh.lowTicketEarnings)   :"—"} green sub="Revana's cut (net of fees)"/>
-          <KpiCard label="This Month"         value={sh?fmt$(sh.lowTicketThisMonth)  :"—"} sub="Sheet payments this month"/>
-          <KpiCard label="Today (Sheet)"      value={sh?fmt$(sh.lowTicketToday)      :"—"} sub="Sheet payments today"/>
-        </div>
-        {/* Whop API live data */}
-        <div style={{display:"grid",gridTemplateColumns:kpiGrid,gap:10}}>
-          <KpiCard label="MRR"               value={whop?fmt$Exact(whop.mrr)              :"—"} accent sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
-          <KpiCard label="New This Month"     value={whop?whop.newMembersThisMonth    :"—"} sub="New subscribers (Whop API)"/>
-          <KpiCard label="Today (Whop API)"   value={whop?fmt$Exact(whop.revenueToday)     :"—"} green sub="Payments today"/>
-          <KpiCard label="Failed Payments"    value={whop?whop.failedPayments         :"—"} warn={!!whop?.failedPayments} sub={whop?.failedPayments?"Needs attention":"All clear"}/>
+        <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:10}}>
+          <KpiCard label="All-Time Revenue" value={sh?fmt$(sh.lowTicketRevenue)      :"—"} accent sub={sh?`${sh.lowTicketPaymentCount} payments`:undefined}/>
+          <KpiCard label="This Month"       value={sh?fmt$(sh.lowTicketThisMonth)    :"—"} sub="Payments this month"/>
+          <KpiCard label="Today"            value={sh?fmt$Exact(sh.lowTicketToday)   :"—"} sub="Payments today"/>
+          <KpiCard label="MRR"              value={whop?fmt$Exact(whop.mrr)          :"—"} accent sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
+          <KpiCard label="New This Month"   value={whop?whop.newMembersThisMonth     :"—"} sub="New subscribers"/>
         </div>
       </section>
 
