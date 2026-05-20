@@ -450,6 +450,12 @@ function DashboardView({data}:{data:DashboardData}){
   const allCalls = cal?.upcomingCalls ?? [];
   const _now = new Date();
 
+  // Expandable lead info state — keyed by email for stability across refreshes
+  // Must be declared before isInPrevious so the closure can read leadInfoMap
+  const [openRows,    setOpenRows]    = useState<Set<number>>(new Set());
+  const [leadInfoMap, setLeadInfoMap] = useState<Map<string, LeadInfo | "loading">>(new Map());
+  const fetchInitiatedRef = useRef<Set<string>>(new Set());
+
   // Split into previous (past/cancelled today) and upcoming (live or future)
   const indexedCalls = allCalls.map((call, idx) => ({ call, idx }));
   const isInPrevious = (c: typeof allCalls[0]) => {
@@ -469,11 +475,6 @@ function DashboardView({data}:{data:DashboardData}){
   };
   const prevCalls   = indexedCalls.filter(({ call: c }) => isInPrevious(c)).reverse(); // most recent first
   const futureCalls = indexedCalls.filter(({ call: c }) => !isInPrevious(c));
-
-  // Expandable lead info state — keyed by email for stability across refreshes
-  const [openRows,    setOpenRows]    = useState<Set<number>>(new Set());
-  const [leadInfoMap, setLeadInfoMap] = useState<Map<string, LeadInfo | "loading">>(new Map());
-  const fetchInitiatedRef = useRef<Set<string>>(new Set());
 
   const fetchLeadInfo = useCallback((email: string) => {
     if (!email || fetchInitiatedRef.current.has(email)) return;
