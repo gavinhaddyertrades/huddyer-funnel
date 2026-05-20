@@ -591,7 +591,7 @@ async function fetchWhopData(): Promise<WhopData | null> {
       planPrice.set(p.id, price);
     }
 
-    // ── 2. All payments — paginate all pages ──────────────────────────────────
+    // ── 2. All payments — paginate all pages (for revenueToday + failedPayments) ──
     const allPayments: WhopPayment[] = [];
     for (let page = 1; ; page++) {
       const r = await fetch(`https://api.whop.com/api/v2/payments?limit=50&page=${page}`, { headers, cache: "no-store" });
@@ -602,33 +602,22 @@ async function fetchWhopData(): Promise<WhopData | null> {
       if (page >= (d.pagination?.total_page ?? 1)) break;
     }
 
-    // Most recent paid amount per membership (API returns newest-first)
-    const lastPaid = new Map<string, number>();
-    for (const p of allPayments) {
-      if (p.status === "paid" && p.paid_at !== null && !lastPaid.has(p.membership)) {
-        lastPaid.set(p.membership, p.final_amount);
-      }
-    }
-
     // ── 3. All memberships — paginate all pages ────────────────────────────────
-    //    Use status=active for the member count (18 real active subscribers).
-    //    Walk all memberships (no filter) once to compute MRR + new-this-month.
-    let activeMembers    = 0;
+    //    MRR = sum of plan renewal_price for active, non-cancelling members.
+    //    This matches how Whop's own dashboard calculates MRR.
+    let activeMembers       = 0;
     let newMembersThisMonth = 0;
-    let mrr              = 0;
+    let mrr                 = 0;
     for (let page = 1; ; page++) {
       const r = await fetch(`https://api.whop.com/api/v2/memberships?limit=50&page=${page}`, { headers, cache: "no-store" });
       const d = await r.json() as { data?: WhopMembership[]; pagination?: { total_page: number; total_count: number } };
       const batch = d.data ?? [];
       if (!batch.length) break;
       for (const m of batch) {
-        if (m.status === "active" && !m.cancel_at_period_end) activeMembers++;
-        // MRR: active + trialing, but exclude cancel_at_period_end (they won't renew)
-        if ((m.status === "active" || m.status === "trialing") && !m.cancel_at_period_end) {
-          // Use actual last-paid amount to capture promo-code discounts;
-          // fall back to plan's renewal price for trial members not yet charged
-          const amt = lastPaid.get(m.id) ?? planPrice.get(m.plan) ?? 0;
-          mrr += amt;
+        if (m.status === "active" && !m.cancel_at_period_end) {
+          activeMembers++;
+          // MRR: use the plan's renewal_price — matches Whop dashboard exactly
+          mrr += planPrice.get(m.plan) ?? 0;
         }
         if (m.created_at >= monthStart) newMembersThisMonth++;
       }
