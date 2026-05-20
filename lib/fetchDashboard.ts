@@ -461,12 +461,21 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
 
 // ── Calendly ──────────────────────────────────────────────────────────────────
 
+export type UpcomingCall = {
+  inviteeName:  string;
+  inviteeEmail: string;
+  startTime:    string;   // ISO 8601
+  eventType:    string;   // Calendly event type name
+};
+
 export type CalendlyData = {
   /** Active (non-cancelled) calls booked in range */
   bookedInRange:    number;
   cancelledInRange: number;
   showRate:         number;
   cancelReasons:    string[];
+  /** Future scheduled calls (next 30 days), sorted ascending */
+  upcomingCalls:    UpcomingCall[];
 };
 
 async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData | null> {
@@ -474,19 +483,57 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
     const org     = encodeURIComponent(CALENDLY_ORG);
     const min     = start.toISOString();
     const max     = end.toISOString();
+    const nowIso  = new Date().toISOString();
+    const future30= new Date(Date.now() + 30 * 24 * 3600_000).toISOString();
     const headers = { Authorization: "Bearer " + CALENDLY_TOKEN };
-    const [activeRes, cancelRes] = await Promise.all([
+
+    const [activeRes, cancelRes, upcomingRes] = await Promise.all([
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`,   { headers, cache: "no-store" }),
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=canceled&count=100`, { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${nowIso}&max_start_time=${future30}&status=active&count=50`, { headers, cache: "no-store" }),
     ]);
+
     const active    = ((await activeRes.json()).collection ?? []) as unknown[];
     const cancelled = ((await cancelRes.json()).collection ?? []) as Array<{ cancellation?: { reason?: string } }>;
     const total     = active.length + cancelled.length;
+
+    type CalEvent = { uri: string; name: string; start_time: string };
+    const upcomingEvents = ((await upcomingRes.json()).collection ?? []) as CalEvent[];
+
+    // Fetch invitees for every upcoming event in parallel
+    const inviteeResults = await Promise.allSettled(
+      upcomingEvents.slice(0, 30).map(async (event) => {
+        const uuid = event.uri.split("/").pop();
+        const r = await fetch(
+          `https://api.calendly.com/scheduled_events/${uuid}/invitees?count=10`,
+          { headers, cache: "no-store" }
+        );
+        const j = await r.json() as { collection?: Array<{ name: string; email: string }> };
+        return { event, invitees: j.collection ?? [] };
+      })
+    );
+
+    const upcomingCalls: UpcomingCall[] = [];
+    for (const result of inviteeResults) {
+      if (result.status !== "fulfilled") continue;
+      const { event, invitees } = result.value;
+      for (const inv of invitees) {
+        upcomingCalls.push({
+          inviteeName:  inv.name  || "Unknown",
+          inviteeEmail: inv.email || "",
+          startTime:    event.start_time,
+          eventType:    event.name,
+        });
+      }
+    }
+    upcomingCalls.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
     return {
       bookedInRange:    active.length,
       cancelledInRange: cancelled.length,
       showRate: total > 0 ? Math.round((active.length / total) * 100) : 0,
       cancelReasons: cancelled.filter(e => e.cancellation?.reason).map(e => e.cancellation!.reason!).slice(0, 5),
+      upcomingCalls,
     };
   } catch (e) {
     console.error("Calendly error:", (e as Error).message);

@@ -14,6 +14,36 @@ const fmt$Exact = (n: number) =>
   "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n: number) => n + "%";
 
+function fmtCallTime(iso: string): { when: string; fromNow: string; isToday: boolean; isSoon: boolean } {
+  const d   = new Date(iso);
+  const now = new Date();
+  const diff = d.getTime() - now.getTime();
+  const diffH = Math.floor(diff / 3_600_000);
+  const diffD = Math.floor(diff / 86_400_000);
+
+  const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const todayStart    = new Date(); todayStart.setHours(0, 0, 0, 0);
+  const tomorrowStart = new Date(todayStart); tomorrowStart.setDate(todayStart.getDate() + 1);
+  const dayAfterStart = new Date(todayStart); dayAfterStart.setDate(todayStart.getDate() + 2);
+
+  const isToday    = d >= todayStart && d < tomorrowStart;
+  const isTomorrow = d >= tomorrowStart && d < dayAfterStart;
+  const isSoon     = diff > 0 && diff < 2 * 3_600_000; // within 2 hours
+
+  let when: string;
+  if (isToday)    when = `Today · ${timeStr}`;
+  else if (isTomorrow) when = `Tomorrow · ${timeStr}`;
+  else            when = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + ` · ${timeStr}`;
+
+  let fromNow: string;
+  if (diff <= 0)       fromNow = "now";
+  else if (diffH < 1)  fromNow = "< 1h";
+  else if (diffH < 24) fromNow = `in ${diffH}h`;
+  else                 fromNow = `in ${diffD}d`;
+
+  return { when, fromNow, isToday, isSoon };
+}
+
 // ── Page types ────────────────────────────────────────────────────────────────
 type PageKey = "dashboard" | "revenue" | "funnel" | "commissions" | "eod" | "overhead";
 
@@ -268,36 +298,82 @@ function DashboardView({data}:{data:DashboardData}){
   const sh=data.sheets.connected?data.sheets:null;
   const whop=data.whop;
   const cal=data.calendly;
-  const tf=data.typeform;
-  const grid1=mobile?"repeat(2,1fr)":"repeat(auto-fill,minmax(150px,1fr))";
+  const grid1=mobile?"repeat(2,1fr)":"repeat(4,1fr)";
+
+  const upcoming   = cal?.upcomingCalls ?? [];
+  const showRate   = cal?.showRate ?? 0;
+  const expectedShows = upcoming.length > 0 && showRate > 0
+    ? Math.round(upcoming.length * showRate / 100) : null;
+
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
+
+      {/* ── 4 KPI cards ── */}
       <section>
-        <SectionLabel>Revenue Overview</SectionLabel>
+        <SectionLabel>Overview</SectionLabel>
         <div style={{display:"grid",gridTemplateColumns:grid1,gap:10}}>
-          <KpiCard label="Total Contracted"  value={sh?fmt$(sh.combinedTotalContracted):"—"} accent/>
-          <KpiCard label="Cash Collected"    value={sh?fmt$(sh.combinedCashCollected)  :"—"} green/>
-          <KpiCard label="Uncollected Rev"   value={sh?fmt$(sh.combinedUncollected)    :"—"} sub="Deals future installments"/>
-          <KpiCard label="This Month"        value={sh?fmt$(sh.revenueThisMonth)       :"—"} sub="High ticket due this month"/>
-          <KpiCard label="MRR"               value={whop?fmt$Exact(whop.mrr)               :"—"} sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
-          <KpiCard label="Whop Today"        value={whop?fmt$Exact(whop.revenueToday)       :"—"} green sub="Whop payments today"/>
-          <KpiCard label="Churned Revenue"   value={sh?fmt$(sh.churnedRevenue)         :"—"} warn={!!sh&&sh.churnedRevenue>0} sub={sh&&sh.voidedLeads.length>0?`${sh.voidedLeads.length} voided`:undefined}/>
-          <KpiCard label="Net Collected"     value={sh?fmt$(sh.combinedNetCollected)   :"—"} green sub="Cash collected − churned"/>
+          <KpiCard label="Total Contracted" value={sh?fmt$(sh.combinedTotalContracted):"—"} accent/>
+          <KpiCard label="Cash Collected"   value={sh?fmt$(sh.combinedCashCollected)  :"—"} green/>
+          <KpiCard label="MRR"              value={whop?fmt$Exact(whop.mrr)            :"—"} sub={whop?`${whop.activeMemberCount} active members`:undefined}/>
+          <KpiCard label="HT Deals Closed"  value={sh?.dealsClosed??"—"} sub="All time · distinct leads"/>
         </div>
       </section>
+
       <GoldDivider/>
+
+      {/* ── Upcoming calls ── */}
       <section>
-        <SectionLabel>Sales Performance</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:grid1,gap:10}}>
-          <KpiCard label="Deals Closed"    value={sh?.dealsClosed??"—"} accent sub="All time"/>
-          <KpiCard label="Avg Deal Value"  value={sh?fmt$(sh.avgDealValue):"—"} sub="All time"/>
-          <KpiCard label="Applications"    value={tf?.totalInRange??"—"} sub="Typeform all time"/>
-          <KpiCard label="Calls Booked"    value={cal?.bookedInRange??"—"} sub="Calendly all time"/>
-          <KpiCard label="Conversion Rate" value={data.conversionRate!==null?fmtPct(data.conversionRate):"—"} sub="Applications → Calls" accent={!!data.conversionRate&&data.conversionRate>=15} warn={data.conversionRate!==null&&data.conversionRate<8}/>
-          <KpiCard label="Close Rate"      value={data.closeRate!==null?fmtPct(data.closeRate):"—"} sub="Calls → Deals" accent={!!data.closeRate&&data.closeRate>=30} warn={data.closeRate!==null&&data.closeRate<15}/>
-          <KpiCard label="Show Rate"       value={cal?fmtPct(cal.showRate):"—"} sub={cal?`${cal.cancelledInRange} cancelled`:undefined} accent={!!cal&&cal.showRate>=70} warn={!!cal&&cal.showRate<50}/>
-          <KpiCard label="Failed Payments" value={whop?.failedPayments??"—"} warn={!!whop?.failedPayments} sub={whop?.failedPayments?"Whop — needs attention":"Whop — all clear"}/>
+        <SectionLabel>Upcoming</SectionLabel>
+
+        {/* Summary header */}
+        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:18,flexWrap:"wrap"}}>
+          <span style={{fontFamily:"var(--font-display)",fontSize:36,color:"#C9A84C",lineHeight:1}}>{upcoming.length}</span>
+          <div>
+            <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#CCC",margin:0}}>
+              call{upcoming.length!==1?"s":""} booked in the next 30 days
+            </p>
+            {expectedShows!==null?(
+              <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#555",margin:"3px 0 0"}}>
+                ~{expectedShows} expected to show&nbsp;&nbsp;·&nbsp;&nbsp;{showRate}% historical show rate
+              </p>
+            ):showRate>0?(
+              <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#555",margin:"3px 0 0"}}>{showRate}% historical show rate</p>
+            ):null}
+          </div>
         </div>
+
+        {upcoming.length===0?(
+          <Card>
+            <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#444",fontStyle:"italic"}}>No upcoming calls scheduled in the next 30 days</p>
+          </Card>
+        ):(
+          <Card style={{padding:0,overflow:"hidden"}}>
+            {upcoming.map((call,i)=>{
+              const {when,fromNow,isToday,isSoon}=fmtCallTime(call.startTime);
+              return(
+                <div key={i} style={{
+                  display:"flex",alignItems:"center",gap:14,
+                  padding:"13px 20px",
+                  borderBottom:i<upcoming.length-1?"1px solid rgba(255,255,255,0.05)":"none",
+                  background:isToday?"rgba(201,168,76,0.04)":"transparent",
+                }}>
+                  {/* Left: name + email */}
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:14,color:"#F2EDE6",margin:0,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeName}</p>
+                    {call.inviteeEmail&&(
+                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:"#555",margin:"2px 0 0",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{call.inviteeEmail}</p>
+                    )}
+                  </div>
+                  {/* Right: when + countdown */}
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday?600:400}}>{when}</p>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isSoon?700:400}}>{fromNow}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+        )}
       </section>
     </div>
   );
