@@ -619,11 +619,142 @@ function OverheadView({data}:{data:DashboardData}){
   );
 }
 
+// ── Password Gate ─────────────────────────────────────────────────────────────
+const GATE_KEY = "huddyer_dash_auth";
+
+function PasswordGate({ children }: { children: React.ReactNode }) {
+  const [unlocked, setUnlocked] = useState<boolean | null>(null);
+  const [value, setValue] = useState("");
+  const [shake, setShake] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setUnlocked(localStorage.getItem(GATE_KEY) === "1");
+  }, []);
+
+  function attempt() {
+    if (value.trim().toLowerCase() === "revana") {
+      localStorage.setItem(GATE_KEY, "1");
+      setUnlocked(true);
+    } else {
+      setShake(true);
+      setValue("");
+      setTimeout(() => setShake(false), 600);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }
+
+  // SSR / hydration: render nothing until we know
+  if (unlocked === null) return null;
+  if (unlocked) return <>{children}</>;
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, background: "#0A0A0A",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      zIndex: 9999, padding: "24px",
+    }}>
+      <style>{`
+        @keyframes gate-shimmer {
+          0%   { background-position: 200% center; }
+          100% { background-position: -200% center; }
+        }
+        .gate-password-label {
+          font-family: var(--font-display), sans-serif;
+          letter-spacing: 0.05em;
+          font-size: clamp(42px, 8vw, 72px);
+          line-height: 1;
+          background: linear-gradient(90deg, #A07830 0%, #D4AF37 30%, #FFF3B0 50%, #D4AF37 70%, #A07830 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: gate-shimmer 4s linear infinite;
+        }
+        @keyframes gate-shake {
+          0%,100% { transform: translateX(0); }
+          20%     { transform: translateX(-8px); }
+          40%     { transform: translateX(8px); }
+          60%     { transform: translateX(-5px); }
+          80%     { transform: translateX(5px); }
+        }
+        .gate-shake { animation: gate-shake 0.5s ease; }
+      `}</style>
+
+      <div style={{
+        width: "100%", maxWidth: 420,
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 32,
+      }}>
+        {/* Logo mark */}
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect x="3"  y="20" width="6" height="14" rx="1.5" fill="#C9A84C"/>
+          <rect x="17" y="8"  width="6" height="26" rx="1.5" fill="#C9A84C"/>
+          <rect x="31" y="14" width="6" height="20" rx="1.5" fill="#C9A84C"/>
+        </svg>
+
+        {/* Label */}
+        <div style={{ textAlign: "center" }}>
+          <div className="gate-password-label">PASSWORD</div>
+          <p style={{
+            fontFamily: "var(--font-body)", fontSize: 13, color: "#555",
+            marginTop: 8, letterSpacing: "0.04em", textTransform: "uppercase",
+          }}>
+            Internal access only
+          </p>
+        </div>
+
+        {/* Input + button */}
+        <div
+          className={shake ? "gate-shake" : ""}
+          style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12 }}
+        >
+          <input
+            ref={inputRef}
+            type="password"
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && attempt()}
+            autoFocus
+            placeholder="Enter password"
+            style={{
+              width: "100%", padding: "14px 18px",
+              background: "rgba(255,255,255,0.04)",
+              border: `1px solid ${shake ? "#E05252" : "rgba(201,168,76,0.25)"}`,
+              borderRadius: 10,
+              color: "#F2EDE6",
+              fontFamily: "var(--font-body)", fontSize: 16,
+              outline: "none",
+              letterSpacing: "0.1em",
+              textAlign: "center",
+              transition: "border-color 0.2s",
+              boxSizing: "border-box",
+            }}
+          />
+          <button
+            onClick={attempt}
+            style={{
+              width: "100%", padding: "14px 0",
+              background: "linear-gradient(135deg, #C9A84C 0%, #D4AF37 50%, #C9A84C 100%)",
+              border: "none", borderRadius: 10,
+              color: "#0A0A0A",
+              fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 700,
+              letterSpacing: "0.08em", textTransform: "uppercase",
+              cursor: "pointer",
+            }}
+          >
+            Unlock
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 const PAGE_TITLES:Record<PageKey,string>={dashboard:"Dashboard",revenue:"Revenue",funnel:"Funnel",commissions:"Commissions",eod:"EOD Reports",overhead:"Overhead"};
 function toIso(d:Date){return d.toISOString().split("T")[0];}
 
-export default function DashboardPage(){
+function DashboardPage(){
   const [data,       setData]       = useState<DashboardData|null>(null);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState(false);
@@ -735,5 +866,15 @@ export default function DashboardPage(){
         {mobile&&<BottomNav current={page} onChange={setPage}/>}
       </div>
     </MobileCtx.Provider>
+  );
+}
+
+// Re-export wrapped in password gate
+const _DashboardPage = DashboardPage;
+export default function Page() {
+  return (
+    <PasswordGate>
+      <_DashboardPage />
+    </PasswordGate>
   );
 }
