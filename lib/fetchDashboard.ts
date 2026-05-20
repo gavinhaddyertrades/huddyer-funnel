@@ -509,8 +509,9 @@ async function fetchWhopData(): Promise<WhopData | null> {
     }
 
     // ── 3. All memberships — paginate all pages ────────────────────────────────
-    //    total_count (no status filter) = all-time community size shown in Whop UI
-    let totalMembers     = 0;
+    //    Use status=active for the member count (18 real active subscribers).
+    //    Walk all memberships (no filter) once to compute MRR + new-this-month.
+    let activeMembers    = 0;
     let newMembersThisMonth = 0;
     let mrr              = 0;
     for (let page = 1; ; page++) {
@@ -518,8 +519,8 @@ async function fetchWhopData(): Promise<WhopData | null> {
       const d = await r.json() as { data?: WhopMembership[]; pagination?: { total_page: number; total_count: number } };
       const batch = d.data ?? [];
       if (!batch.length) break;
-      if (page === 1) totalMembers = d.pagination?.total_count ?? 0;
       for (const m of batch) {
+        if (m.status === "active" || m.status === "trialing") activeMembers++;
         // MRR: active + trialing (paying or about to pay)
         if (m.status === "active" || m.status === "trialing") {
           // Use actual last-paid amount to capture promo-code discounts;
@@ -540,7 +541,7 @@ async function fetchWhopData(): Promise<WhopData | null> {
       .filter(p => p.status === "open" && p.payments_failed > 0).length;
 
     return {
-      activeMemberCount:   totalMembers,
+      activeMemberCount:   activeMembers,
       mrr:                 round2(mrr),
       newMembersThisMonth,
       revenueToday,
