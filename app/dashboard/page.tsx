@@ -384,7 +384,7 @@ function RevenueView({data}:{data:DashboardData}){
   const sh=data.sheets.connected?data.sheets:null;
   const whop=data.whop;
   const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
-  const kpiGrid=mobile?"repeat(2,1fr)":"repeat(auto-fill,minmax(150px,1fr))";
+  const kpiGrid=mobile?"repeat(2,1fr)":"repeat(4,1fr)";
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
 
