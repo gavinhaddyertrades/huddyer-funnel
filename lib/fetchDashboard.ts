@@ -625,6 +625,7 @@ export type UpcomingCall = {
   endTime:      string;   // ISO 8601
   eventType:    string;   // Calendly event type name
   hostName:     string;   // Calendly host (the closer taking the call)
+  cancelled:    boolean;
 };
 
 export type CalendlyData = {
@@ -647,10 +648,11 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
     const future30= new Date(Date.now() + 30 * 24 * 3600_000).toISOString();
     const headers = { Authorization: "Bearer " + CALENDLY_TOKEN };
 
-    const [activeRes, cancelRes, upcomingRes] = await Promise.all([
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`,   { headers, cache: "no-store" }),
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=canceled&count=100`, { headers, cache: "no-store" }),
-      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${past3h}&max_start_time=${future30}&status=active&count=50`, { headers, cache: "no-store" }),
+    const [activeRes, cancelRes, upcomingRes, upcomingCancelRes] = await Promise.all([
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=active&count=100`,    { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${min}&max_start_time=${max}&status=canceled&count=100`,  { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${past3h}&max_start_time=${future30}&status=active&count=50`,   { headers, cache: "no-store" }),
+      fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${past3h}&max_start_time=${future30}&status=canceled&count=50`, { headers, cache: "no-store" }),
     ]);
 
     const active    = ((await activeRes.json()).collection ?? []) as unknown[];
@@ -661,11 +663,17 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
       uri: string; name: string; start_time: string; end_time: string;
       event_memberships?: Array<{ user_name?: string }>;
     };
-    const upcomingEvents = ((await upcomingRes.json()).collection ?? []) as CalEvent[];
+    const upcomingActive   = ((await upcomingRes.json()).collection        ?? []) as CalEvent[];
+    const upcomingCancelled= ((await upcomingCancelRes.json()).collection  ?? []) as CalEvent[];
+    // Combine: active first, cancelled second (both sorted by start_time below)
+    const upcomingEvents = [
+      ...upcomingActive.map(e  => ({ ...e, _cancelled: false })),
+      ...upcomingCancelled.map(e => ({ ...e, _cancelled: true  })),
+    ];
 
     // Fetch invitees for every upcoming event in parallel
     const inviteeResults = await Promise.allSettled(
-      upcomingEvents.slice(0, 30).map(async (event) => {
+      upcomingEvents.slice(0, 50).map(async (event) => {
         const uuid = event.uri.split("/").pop();
         const r = await fetch(
           `https://api.calendly.com/scheduled_events/${uuid}/invitees?count=10`,
@@ -688,6 +696,7 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
           endTime:      event.end_time,
           eventType:    event.name,
           hostName:     event.event_memberships?.[0]?.user_name || "",
+          cancelled:    event._cancelled,
         });
       }
     }

@@ -453,14 +453,16 @@ function DashboardView({data}:{data:DashboardData}){
   const _todayStart = new Date(_now); _todayStart.setHours(0,0,0,0);
   const _tomorrowStart = new Date(_todayStart); _tomorrowStart.setDate(_todayStart.getDate()+1);
   const completedToday = upcoming.filter(c => {
+    if (c.cancelled) return false;
     const end = c.endTime ? new Date(c.endTime) : null;
     return end && _now >= end && new Date(c.startTime) >= _todayStart && new Date(c.startTime) < _tomorrowStart;
   }).length;
   const remaining = upcoming.filter(c => {
+    if (c.cancelled) return false;
     const start = new Date(c.startTime);
     const end   = c.endTime ? new Date(c.endTime) : null;
-    const isToday = start >= _todayStart && start < _tomorrowStart;
-    return isToday && (end ? _now < end : _now < start);
+    const isTodayCall = start >= _todayStart && start < _tomorrowStart;
+    return isTodayCall && (end ? _now < end : _now < start);
   }).length;
 
   // Expandable lead info state
@@ -524,6 +526,7 @@ function DashboardView({data}:{data:DashboardData}){
           <Card style={{padding:0,overflow:"hidden"}}>
             {upcoming.map((call,i)=>{
               const {when,fromNow,isToday,isSoon,isLive,isPast}=fmtCallTime(call.startTime, call.endTime);
+              const isCancelled = call.cancelled;
               const isOpen = openRows.has(i);
               const info   = leadInfoMap.get(i);
               return(
@@ -532,8 +535,8 @@ function DashboardView({data}:{data:DashboardData}){
                   <div style={{
                     display:"flex",alignItems:"center",gap:14,
                     padding:"13px 20px",
-                    background:isPast?"rgba(255,255,255,0.01)":isLive?"rgba(76,175,80,0.04)":isToday?"rgba(201,168,76,0.04)":"transparent",
-                    opacity:isPast?0.65:1,
+                    background:isCancelled?"rgba(224,82,82,0.04)":isPast?"rgba(255,255,255,0.01)":isLive?"rgba(76,175,80,0.04)":isToday?"rgba(201,168,76,0.04)":"transparent",
+                    opacity:isCancelled||isPast?0.6:1,
                     cursor:"pointer",
                   }} onClick={()=>call.inviteeEmail&&toggleRow(i,call.inviteeEmail)}>
                     {/* Chevron */}
@@ -549,8 +552,10 @@ function DashboardView({data}:{data:DashboardData}){
                     </div>
                     {/* Right: when + countdown */}
                     <div style={{textAlign:"right",flexShrink:0}}>
-                      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday?600:400}}>{when}</p>
-                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isLive?"#4CAF50":isPast?"#444":isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isLive||isSoon?700:400,letterSpacing:isLive?"0.08em":undefined}}>{fromNow}</p>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:12,color:isCancelled?"#666":isToday?"#C9A84C":"#AAA",margin:0,fontWeight:isToday&&!isCancelled?600:400}}>{when}</p>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:11,color:isCancelled?"#E05252":isLive?"#4CAF50":isPast?"#444":isSoon?"#E05252":isToday?"#C9A84C":"#555",margin:"2px 0 0",fontWeight:isCancelled||isLive||isSoon?700:400,letterSpacing:isLive?"0.08em":undefined}}>
+                        {isCancelled?"Cancelled":fromNow}
+                      </p>
                     </div>
                   </div>
                   {/* Expanded: Typeform answers */}
