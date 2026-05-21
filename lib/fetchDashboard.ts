@@ -208,6 +208,7 @@ export type SheetsData =
       revenueStillDueThisMonth: number;
       /** Cash collected today (US calendar date) */
       htCashCollectedToday: number;
+      dealsClosedToday:     number;
 
       // ── Date-range filtered ──
       dealsClosed:        number;    // distinct lead names where dateClosed in range
@@ -363,6 +364,12 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
   const revenueStillDueThisMonth = round2(allDealRows.filter(r => r.paymentDate >= tomorrowStart && r.paymentDate <= monthEnd).reduce((s, r) => s + r.cashCollected, 0));
   const htTodayStart = startOfTodayUS();
   const htCashCollectedToday = round2(allDealRows.filter(r => r.paymentDate >= htTodayStart && r.paymentDate <= today).reduce((s, r) => s + r.cashCollected, 0));
+  const dealsClosedToday = new Set(
+    allDealRows
+      .filter(r => r.dateClosed >= htTodayStart && r.dateClosed <= today)
+      .map(r => r.leadName)
+      .filter(Boolean)
+  ).size;
 
   // ── Date-range filtered ─────────────────────────────────────────────────────
   const dealsInRange  = allDealRows.filter(r => r.dateClosed >= start && r.dateClosed <= end);
@@ -588,6 +595,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     revenueThisMonth,
     revenueStillDueThisMonth,
     htCashCollectedToday,
+    dealsClosedToday,
     dealsClosed,
     avgDealValue,
     pifContracted:        round2(pif),
@@ -647,6 +655,7 @@ export type CalendlyData = {
   cancelledInRange: number;
   showRate:         number;
   cancelReasons:    string[];
+  bookedToday:      number;
   /** Future scheduled calls (next 30 days), sorted ascending */
   upcomingCalls:    UpcomingCall[];
 };
@@ -674,6 +683,7 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
 
     type CalEvent = {
       uri: string; name: string; start_time: string; end_time: string;
+      created_at?: string;
       event_memberships?: Array<{ user_name?: string }>;
       cancellation?: { reason?: string; canceled_by?: string };
     };
@@ -725,11 +735,18 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
     }
     upcomingCalls.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
+    // Count active events booked today (created_at = today US date)
+    const calTodayStart = startOfTodayUS();
+    const bookedToday = upcomingActive.filter(e =>
+      e.created_at && new Date(e.created_at) >= calTodayStart
+    ).length;
+
     return {
       bookedInRange:    active.length,
       cancelledInRange: cancelled.length,
       showRate: total > 0 ? Math.round((active.length / total) * 100) : 0,
       cancelReasons: cancelled.filter(e => e.cancellation?.reason).map(e => e.cancellation!.reason!).slice(0, 5),
+      bookedToday,
       upcomingCalls,
     };
   } catch (e) {
@@ -743,8 +760,9 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
 // Columns: 0=Date, 1=Name, 2=Age, 3=Budget, 4=utm_source, 5=utm_medium
 
 export type TypeformData = {
-  totalInRange:   number;
-  trafficSources: { source: string; count: number }[];
+  totalInRange:      number;
+  applicationsToday: number;
+  trafficSources:    { source: string; count: number }[];
 };
 
 async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData | null> {
@@ -753,11 +771,14 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
     if (!raw) return null;
 
     const sourceMap = new Map<string, number>();
-    let totalInRange = 0;
+    let totalInRange    = 0;
+    let applicationsToday = 0;
+    const appTodayStart = startOfTodayUS();
 
     for (const c of raw) {
       const date = parseGvizDate(c[0]);
       if (!date) continue;
+      if (date >= appTodayStart) applicationsToday++;
       if (date < start || date > end) continue;
       totalInRange++;
       const src = String(c[4] ?? "").trim().toLowerCase() || "organic";
@@ -766,6 +787,7 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
 
     return {
       totalInRange,
+      applicationsToday,
       trafficSources: Array.from(sourceMap.entries())
         .sort((a, b) => b[1] - a[1])
         .map(([source, count]) => ({ source, count })),
@@ -872,6 +894,27 @@ async function fetchWhopData(): Promise<WhopData | null> {
   }
 }
 
+// ── DNQs today (Close CRM) ────────────────────────────────────────────────────
+
+async function fetchDnqsToday(): Promise<number> {
+  try {
+    const CLOSE_API_KEY = process.env.CLOSE_API_KEY!;
+    const auth    = "Basic " + Buffer.from(CLOSE_API_KEY + ":").toString("base64");
+    const todayStart = startOfTodayUS();
+    const todayISO   = todayStart.toISOString(); // UTC midnight of US date
+
+    const res = await fetch(
+      `https://api.close.com/api/v1/lead/?query=${encodeURIComponent('status_label:"DNQ"')}&date_created__gte=${encodeURIComponent(todayISO)}&_limit=100&_fields=id`,
+      { headers: { Authorization: auth }, cache: "no-store" }
+    );
+    if (!res.ok) return 0;
+    const json = await res.json() as { data?: unknown[] };
+    return json.data?.length ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 // ── Aggregate ─────────────────────────────────────────────────────────────────
 
 export type DashboardData = {
@@ -881,15 +924,17 @@ export type DashboardData = {
   whop:           WhopData | null;
   conversionRate: number | null;
   closeRate:      number | null;
+  dnqsToday:      number;
   lastUpdated:    string;
 };
 
 export async function fetchAllDashboardData(start: Date, end: Date): Promise<DashboardData> {
-  const [sh, cal, tf, whop] = await Promise.allSettled([
+  const [sh, cal, tf, whop, dnqResult] = await Promise.allSettled([
     fetchSheetsData(start, end),
     fetchCalendlyData(start, end),
     fetchTypeformData(start, end),
     fetchWhopData(),
+    fetchDnqsToday(),
   ]);
 
   const sheets   = sh.status   === "fulfilled" ? sh.value   : ({ connected: false, error: "rejected" } as SheetsData);
@@ -908,6 +953,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
     whop:           whopVal,
     conversionRate: apps   > 0 ? Math.round((booked / apps)   * 100) : null,
     closeRate:      booked > 0 ? Math.round((closed / booked) * 100) : null,
+    dnqsToday:      dnqResult.status === "fulfilled" ? dnqResult.value : 0,
     lastUpdated:    new Date().toISOString(),
   };
 }
