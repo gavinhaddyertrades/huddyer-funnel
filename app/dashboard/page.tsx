@@ -369,8 +369,8 @@ function EodTable({title,rows,columns,emptyMsg}:{title:string;rows:Record<string
       {rows.length===0?(
         <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#777",fontStyle:"italic"}}>{emptyMsg??"No reports yet"}</p>
       ):(
-        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"var(--font-body)",fontSize:12,minWidth:420}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch",maxWidth:"100%"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"var(--font-body)",fontSize:12,minWidth:360}}>
             <thead><tr>{columns.map(col=><th key={col.key} style={{textAlign:"left",color:"#AAA",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",fontSize:10,padding:"0 10px 8px 0",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>{col.label}</th>)}</tr></thead>
             <tbody>{rows.map((row,i)=><tr key={i}>{columns.map(col=><td key={col.key} style={{padding:"7px 10px 7px 0",color:"#AAA",borderBottom:"1px solid rgba(255,255,255,0.04)",whiteSpace:"nowrap"}}>{String(row[col.key]??"")}</td>)}</tr>)}</tbody>
           </table>
@@ -532,11 +532,11 @@ function DashboardView({data}:{data:DashboardData}){
       <section>
         <SectionLabel>Daily Stats</SectionLabel>
         <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:10}}>
-          <KpiCard label="Applications"     value={tf?.applicationsToday          ?? "—"} sub="Submitted today"/>
-          <KpiCard label="Calls Booked"     value={cal?.bookedToday               ?? "—"} sub="Booked today" accent/>
-          <KpiCard label="No Shows / Cancels" value={cal?.noShowsCancelsToday     ?? "—"} sub="Today" warn/>
-          <KpiCard label="DNQs"             value={data.dnqsToday}                        sub="Disqualified today" warn/>
-          <KpiCard label="Deals Closed"     value={sh?.dealsClosedToday           ?? "—"} sub="Closed today" green/>
+          <KpiCard label="Applications"        value={tf?.applicationsToday             ?? "—"} sub="Submitted today"/>
+          <KpiCard label="Calls Booked"        value={cal?.bookedToday                  ?? "—"} sub="Booked today" accent/>
+          <KpiCard label="No Shows / Cancels"  value={cal?.noShowsCancelsToday          ?? "—"} sub="Today" warn/>
+          <KpiCard label="DNQs"                value={data.dnqsToday}                           sub="Disqualified today" warn/>
+          <KpiCard label="Deals Closed"        value={sh?.dealsClosedToday              ?? "—"} sub="Closed today" green/>
         </div>
       </section>
 
@@ -974,7 +974,7 @@ function EodView({data}:{data:DashboardData}){
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
         <SectionLabel>EOD Reports</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
+        <div style={{display:"grid",gridTemplateColumns:mobile?"minmax(0,1fr)":"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
           <EodTable title="Setter EOD" rows={setterRows as Record<string,string|number>[]} emptyMsg="No setter reports yet"
             columns={[{key:"name",label:"Setter"},{key:"contacted",label:"Contacted"},{key:"booked",label:"Calls Booked"},{key:"bookRate",label:"Book Rate"}]}/>
           <EodTable title="Closer EOD" rows={closerRows as Record<string,string|number>[]} emptyMsg="No closer reports yet"
