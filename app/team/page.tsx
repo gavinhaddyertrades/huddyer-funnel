@@ -173,48 +173,52 @@ export default function TeamPage() {
   const isSetter = mySetterRows.length > 0;
   const isCloser = myCloserRows.length > 0;
 
-  // Deal rows for this person (from Deals sheet)
-  const myCloserDeals = (sh?.teamDealRows ?? []).filter(d => d.closerName.trim().toLowerCase() === nameLow);
-  const mySetterDeals = (sh?.teamDealRows ?? []).filter(d => d.setterName.trim().toLowerCase() === nameLow);
+  // All deal rows where this person earned anything (as setter, closer, or both)
+  const allMyDealRows = (sh?.teamDealRows ?? []).filter(d =>
+    d.closerName.trim().toLowerCase() === nameLow ||
+    d.setterName.trim().toLowerCase() === nameLow
+  );
 
-  // Setter stats
+  // Setter stats (EOD)
   const totalContacted = mySetterRows.reduce((s, r) => s + r.contacted,   0);
   const totalBooked    = mySetterRows.reduce((s, r) => s + r.callsBooked, 0);
   const setterNoShows  = mySetterRows.reduce((s, r) => s + r.noShows,     0);
   const bookingRate    = totalContacted > 0 ? Math.round((totalBooked / totalContacted) * 100) : null;
 
-  // Closer stats — performance from EOD, financials from Deals sheet
-  const totalScheduled  = myCloserRows.reduce((s, r) => s + r.callsScheduled, 0);
-  const eodDealsClosed  = myCloserRows.reduce((s, r) => s + r.dealsClosed,    0);
-  const closerNoShows   = myCloserRows.reduce((s, r) => s + r.noShows,        0);
-  const closeRate       = totalScheduled > 0 ? Math.round((eodDealsClosed / totalScheduled) * 100) : null;
+  // Closer stats — performance from EOD
+  const totalScheduled = myCloserRows.reduce((s, r) => s + r.callsScheduled, 0);
+  const eodDealsClosed = myCloserRows.reduce((s, r) => s + r.dealsClosed,    0);
+  const closerNoShows  = myCloserRows.reduce((s, r) => s + r.noShows,        0);
+  const closeRate      = totalScheduled > 0 ? Math.round((eodDealsClosed / totalScheduled) * 100) : null;
 
-  // Closer financials from actual Deals sheet
-  const closerCashCollected = myCloserDeals.reduce((s, d) => s + d.cashCollected,    0);
-  const closerTotalComm     = myCloserDeals.reduce((s, d) => s + d.closerCommission, 0);
+  // Combined commission per deal: setter + closer if they played both roles
+  type DealEntry = { leadName: string; program: string; dateClosed: string; dateClosedMs: number; cashCollected: number; commission: number };
+  const dealMap = new Map<string, DealEntry>();
+  let closerCashCollected = 0;
 
-  // Distinct deals by lead name (for deals closed count + breakdown)
-  const closerLeadMap = new Map<string, { leadName: string; program: string; dateClosed: string; dateClosedMs: number; cashCollected: number; commission: number }>();
-  for (const d of myCloserDeals) {
-    const key = d.leadName.toLowerCase();
+  for (const d of allMyDealRows) {
+    const key    = d.leadName.toLowerCase();
     if (!key) continue;
-    const ex = closerLeadMap.get(key);
-    if (ex) { ex.cashCollected += d.cashCollected; ex.commission += d.closerCommission; }
-    else closerLeadMap.set(key, { leadName: d.leadName, program: d.program, dateClosed: d.dateClosed, dateClosedMs: d.dateClosedMs, cashCollected: d.cashCollected, commission: d.closerCommission });
+    const isCloser = d.closerName.trim().toLowerCase() === nameLow;
+    const isSett   = d.setterName.trim().toLowerCase() === nameLow;
+    const myComm   = (isCloser ? d.closerCommission : 0) + (isSett ? d.setterCommission : 0);
+    if (isCloser) closerCashCollected += d.cashCollected;
+    const ex = dealMap.get(key);
+    if (ex) { ex.cashCollected += d.cashCollected; ex.commission += myComm; }
+    else dealMap.set(key, { leadName: d.leadName, program: d.program, dateClosed: d.dateClosed, dateClosedMs: d.dateClosedMs, cashCollected: d.cashCollected, commission: myComm });
   }
-  const closerBreakdown = Array.from(closerLeadMap.values()).sort((a, b) => b.dateClosedMs - a.dateClosedMs);
-  const dealsClosed = closerLeadMap.size;
 
-  // Setter breakdown (distinct leads set for)
-  const setterLeadMap = new Map<string, { leadName: string; program: string; dateClosed: string; dateClosedMs: number; cashCollected: number; commission: number }>();
-  for (const d of mySetterDeals) {
-    const key = d.leadName.toLowerCase();
-    if (!key) continue;
-    const ex = setterLeadMap.get(key);
-    if (ex) { ex.cashCollected += d.cashCollected; ex.commission += d.setterCommission; }
-    else setterLeadMap.set(key, { leadName: d.leadName, program: d.program, dateClosed: d.dateClosed, dateClosedMs: d.dateClosedMs, cashCollected: d.cashCollected, commission: d.setterCommission });
-  }
-  const setterBreakdown = Array.from(setterLeadMap.values()).sort((a, b) => b.dateClosedMs - a.dateClosedMs);
+  const dealBreakdown = Array.from(dealMap.values()).sort((a, b) => b.dateClosedMs - a.dateClosedMs);
+  const totalAllComm  = dealMap.size > 0 ? Array.from(dealMap.values()).reduce((s, d) => s + d.commission, 0) : allMyDealRows.reduce((s, d) => {
+    return s + (d.closerName.trim().toLowerCase() === nameLow ? d.closerCommission : 0)
+             + (d.setterName.trim().toLowerCase() === nameLow ? d.setterCommission : 0);
+  }, 0);
+
+  // Deals closed = distinct leads where they were the closer
+  const dealsClosed = [...dealMap.keys()].filter(k => {
+    const rows = allMyDealRows.filter(d => d.leadName.toLowerCase() === k);
+    return rows.some(d => d.closerName.trim().toLowerCase() === nameLow);
+  }).length;
 
   // Commissions
   const findAmt = (arr: { name: string; amount: number }[]) =>
@@ -293,8 +297,8 @@ export default function TeamPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 }}>
                   <StatCard label="Close Rate"        value={closeRate !== null ? fmtPct(closeRate) : "—"} color="#C9A84C" sub="Calls → deals"/>
                   <StatCard label="Deals Closed"      value={dealsClosed}             color="#4CAF50" sub="All time"/>
-                  <StatCard label="Cash Collected"    value={fmt$(closerCashCollected)}  color="#F2EDE6" sub="From your deals"/>
-                  <StatCard label="Total Commissions" value={fmt$Exact(closerTotalComm)} color="#C9A84C" sub="All time earned"/>
+                  <StatCard label="Cash Collected"    value={fmt$(closerCashCollected)} color="#F2EDE6" sub="From your deals"/>
+                  <StatCard label="Total Commissions" value={fmt$Exact(totalAllComm)}   color="#C9A84C" sub="All time earned"/>
                 </div>
               </section>
             )}
@@ -346,39 +350,15 @@ export default function TeamPage() {
               </section>
             )}
 
-            {/* ── Closer Breakdown ── */}
-            {isCloser && closerBreakdown.length > 0 && (
+            {/* ── Deal Breakdown (unified: setter + closer commissions combined per deal) ── */}
+            {dealBreakdown.length > 0 && (
               <>
                 <GoldDiv />
                 <section>
                   <SLabel>Deal Breakdown</SLabel>
                   <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
-                    {closerBreakdown.map((d, i) => (
-                      <div key={d.leadName} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < closerBreakdown.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 14, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.leadName}</p>
-                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#666", margin: 0 }}>{d.program} · {d.dateClosed}</p>
-                        </div>
-                        <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
-                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 13, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 700 }}>{fmt$(d.cashCollected)}</p>
-                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#C9A84C", margin: 0 }}>You earned {fmt$Exact(d.commission)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </>
-            )}
-
-            {/* ── Setter Breakdown ── */}
-            {isSetter && setterBreakdown.length > 0 && (
-              <>
-                <GoldDiv />
-                <section>
-                  <SLabel>Deal Breakdown</SLabel>
-                  <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
-                    {setterBreakdown.map((d, i) => (
-                      <div key={d.leadName} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < setterBreakdown.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                    {dealBreakdown.map((d, i) => (
+                      <div key={d.leadName} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < dealBreakdown.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
                         <div style={{ minWidth: 0, flex: 1 }}>
                           <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 14, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.leadName}</p>
                           <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#666", margin: 0 }}>{d.program} · {d.dateClosed}</p>
