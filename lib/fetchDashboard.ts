@@ -283,6 +283,19 @@ export type SheetsData =
       // ── Overhead ──
       subscriptions:      { tool: string; monthlyCost: number }[];
       totalMonthlyOverhead: number;
+
+      // ── Per-person deal rows (for team member view) ──
+      teamDealRows: Array<{
+        leadName:         string;
+        program:          string;
+        dateClosed:       string;   // "May 21, 2026"
+        dateClosedMs:     number;   // epoch ms for sorting
+        cashCollected:    number;
+        setterName:       string;
+        setterCommission: number;
+        closerName:       string;
+        closerCommission: number;
+      }>;
     }
   | { connected: false; error: string };
 
@@ -632,6 +645,17 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     payPeriodCommission,
     subscriptions,
     totalMonthlyOverhead: round2(subscriptions.reduce((s, x) => s + x.monthlyCost, 0)),
+    teamDealRows: allDealRows.map(r => ({
+      leadName:         r.leadName,
+      program:          r.program,
+      dateClosed:       r.dateClosed.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      dateClosedMs:     r.dateClosed.getTime(),
+      cashCollected:    r.cashCollected,
+      setterName:       r.setterName,
+      setterCommission: r.setterCommission,
+      closerName:       r.closerName,
+      closerCommission: r.closerCommission,
+    })),
   };
 }
 

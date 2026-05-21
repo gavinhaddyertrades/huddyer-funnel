@@ -4,13 +4,15 @@ import { useEffect, useState, useCallback } from "react";
 import type { DashboardData } from "@/lib/fetchDashboard";
 
 const TEAM_AUTH_KEY = "huddyer_team_auth";
-const AUTH_TTL_MS   = 24 * 3_600_000; // 24 hours
+const AUTH_TTL_MS   = 24 * 3_600_000;
 
+const fmt$ = (n: number) =>
+  "$" + n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const fmt$Exact = (n: number) =>
   "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n: number) => n + "%";
 
-// ── Shared atoms ──────────────────────────────────────────────────────────────
+// ── Atoms ─────────────────────────────────────────────────────────────────────
 
 function Logo() {
   return (
@@ -57,14 +59,6 @@ function CommRow({ label, value, highlight, dim }: { label: string; value: strin
         lineHeight: 1,
       }}>{value}</span>
     </div>
-  );
-}
-
-function RoleBadge({ label, color }: { label: string; color: string }) {
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", padding: "2px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700, fontFamily: "var(--font-dm-sans,sans-serif)", letterSpacing: "0.08em", textTransform: "uppercase", background: `${color}18`, color, border: `1px solid ${color}30` }}>
-      {label}
-    </span>
   );
 }
 
@@ -173,27 +167,56 @@ export default function TeamPage() {
   const periods = sh?.payPeriodCommission;
   const nameLow = authedName.toLowerCase().trim();
 
-  // Aggregate EOD rows for this person
+  // EOD rows for this person
   const mySetterRows = (sh?.setterEod.rows ?? []).filter(r => r.name.trim().toLowerCase() === nameLow);
   const myCloserRows = (sh?.closerEod.rows ?? []).filter(r => r.name.trim().toLowerCase() === nameLow);
   const isSetter = mySetterRows.length > 0;
   const isCloser = myCloserRows.length > 0;
 
-  // Setter stats (all-time from EOD submissions)
-  const totalContacted = mySetterRows.reduce((s, r) => s + r.contacted, 0);
+  // Deal rows for this person (from Deals sheet)
+  const myCloserDeals = (sh?.teamDealRows ?? []).filter(d => d.closerName.trim().toLowerCase() === nameLow);
+  const mySetterDeals = (sh?.teamDealRows ?? []).filter(d => d.setterName.trim().toLowerCase() === nameLow);
+
+  // Setter stats
+  const totalContacted = mySetterRows.reduce((s, r) => s + r.contacted,   0);
   const totalBooked    = mySetterRows.reduce((s, r) => s + r.callsBooked, 0);
-  const setterNoShows  = mySetterRows.reduce((s, r) => s + r.noShows, 0);
+  const setterNoShows  = mySetterRows.reduce((s, r) => s + r.noShows,     0);
   const bookingRate    = totalContacted > 0 ? Math.round((totalBooked / totalContacted) * 100) : null;
 
-  // Closer stats (all-time from EOD submissions)
-  const totalScheduled = myCloserRows.reduce((s, r) => s + r.callsScheduled, 0);
-  const totalClosed    = myCloserRows.reduce((s, r) => s + r.dealsClosed, 0);
-  const closerNoShows  = myCloserRows.reduce((s, r) => s + r.noShows, 0);
-  const totalRescheds  = myCloserRows.reduce((s, r) => s + r.reschedules, 0);
-  const closeRate      = totalScheduled > 0 ? Math.round((totalClosed    / totalScheduled) * 100) : null;
-  const showRate       = totalScheduled > 0 ? Math.round(((totalScheduled - closerNoShows) / totalScheduled) * 100) : null;
+  // Closer stats — performance from EOD, financials from Deals sheet
+  const totalScheduled  = myCloserRows.reduce((s, r) => s + r.callsScheduled, 0);
+  const eodDealsClosed  = myCloserRows.reduce((s, r) => s + r.dealsClosed,    0);
+  const closerNoShows   = myCloserRows.reduce((s, r) => s + r.noShows,        0);
+  const closeRate       = totalScheduled > 0 ? Math.round((eodDealsClosed / totalScheduled) * 100) : null;
 
-  // Commission (default to 0 when not present in period)
+  // Closer financials from actual Deals sheet
+  const closerCashCollected = myCloserDeals.reduce((s, d) => s + d.cashCollected,    0);
+  const closerTotalComm     = myCloserDeals.reduce((s, d) => s + d.closerCommission, 0);
+
+  // Distinct deals by lead name (for deals closed count + breakdown)
+  const closerLeadMap = new Map<string, { leadName: string; program: string; dateClosed: string; dateClosedMs: number; cashCollected: number; commission: number }>();
+  for (const d of myCloserDeals) {
+    const key = d.leadName.toLowerCase();
+    if (!key) continue;
+    const ex = closerLeadMap.get(key);
+    if (ex) { ex.cashCollected += d.cashCollected; ex.commission += d.closerCommission; }
+    else closerLeadMap.set(key, { leadName: d.leadName, program: d.program, dateClosed: d.dateClosed, dateClosedMs: d.dateClosedMs, cashCollected: d.cashCollected, commission: d.closerCommission });
+  }
+  const closerBreakdown = Array.from(closerLeadMap.values()).sort((a, b) => b.dateClosedMs - a.dateClosedMs);
+  const dealsClosed = closerLeadMap.size;
+
+  // Setter breakdown (distinct leads set for)
+  const setterLeadMap = new Map<string, { leadName: string; program: string; dateClosed: string; dateClosedMs: number; cashCollected: number; commission: number }>();
+  for (const d of mySetterDeals) {
+    const key = d.leadName.toLowerCase();
+    if (!key) continue;
+    const ex = setterLeadMap.get(key);
+    if (ex) { ex.cashCollected += d.cashCollected; ex.commission += d.setterCommission; }
+    else setterLeadMap.set(key, { leadName: d.leadName, program: d.program, dateClosed: d.dateClosed, dateClosedMs: d.dateClosedMs, cashCollected: d.cashCollected, commission: d.setterCommission });
+  }
+  const setterBreakdown = Array.from(setterLeadMap.values()).sort((a, b) => b.dateClosedMs - a.dateClosedMs);
+
+  // Commissions
   const findAmt = (arr: { name: string; amount: number }[]) =>
     arr.find(r => r.name.toLowerCase().trim() === nameLow)?.amount ?? 0;
   const currSetterAmt = periods ? findAmt(periods.current.setterComm)  : 0;
@@ -206,10 +229,9 @@ export default function TeamPage() {
   const hasAnyData = isSetter || isCloser || currTotal > 0 || prevTotal > 0;
 
   const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "20px 22px", width: "100%" };
-  const grid2: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 };
 
   return (
-    <div style={{ ...base, justifyContent: "flex-start", paddingTop: 40, paddingBottom: 48 }}>
+    <div style={{ ...base, justifyContent: "flex-start", paddingTop: 40, paddingBottom: 60 }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <div style={{ width: "100%", maxWidth: 480, display: "flex", flexDirection: "column", gap: 22 }}>
 
@@ -218,11 +240,8 @@ export default function TeamPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Logo />
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-                {isSetter && <RoleBadge label="Setter" color="#C9A84C"/>}
-                {isCloser && <RoleBadge label="Closer" color="#A78BFA"/>}
-              </div>
-              <p style={{ fontFamily: "var(--font-bebas,sans-serif)", fontSize: 24, color: "#F2EDE6", margin: 0, letterSpacing: "0.06em", lineHeight: 1 }}>{authedName}</p>
+              <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 10, color: "#AAA", margin: 0, letterSpacing: "0.12em", textTransform: "uppercase" }}>My Stats</p>
+              <p style={{ fontFamily: "var(--font-bebas,sans-serif)", fontSize: 22, color: "#F2EDE6", margin: 0, letterSpacing: "0.08em", lineHeight: 1 }}>{authedName}</p>
             </div>
           </div>
           <button onClick={() => { localStorage.removeItem(TEAM_AUTH_KEY); setAuthedName(null); setData(null); }}
@@ -257,8 +276,8 @@ export default function TeamPage() {
             {/* ── Setter Performance ── */}
             {isSetter && (
               <section>
-                <SLabel>Setter Performance</SLabel>
-                <div style={grid2}>
+                <SLabel>Performance</SLabel>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 }}>
                   <StatCard label="Book Rate"     value={bookingRate !== null ? fmtPct(bookingRate) : "—"} color="#C9A84C" sub="Contacts → booked"/>
                   <StatCard label="Calls Booked"  value={totalBooked}  color="#F2EDE6" sub="Total booked"/>
                   <StatCard label="Contacts Made" value={totalContacted} sub="Total reached out"/>
@@ -270,19 +289,13 @@ export default function TeamPage() {
             {/* ── Closer Performance ── */}
             {isCloser && (
               <section>
-                <SLabel>Closer Performance</SLabel>
-                <div style={grid2}>
-                  <StatCard label="Close Rate"      value={closeRate !== null ? fmtPct(closeRate) : "—"} color="#C9A84C" sub="Calls → deals"/>
-                  <StatCard label="Deals Closed"    value={totalClosed}    color="#4CAF50" sub="Total closed"/>
-                  <StatCard label="Show Rate"        value={showRate  !== null ? fmtPct(showRate)  : "—"} sub="Showed up rate"/>
-                  <StatCard label="Calls Scheduled" value={totalScheduled} sub="Total scheduled"/>
+                <SLabel>Performance</SLabel>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 }}>
+                  <StatCard label="Close Rate"        value={closeRate !== null ? fmtPct(closeRate) : "—"} color="#C9A84C" sub="Calls → deals"/>
+                  <StatCard label="Deals Closed"      value={dealsClosed}             color="#4CAF50" sub="All time"/>
+                  <StatCard label="Cash Collected"    value={fmt$(closerCashCollected)}  color="#F2EDE6" sub="From your deals"/>
+                  <StatCard label="Total Commissions" value={fmt$Exact(closerTotalComm)} color="#C9A84C" sub="All time earned"/>
                 </div>
-                {(closerNoShows > 0 || totalRescheds > 0) && (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginTop: 10 }}>
-                    {closerNoShows > 0  && <StatCard label="No Shows"    value={closerNoShows}  color="#E05252"/>}
-                    {totalRescheds > 0  && <StatCard label="Reschedules" value={totalRescheds}  color="#C9A84C"/>}
-                  </div>
-                )}
               </section>
             )}
 
@@ -302,18 +315,13 @@ export default function TeamPage() {
                   {currSetterAmt > 0 && <CommRow label="Setter Commission" value={fmt$Exact(currSetterAmt)} />}
                   {currCloserAmt > 0 && <CommRow label="Closer Commission" value={fmt$Exact(currCloserAmt)} />}
                   {currSetterAmt > 0 && currCloserAmt > 0 && (
-                    <>
-                      <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "10px 0 14px" }} />
-                      <CommRow label="Total" value={fmt$Exact(currTotal)} highlight />
-                    </>
+                    <><div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "10px 0 14px" }}/><CommRow label="Total" value={fmt$Exact(currTotal)} highlight /></>
+                  )}
+                  {currTotal > 0 && !(currSetterAmt > 0 && currCloserAmt > 0) && (
+                    <CommRow label="Total" value={fmt$Exact(currTotal)} highlight />
                   )}
                   {currTotal === 0 && (
                     <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 12, color: "#666", fontStyle: "italic", margin: 0 }}>No earnings this period yet</p>
-                  )}
-                  {currTotal > 0 && !(currSetterAmt > 0 && currCloserAmt > 0) && (
-                    <div style={{ marginTop: 4 }}>
-                      <CommRow label="Total" value={fmt$Exact(currTotal)} highlight />
-                    </div>
                   )}
                 </div>
 
@@ -326,20 +334,66 @@ export default function TeamPage() {
                   {prevSetterAmt > 0 && <CommRow label="Setter Commission" value={fmt$Exact(prevSetterAmt)} dim />}
                   {prevCloserAmt > 0 && <CommRow label="Closer Commission" value={fmt$Exact(prevCloserAmt)} dim />}
                   {prevSetterAmt > 0 && prevCloserAmt > 0 && (
-                    <>
-                      <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "10px 0 14px" }} />
-                      <CommRow label="Total" value={fmt$Exact(prevTotal)} dim />
-                    </>
-                  )}
-                  {prevTotal === 0 && (
-                    <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 12, color: "#555", fontStyle: "italic", margin: 0 }}>No earnings this period</p>
+                    <><div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "10px 0 14px" }}/><CommRow label="Total" value={fmt$Exact(prevTotal)} dim /></>
                   )}
                   {prevTotal > 0 && !(prevSetterAmt > 0 && prevCloserAmt > 0) && (
                     <CommRow label="Total" value={fmt$Exact(prevTotal)} dim />
                   )}
+                  {prevTotal === 0 && (
+                    <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 12, color: "#555", fontStyle: "italic", margin: 0 }}>No earnings this period</p>
+                  )}
                 </div>
               </section>
             )}
+
+            {/* ── Closer Breakdown ── */}
+            {isCloser && closerBreakdown.length > 0 && (
+              <>
+                <GoldDiv />
+                <section>
+                  <SLabel>Deal Breakdown</SLabel>
+                  <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
+                    {closerBreakdown.map((d, i) => (
+                      <div key={d.leadName} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < closerBreakdown.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 14, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.leadName}</p>
+                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#666", margin: 0 }}>{d.program} · {d.dateClosed}</p>
+                        </div>
+                        <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
+                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 13, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 700 }}>{fmt$(d.cashCollected)}</p>
+                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#C9A84C", margin: 0 }}>You earned {fmt$Exact(d.commission)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </>
+            )}
+
+            {/* ── Setter Breakdown ── */}
+            {isSetter && setterBreakdown.length > 0 && (
+              <>
+                <GoldDiv />
+                <section>
+                  <SLabel>Deal Breakdown</SLabel>
+                  <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
+                    {setterBreakdown.map((d, i) => (
+                      <div key={d.leadName} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < setterBreakdown.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 14, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.leadName}</p>
+                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#666", margin: 0 }}>{d.program} · {d.dateClosed}</p>
+                        </div>
+                        <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
+                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 13, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 700 }}>{fmt$(d.cashCollected)}</p>
+                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#C9A84C", margin: 0 }}>You earned {fmt$Exact(d.commission)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </>
+            )}
+
           </>
         )}
       </div>
