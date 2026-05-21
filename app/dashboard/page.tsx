@@ -462,10 +462,11 @@ function DashboardView({data}:{data:DashboardData}){
     const end   = c.endTime ? new Date(c.endTime) : null;
     const isLive = end && !c.cancelled ? _now >= start && _now < end : false;
     if (isLive) {
-      // If Close CRM already marked the lead Closed during the call → move to Previous
+      // If Close CRM marked the lead Closed or No Show during the call → move to Previous
       const info = leadInfoMap.get(c.inviteeEmail);
-      if (info && info !== "loading" && (info.statusLabel ?? "").toLowerCase().includes("closed")) return true;
-      return false; // still live and not yet closed
+      const sl   = (info && info !== "loading") ? (info.statusLabel ?? "").toLowerCase() : "";
+      if (sl.includes("closed") || sl.includes("no show") || sl.includes("no-show")) return true;
+      return false; // still live
     }
     if (c.rescheduled) return true; // rescheduled always goes to Previous
     if (c.cancelled)   return true; // cancelled always goes to Previous
@@ -551,18 +552,19 @@ function DashboardView({data}:{data:DashboardData}){
                     ? (info.statusLabel ?? "").toLowerCase() : "";
                   const isPitched   = closeStatus.includes("pitched");
                   const isClosedWon = closeStatus.includes("closed");
+                  const isNoShowCRM = closeStatus.includes("no show") || closeStatus.includes("no-show");
 
                   const oppVal = isClosedWon && info && info !== "loading" && info.opportunityValue
                     ? " · " + fmt$(info.opportunityValue) : "";
                   const statusLabel = isCancelled
                     ? (hasNewCall ? "Rescheduled" : reschedActive ? "Rescheduling" : call.noShow ? "No Show" : "Cancelled")
-                    : call.noShow ? "No Show"
+                    : call.noShow || isNoShowCRM ? "No Show"
                     : isPitched   ? "Pitched"
                     : isClosedWon ? "Closed" + oppVal
                     : fromNow;
                   const statusColor = isCancelled
                     ? (hasNewCall ? "#4CAF50" : reschedActive ? "#C9A84C" : "#E05252")
-                    : call.noShow ? "#E05252"
+                    : call.noShow || isNoShowCRM ? "#E05252"
                     : isPitched   ? "#E08020"
                     : isClosedWon ? "#4CAF50"
                     : isLive      ? "#4CAF50"
@@ -570,7 +572,7 @@ function DashboardView({data}:{data:DashboardData}){
                     : isSoon      ? "#E05252"
                     : isToday     ? "#C9A84C"
                     : "#555";
-                  const isBold = isCancelled||call.noShow||isLive||isSoon||isPitched||isClosedWon||hasNewCall;
+                  const isBold = isCancelled||call.noShow||isNoShowCRM||isLive||isSoon||isPitched||isClosedWon||hasNewCall;
                   return(
                     <p style={{fontFamily:"var(--font-body)",fontSize:11,color:statusColor,margin:"2px 0 0",fontWeight:isBold?700:400,letterSpacing:isLive?"0.08em":undefined}}>
                       {statusLabel}
