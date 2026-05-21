@@ -158,7 +158,7 @@ export default function TeamPage() {
               margin:               0,
               lineHeight:           1,
             }}>
-              COMMISSIONS
+              MY STATS
             </p>
             <p style={{ fontFamily: "var(--font-dm-sans, sans-serif)", fontSize: 12, color: "#555", marginTop: 8, letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Enter your password
@@ -246,7 +246,7 @@ export default function TeamPage() {
             <Logo />
             <div>
               <p style={{ fontFamily: "var(--font-dm-sans, sans-serif)", fontSize: 10, color: "#AAA", margin: 0, letterSpacing: "0.12em", textTransform: "uppercase" }}>
-                Commissions
+                My Stats
               </p>
               <p style={{ fontFamily: "var(--font-bebas, sans-serif)", fontSize: 22, color: "#F2EDE6", margin: 0, letterSpacing: "0.08em" }}>
                 {authedName}
