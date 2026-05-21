@@ -243,8 +243,11 @@ export default function TeamPage() {
         {/* ── No data ── */}
         {!loading && !hasAnyData && (
           <div style={card}>
-            <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 13, color: "#888", textAlign: "center", fontStyle: "italic", margin: 0 }}>
+            <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 14, color: "#AAA", textAlign: "center", margin: "0 0 10px" }}>
               No data found for <strong style={{ color: "#F2EDE6" }}>{authedName}</strong>.
+            </p>
+            <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 12, color: "#666", textAlign: "center", margin: 0, lineHeight: 1.6 }}>
+              If you believe this is a mistake, please reach out to your sales manager.
             </p>
           </div>
         )}
