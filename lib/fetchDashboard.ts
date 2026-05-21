@@ -425,9 +425,9 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     .map(([leadName, amount]) => ({ leadName, amount: round2(amount) }))
     .sort((a, b) => b.amount - a.amount);
 
-  // EOD — setter: gviz returns generic A/B/C cols → header text is ROW 0 → skip it
+  // EOD — setter: gviz puts headers in cols[], not as a data row — no slice needed
   const setterEodRows: EodRow[] = [];
-  for (const c of (setterEodRaw ?? []).slice(1)) {
+  for (const c of (setterEodRaw ?? [])) {
     if (!c[0]) continue;
     setterEodRows.push({
       timestamp:   parseGvizDatetime(c[0]),
