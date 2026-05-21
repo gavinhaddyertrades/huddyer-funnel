@@ -896,19 +896,38 @@ function EodView({data}:{data:DashboardData}){
   const sh=data.sheets.connected?data.sheets:null;
   if(!sh) return <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#888"}}>Google Sheets not connected.</p>;
 
-  // Deduplicate — one row per person (latest submission wins)
-  const setterRows = dedupeByName(sh.setterEod.rows).map(r=>({
-    name:      r.name,
-    contacted: r.contacted,
-    booked:    r.callsBooked,
-    bookRate:  r.contacted>0?Math.round((r.callsBooked/r.contacted)*100)+"%":"—",
-  }));
-  const closerRows = dedupeByName(sh.closerEod.rows).map(r=>({
-    name:      r.name,
-    scheduled: r.callsScheduled,
-    closed:    r.dealsClosed,
-    closeRate: r.callsScheduled>0?Math.round((r.dealsClosed/r.callsScheduled)*100)+"%":"—",
-  }));
+  // Aggregate ALL submissions per person (sum every row, not just latest)
+  const setterAgg = new Map<string, { contacted: number; booked: number }>();
+  for (const r of sh.setterEod.rows) {
+    const key = r.name.trim().toLowerCase();
+    if (!key) continue;
+    const prev = setterAgg.get(key) ?? { contacted: 0, booked: 0 };
+    setterAgg.set(key, { contacted: prev.contacted + r.contacted, booked: prev.booked + r.callsBooked });
+  }
+  const setterRows = Array.from(setterAgg.entries())
+    .map(([, v], i) => ({
+      name:      sh.setterEod.rows.find(r => r.name.trim().toLowerCase() === Array.from(setterAgg.keys())[i])?.name ?? "",
+      contacted: v.contacted,
+      booked:    v.booked,
+      bookRate:  v.contacted > 0 ? Math.round((v.booked / v.contacted) * 100) + "%" : "—",
+    }))
+    .sort((a, b) => b.booked - a.booked);
+
+  const closerAgg = new Map<string, { scheduled: number; closed: number }>();
+  for (const r of sh.closerEod.rows) {
+    const key = r.name.trim().toLowerCase();
+    if (!key) continue;
+    const prev = closerAgg.get(key) ?? { scheduled: 0, closed: 0 };
+    closerAgg.set(key, { scheduled: prev.scheduled + r.callsScheduled, closed: prev.closed + r.dealsClosed });
+  }
+  const closerRows = Array.from(closerAgg.entries())
+    .map(([, v], i) => ({
+      name:      sh.closerEod.rows.find(r => r.name.trim().toLowerCase() === Array.from(closerAgg.keys())[i])?.name ?? "",
+      scheduled: v.scheduled,
+      closed:    v.closed,
+      closeRate: v.scheduled > 0 ? Math.round((v.closed / v.scheduled) * 100) + "%" : "—",
+    }))
+    .sort((a, b) => b.closed - a.closed);
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
