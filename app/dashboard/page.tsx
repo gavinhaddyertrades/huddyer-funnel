@@ -455,7 +455,9 @@ function DashboardView({data}:{data:DashboardData}){
   // Must be declared before isInPrevious so the closure can read leadInfoMap
   const [leadInfoMap, setLeadInfoMap] = useState<Map<string, LeadInfo | "loading">>(new Map());
   const fetchInitiatedRef = useRef<Set<string>>(new Set());
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
+    new Set(["up:Today","up:Future Events","prev:Today","prev:Last 7 Days","prev:Last 30 Days"])
+  );
   const toggleSection = (label: string) =>
     setCollapsedSections(prev => { const n = new Set(prev); n.has(label) ? n.delete(label) : n.add(label); return n; });
 
