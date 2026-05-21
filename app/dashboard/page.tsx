@@ -468,7 +468,8 @@ function DashboardView({data}:{data:DashboardData}){
       return false; // still live and not yet closed
     }
     if (c.rescheduled) return true; // rescheduled always goes to Previous
-    if (c.cancelled) return true;   // cancelled/no-show always goes to Previous
+    if (c.cancelled)   return true; // cancelled always goes to Previous
+    if (c.noShow)      return true; // no-show always goes to Previous (event stays active in Calendly)
     if (end && _now >= end) return true; // fully ended
     return false;
   };
@@ -554,11 +555,13 @@ function DashboardView({data}:{data:DashboardData}){
                     ? " · " + fmt$(info.opportunityValue) : "";
                   const statusLabel = isCancelled
                     ? (hasNewCall ? "Rescheduled" : reschedActive ? "Rescheduling" : call.noShow ? "No Show" : "Cancelled")
+                    : call.noShow ? "No Show"
                     : isPitched   ? "Pitched"
                     : isClosedWon ? "Closed" + oppVal
                     : fromNow;
                   const statusColor = isCancelled
                     ? (hasNewCall ? "#4CAF50" : reschedActive ? "#C9A84C" : "#E05252")
+                    : call.noShow ? "#E05252"
                     : isPitched   ? "#E08020"
                     : isClosedWon ? "#4CAF50"
                     : isLive      ? "#4CAF50"
@@ -566,7 +569,7 @@ function DashboardView({data}:{data:DashboardData}){
                     : isSoon      ? "#E05252"
                     : isToday     ? "#C9A84C"
                     : "#555";
-                  const isBold = isCancelled||isLive||isSoon||isPitched||isClosedWon||hasNewCall;
+                  const isBold = isCancelled||call.noShow||isLive||isSoon||isPitched||isClosedWon||hasNewCall;
                   return(
                     <p style={{fontFamily:"var(--font-body)",fontSize:11,color:statusColor,margin:"2px 0 0",fontWeight:isBold?700:400,letterSpacing:isLive?"0.08em":undefined}}>
                       {statusLabel}
