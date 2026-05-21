@@ -651,13 +651,14 @@ export type UpcomingCall = {
 
 export type CalendlyData = {
   /** Active (non-cancelled) calls booked in range */
-  bookedInRange:    number;
-  cancelledInRange: number;
-  showRate:         number;
-  cancelReasons:    string[];
-  bookedToday:      number;
+  bookedInRange:       number;
+  cancelledInRange:    number;
+  showRate:            number;
+  cancelReasons:       string[];
+  bookedToday:         number;
+  noShowsCancelsToday: number;
   /** Future scheduled calls (next 30 days), sorted ascending */
-  upcomingCalls:    UpcomingCall[];
+  upcomingCalls:       UpcomingCall[];
 };
 
 async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData | null> {
@@ -741,12 +742,19 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
       e.created_at && new Date(e.created_at) >= calTodayStart
     ).length;
 
+    // No-shows + cancellations with a start time today
+    const noShowsCancelsToday = upcomingCalls.filter(c => {
+      const s = new Date(c.startTime);
+      return s >= calTodayStart && (c.noShow || c.cancelled);
+    }).length;
+
     return {
       bookedInRange:    active.length,
       cancelledInRange: cancelled.length,
       showRate: total > 0 ? Math.round((active.length / total) * 100) : 0,
       cancelReasons: cancelled.filter(e => e.cancellation?.reason).map(e => e.cancellation!.reason!).slice(0, 5),
       bookedToday,
+      noShowsCancelsToday,
       upcomingCalls,
     };
   } catch (e) {

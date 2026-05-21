@@ -531,11 +531,12 @@ function DashboardView({data}:{data:DashboardData}){
       {/* ── Daily Stats ── */}
       <section>
         <SectionLabel>Daily Stats</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:10}}>
-          <KpiCard label="Applications"  value={tf?.applicationsToday ?? "—"} sub="Submitted today"/>
-          <KpiCard label="Calls Booked"  value={cal?.bookedToday      ?? "—"} sub="Booked today" accent/>
-          <KpiCard label="DNQs"          value={data.dnqsToday}               sub="Disqualified today" warn/>
-          <KpiCard label="Deals Closed"  value={sh?.dealsClosedToday  ?? "—"} sub="Closed today" green/>
+        <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:10}}>
+          <KpiCard label="Applications"     value={tf?.applicationsToday          ?? "—"} sub="Submitted today"/>
+          <KpiCard label="Calls Booked"     value={cal?.bookedToday               ?? "—"} sub="Booked today" accent/>
+          <KpiCard label="No Shows / Cancels" value={cal?.noShowsCancelsToday     ?? "—"} sub="Today" warn/>
+          <KpiCard label="DNQs"             value={data.dnqsToday}                        sub="Disqualified today" warn/>
+          <KpiCard label="Deals Closed"     value={sh?.dealsClosedToday           ?? "—"} sub="Closed today" green/>
         </div>
       </section>
 
