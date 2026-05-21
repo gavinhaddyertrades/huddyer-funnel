@@ -455,6 +455,9 @@ function DashboardView({data}:{data:DashboardData}){
   // Must be declared before isInPrevious so the closure can read leadInfoMap
   const [leadInfoMap, setLeadInfoMap] = useState<Map<string, LeadInfo | "loading">>(new Map());
   const fetchInitiatedRef = useRef<Set<string>>(new Set());
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  const toggleSection = (label: string) =>
+    setCollapsedSections(prev => { const n = new Set(prev); n.has(label) ? n.delete(label) : n.add(label); return n; });
 
   // Split into previous (past/cancelled today) and upcoming (live or future)
   const indexedCalls = allCalls.map((call, idx) => ({ call, idx }));
@@ -609,15 +612,25 @@ function DashboardView({data}:{data:DashboardData}){
                 const todayGroup      = futureCalls.filter(({call:c})=>new Date(c.startTime)<_tomorrowStart);
                 const afterGroup      = futureCalls.filter(({call:c})=>new Date(c.startTime)>=_tomorrowStart);
 
-                const SubSection = ({label,calls}:{label:string;calls:typeof futureCalls})=>
-                  calls.length===0?null:(
+                const SubSection = ({label,calls}:{label:string;calls:typeof futureCalls})=>{
+                  if(calls.length===0) return null;
+                  const isCollapsed=collapsedSections.has("up:"+label);
+                  return(
                     <div style={{marginBottom:24}}>
-                      <p style={{fontFamily:"var(--font-body)",fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"#888",marginBottom:10,paddingLeft:2}}>{label}</p>
-                      <Card style={{padding:0,overflow:"hidden"}}>
-                        {calls.map(({call,idx},pos)=>renderRow(call,idx,pos===calls.length-1))}
-                      </Card>
+                      <button onClick={()=>toggleSection("up:"+label)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"0 2px",marginBottom:isCollapsed?0:10}}>
+                        <span style={{fontFamily:"var(--font-body)",fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"#888"}}>{label}</span>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{transform:isCollapsed?"rotate(-90deg)":"rotate(0deg)",transition:"transform 0.2s ease",flexShrink:0,marginLeft:6}}>
+                          <path d="M2 4l4 4 4-4" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                      {!isCollapsed&&(
+                        <Card style={{padding:0,overflow:"hidden"}}>
+                          {calls.map(({call,idx},pos)=>renderRow(call,idx,pos===calls.length-1))}
+                        </Card>
+                      )}
                     </div>
                   );
+                };
 
                 if (futureCalls.length===0) return(
                   <Card><p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#777",fontStyle:"italic"}}>No upcoming calls scheduled</p></Card>
@@ -641,16 +654,25 @@ function DashboardView({data}:{data:DashboardData}){
               const last7Group   = prevCalls.filter(({call:c})=>{const s=new Date(c.startTime);return s>=_7dAgo&&s<_todayStart;});
               const last30Group  = prevCalls.filter(({call:c})=>{const s=new Date(c.startTime);return s>=_30dAgo&&s<_7dAgo;});
 
-              const SubSection = ({label,calls}:{label:string;calls:typeof prevCalls})=>(
-                calls.length===0?null:(
+              const SubSection = ({label,calls}:{label:string;calls:typeof prevCalls})=>{
+                if(calls.length===0) return null;
+                const isCollapsed=collapsedSections.has("prev:"+label);
+                return(
                   <div style={{marginBottom:24}}>
-                    <p style={{fontFamily:"var(--font-body)",fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"#888",marginBottom:10,paddingLeft:2}}>{label}</p>
-                    <Card style={{padding:0,overflow:"hidden"}}>
-                      {calls.map(({call,idx},pos)=>renderRow(call,idx,pos===calls.length-1,true))}
-                    </Card>
+                    <button onClick={()=>toggleSection("prev:"+label)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"0 2px",marginBottom:isCollapsed?0:10}}>
+                      <span style={{fontFamily:"var(--font-body)",fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"#888"}}>{label}</span>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{transform:isCollapsed?"rotate(-90deg)":"rotate(0deg)",transition:"transform 0.2s ease",flexShrink:0,marginLeft:6}}>
+                        <path d="M2 4l4 4 4-4" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                    {!isCollapsed&&(
+                      <Card style={{padding:0,overflow:"hidden"}}>
+                        {calls.map(({call,idx},pos)=>renderRow(call,idx,pos===calls.length-1,true))}
+                      </Card>
+                    )}
                   </div>
-                )
-              );
+                );
+              };
 
               return(
                 <>
