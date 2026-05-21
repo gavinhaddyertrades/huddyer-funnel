@@ -784,8 +784,8 @@ function FunnelView({data}:{data:DashboardData}){
   const sh=data.sheets.connected?data.sheets:null;
   const cal=data.calendly;
   const tf=data.typeform;
-  const LEAD_SOURCE_KEYS=["youtube","linktree","manychat","meta","instagram"];
-  const LEAD_SOURCE_LABEL:Record<string,string>={youtube:"Youtube",linktree:"Linktree",manychat:"Manychat",meta:"Meta",instagram:"Instagram"};
+  const LEAD_SOURCE_KEYS=["youtube","linktree","manychat","meta","instagram","discord"];
+  const LEAD_SOURCE_LABEL:Record<string,string>={youtube:"Youtube",linktree:"Linktree",manychat:"Manychat",meta:"Meta",instagram:"Instagram",discord:"Discord"};
   const srcCountMap=new Map((tf?.trafficSources??[]).map(s=>[s.source.toLowerCase(),s.count]));
   const filteredSources=LEAD_SOURCE_KEYS
     .map(k=>({source:LEAD_SOURCE_LABEL[k],count:srcCountMap.get(k)??0}))
