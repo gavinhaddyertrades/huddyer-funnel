@@ -68,10 +68,13 @@ function parseGvizDatetime(v: unknown): string {
 
 async function fetchGviz(sheet: string): Promise<unknown[][] | null> {
   try {
-    // Append a timestamp so Google's gviz CDN never serves a cached response
+    // Unique URL + no-cache headers → defeat both CDN and server-side gviz cache
     const bust = Date.now();
     const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}&_=${bust}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" },
+    });
     if (!res.ok) {
       console.error(`Sheets sheet="${sheet}": HTTP ${res.status}`);
       return null;
