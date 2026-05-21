@@ -285,11 +285,13 @@ export type SheetsData =
       totalMonthlyOverhead: number;
 
       // ── Per-person deal rows (for team member view) ──
+      // Only includes rows where paymentDate ≤ today (no future payments)
       teamDealRows: Array<{
         leadName:         string;
         program:          string;
         dateClosed:       string;   // "May 21, 2026"
-        dateClosedMs:     number;   // epoch ms for sorting
+        paymentDate:      string;   // "May 21, 2026"
+        paymentDateMs:    number;   // epoch ms — used for sorting
         cashCollected:    number;
         setterName:       string;
         setterCommission: number;
@@ -645,17 +647,23 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     payPeriodCommission,
     subscriptions,
     totalMonthlyOverhead: round2(subscriptions.reduce((s, x) => s + x.monthlyCost, 0)),
-    teamDealRows: allDealRows.map(r => ({
-      leadName:         r.leadName,
-      program:          r.program,
-      dateClosed:       r.dateClosed.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      dateClosedMs:     r.dateClosed.getTime(),
-      cashCollected:    r.cashCollected,
-      setterName:       r.setterName,
-      setterCommission: r.setterCommission,
-      closerName:       r.closerName,
-      closerCommission: r.closerCommission,
-    })),
+    // Only rows where payment has actually landed (paymentDate ≤ today)
+    // Sorted newest payment first so the client can render without re-sorting
+    teamDealRows: allDealRows
+      .filter(r => r.paymentDate <= today)
+      .sort((a, b) => b.paymentDate.getTime() - a.paymentDate.getTime())
+      .map(r => ({
+        leadName:         r.leadName,
+        program:          r.program,
+        dateClosed:       r.dateClosed.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        paymentDate:      r.paymentDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        paymentDateMs:    r.paymentDate.getTime(),
+        cashCollected:    r.cashCollected,
+        setterName:       r.setterName,
+        setterCommission: r.setterCommission,
+        closerName:       r.closerName,
+        closerCommission: r.closerCommission,
+      })),
   };
 }
 

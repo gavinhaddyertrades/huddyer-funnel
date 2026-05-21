@@ -173,8 +173,9 @@ export default function TeamPage() {
   const isSetter = mySetterRows.length > 0;
   const isCloser = myCloserRows.length > 0;
 
-  // All deal rows where this person earned anything (as setter, closer, or both)
-  const allMyDealRows = (sh?.teamDealRows ?? []).filter(d =>
+  // All paid payment rows for this person (paymentDate ≤ today, pre-filtered server-side)
+  // Already sorted newest-first by paymentDate
+  const allMyPaymentRows = (sh?.teamDealRows ?? []).filter(d =>
     d.closerName.trim().toLowerCase() === nameLow ||
     d.setterName.trim().toLowerCase() === nameLow
   );
@@ -191,34 +192,22 @@ export default function TeamPage() {
   const closerNoShows  = myCloserRows.reduce((s, r) => s + r.noShows,        0);
   const closeRate      = totalScheduled > 0 ? Math.round((eodDealsClosed / totalScheduled) * 100) : null;
 
-  // Combined commission per deal: setter + closer if they played both roles
-  type DealEntry = { leadName: string; program: string; dateClosed: string; dateClosedMs: number; cashCollected: number; commission: number };
-  const dealMap = new Map<string, DealEntry>();
-  let closerCashCollected = 0;
+  // Financials from actual payment rows
+  const closerCashCollected = allMyPaymentRows
+    .filter(d => d.closerName.trim().toLowerCase() === nameLow)
+    .reduce((s, d) => s + d.cashCollected, 0);
 
-  for (const d of allMyDealRows) {
-    const key    = d.leadName.toLowerCase();
-    if (!key) continue;
-    const isCloser = d.closerName.trim().toLowerCase() === nameLow;
-    const isSett   = d.setterName.trim().toLowerCase() === nameLow;
-    const myComm   = (isCloser ? d.closerCommission : 0) + (isSett ? d.setterCommission : 0);
-    if (isCloser) closerCashCollected += d.cashCollected;
-    const ex = dealMap.get(key);
-    if (ex) { ex.cashCollected += d.cashCollected; ex.commission += myComm; }
-    else dealMap.set(key, { leadName: d.leadName, program: d.program, dateClosed: d.dateClosed, dateClosedMs: d.dateClosedMs, cashCollected: d.cashCollected, commission: myComm });
-  }
-
-  const dealBreakdown = Array.from(dealMap.values()).sort((a, b) => b.dateClosedMs - a.dateClosedMs);
-  const totalAllComm  = dealMap.size > 0 ? Array.from(dealMap.values()).reduce((s, d) => s + d.commission, 0) : allMyDealRows.reduce((s, d) => {
+  const totalAllComm = allMyPaymentRows.reduce((s, d) => {
     return s + (d.closerName.trim().toLowerCase() === nameLow ? d.closerCommission : 0)
              + (d.setterName.trim().toLowerCase() === nameLow ? d.setterCommission : 0);
   }, 0);
 
-  // Deals closed = distinct leads where they were the closer
-  const dealsClosed = [...dealMap.keys()].filter(k => {
-    const rows = allMyDealRows.filter(d => d.leadName.toLowerCase() === k);
-    return rows.some(d => d.closerName.trim().toLowerCase() === nameLow);
-  }).length;
+  // Distinct leads closed (for stat card)
+  const dealsClosed = new Set(
+    allMyPaymentRows
+      .filter(d => d.closerName.trim().toLowerCase() === nameLow)
+      .map(d => d.leadName.toLowerCase())
+  ).size;
 
   // Commissions
   const findAmt = (arr: { name: string; amount: number }[]) =>
@@ -350,25 +339,29 @@ export default function TeamPage() {
               </section>
             )}
 
-            {/* ── Deal Breakdown (unified: setter + closer commissions combined per deal) ── */}
-            {dealBreakdown.length > 0 && (
+            {/* ── Payment Breakdown (one row per payment, sorted by payment date) ── */}
+            {allMyPaymentRows.length > 0 && (
               <>
                 <GoldDiv />
                 <section>
-                  <SLabel>Deal Breakdown</SLabel>
+                  <SLabel>Payment Breakdown</SLabel>
                   <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
-                    {dealBreakdown.map((d, i) => (
-                      <div key={d.leadName} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < dealBreakdown.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 14, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.leadName}</p>
-                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#666", margin: 0 }}>{d.program} · {d.dateClosed}</p>
+                    {allMyPaymentRows.map((d, i) => {
+                      const myComm = (d.closerName.trim().toLowerCase() === nameLow ? d.closerCommission : 0)
+                                   + (d.setterName.trim().toLowerCase() === nameLow ? d.setterCommission : 0);
+                      return (
+                        <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < allMyPaymentRows.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 14, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.leadName}</p>
+                            <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#666", margin: 0 }}>{d.program} · {d.paymentDate}</p>
+                          </div>
+                          <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
+                            <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 13, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 700 }}>{fmt$(d.cashCollected)}</p>
+                            <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#C9A84C", margin: 0 }}>You earned {fmt$Exact(myComm)}</p>
+                          </div>
                         </div>
-                        <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
-                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 13, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 700 }}>{fmt$(d.cashCollected)}</p>
-                          <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#C9A84C", margin: 0 }}>You earned {fmt$Exact(d.commission)}</p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </section>
               </>
