@@ -68,7 +68,9 @@ function parseGvizDatetime(v: unknown): string {
 
 async function fetchGviz(sheet: string): Promise<unknown[][] | null> {
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
+    // Append a timestamp so Google's gviz CDN never serves a cached response
+    const bust = Date.now();
+    const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}&_=${bust}`;
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
       console.error(`Sheets sheet="${sheet}": HTTP ${res.status}`);
