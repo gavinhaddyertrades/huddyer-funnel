@@ -803,6 +803,7 @@ export type TypeformData = {
   totalInRange:      number;
   applicationsToday: number;
   trafficSources:    { source: string; count: number }[];
+  metaCampaigns:     { campaign: string; count: number }[];
 };
 
 async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData | null> {
@@ -810,7 +811,8 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
     const raw = await fetchGviz(SHEET_APPLICATIONS);
     if (!raw) return null;
 
-    const sourceMap = new Map<string, number>();
+    const sourceMap   = new Map<string, number>();
+    const campaignMap = new Map<string, number>();
     let totalInRange    = 0;
     let applicationsToday = 0;
     const appTodayStart = startOfTodayUS();
@@ -823,6 +825,10 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
       totalInRange++;
       const src = String(c[4] ?? "").trim().toLowerCase() || "organic";
       sourceMap.set(src, (sourceMap.get(src) ?? 0) + 1);
+      if (src === "meta") {
+        const campaign = String(c[6] ?? "").trim() || "(no campaign)";
+        campaignMap.set(campaign, (campaignMap.get(campaign) ?? 0) + 1);
+      }
     }
 
     return {
@@ -831,6 +837,9 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
       trafficSources: Array.from(sourceMap.entries())
         .sort((a, b) => b[1] - a[1])
         .map(([source, count]) => ({ source, count })),
+      metaCampaigns: Array.from(campaignMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([campaign, count]) => ({ campaign, count })),
     };
   } catch (e) {
     console.error("Applications sheet error:", (e as Error).message);

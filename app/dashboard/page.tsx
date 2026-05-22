@@ -793,6 +793,11 @@ function FunnelView({data}:{data:DashboardData}){
     .sort((a,b)=>b.count-a.count);
   const srcMax=Math.max(...filteredSources.map(s=>s.count),1);
   const cardGrid=mobile?"1fr":"repeat(auto-fit,minmax(260px,1fr))";
+
+  const metaCampaigns = tf?.metaCampaigns ?? [];
+  const metaTotal = metaCampaigns.reduce((s,c)=>s+c.count,0);
+  const campMax = Math.max(...metaCampaigns.map(c=>c.count),1);
+
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
       <section>
@@ -818,7 +823,6 @@ function FunnelView({data}:{data:DashboardData}){
           <Card>
             <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",marginBottom:14}}>Key Rates</p>
             {(()=>{
-              const sRows = sh?.setterEod.rows ?? [];
               const cRows = sh?.closerEod.rows ?? [];
               const scheduled   = cRows.reduce((s,r)=>s+r.callsScheduled,0);
               const noShows     = cRows.reduce((s,r)=>s+r.noShows,      0);
@@ -846,6 +850,38 @@ function FunnelView({data}:{data:DashboardData}){
                 {filteredSources.map(s=><BarRow key={s.source} label={s.source} value={s.count} total={srcMax}/>)}
               </div>
             ):<p style={{color:"#777",fontSize:12}}>No data</p>}
+          </Card>
+        </div>
+      </section>
+
+      <GoldDivider/>
+
+      {/* ── Meta Ads ── */}
+      <section>
+        <SectionLabel>Meta Ads</SectionLabel>
+        <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
+          <Card>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+              <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",margin:0}}>Leads by Campaign</p>
+              {metaTotal>0&&(
+                <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888"}}>{metaTotal} total</span>
+              )}
+            </div>
+            {metaCampaigns.length===0?(
+              <p style={{color:"#777",fontSize:12}}>No Meta leads in range</p>
+            ):(
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {metaCampaigns.map(c=>(
+                  <div key={c.campaign} style={{display:"flex",alignItems:"center",gap:10}}>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#888",minWidth:0,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.campaign}</p>
+                    <div style={{width:100,flexShrink:0,height:5,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+                      <div style={{width:`${Math.round((c.count/campMax)*100)}%`,height:"100%",background:"#1877F2",borderRadius:3,transition:"width 0.5s ease"}}/>
+                    </div>
+                    <span style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",minWidth:20,textAlign:"right"}}>{c.count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
         </div>
       </section>
