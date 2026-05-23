@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Huddyer Trades — Mentorship Agreement</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 11pt;
+      line-height: 1.7;
+      color: #1a1a1a;
+      background: #ffffff;
+    }
+
+    /* ── Print ────────────────────────────────────────────────────────────── */
+    @page {
+      size: letter;
+      margin: 0.75in 1in;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { font-size: 10.5pt; }
+      .page-break { page-break-before: always; }
+      .avoid-break { page-break-inside: avoid; }
+    }
+
+    /* ── Print Button (screen only) ──────────────────────────────────────── */
+    .print-btn {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: #C9A84C;
+      color: #0A0A0A;
+      border: none;
+      padding: 10px 22px;
+      font-family: 'Arial', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 999;
+      box-shadow: 0 2px 12px rgba(201,168,76,0.35);
+    }
+    .print-btn:hover { background: #D4AF37; }
+
+    /* ── Wrapper ──────────────────────────────────────────────────────────── */
+    .wrapper {
+      max-width: 750px;
+      margin: 0 auto;
+      padding: 48px 56px 64px;
+    }
+
+    @media print {
+      .wrapper { max-width: 100%; padding: 0; }
+    }
+
+    /* ── Header ──────────────────────────────────────────────────────────── */
+    .header {
+      background: #0A0A0A;
+      color: #ffffff;
+      padding: 36px 40px 28px;
+      margin-bottom: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #A07830, #D4AF37, #FFF3B0, #D4AF37, #A07830);
+    }
+
+    .header-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .header-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 28px;
+    }
+
+    .header-bars span {
+      display: block;
+      border-radius: 2px;
+      background: #C9A84C;
+    }
+
+    .header-bars span:nth-child(1) { width: 5px; height: 12px; }
+    .header-bars span:nth-child(2) { width: 5px; height: 18px; background: #D4AF37; }
+    .header-bars span:nth-child(3) { width: 5px; height: 22px; }
+    .header-bars span:nth-child(4) { width: 5px; height: 28px; background: #D4AF37; }
+
+    .header-brand {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #C9A84C;
+    }
+
+    .header h1 {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .header-meta {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 11px;
+      color: #777;
+      letter-spacing: 0.08em;
+    }
+
+    .header-meta span {
+      color: #C9A84C;
+      font-weight: 600;
+    }
+
+    /* ── Gold divider ─────────────────────────────────────────────────────── */
+    .gold-line {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(201,168,76,0.6), rgba(201,168,76,0.1));
+      margin: 22px 0;
+    }
+
+    /* ── Section ──────────────────────────────────────────────────────────── */
+    .section {
+      margin-bottom: 28px;
+    }
+
+    .section-number {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #C9A84C;
+      margin-bottom: 4px;
+    }
+
+    .section h2 {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #0A0A0A;
+      margin-bottom: 10px;
+      padding-bottom: 7px;
+      border-bottom: 1px solid #e8e0d0;
+    }
+
+    .section p {
+      margin-bottom: 10px;
+      color: #2a2a2a;
+    }
+
+    .section p:last-child { margin-bottom: 0; }
+
+    /* ── Parties box ─────────────────────────────────────────────────────── */
+    .parties-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .party-card {
+      background: #f8f5ef;
+      border: 1px solid #e8e0d0;
+      border-radius: 6px;
+      padding: 16px 18px;
+    }
+
+    .party-label {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .party-name {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0A0A0A;
+      margin-bottom: 4px;
+    }
+
+    .party-detail {
+      font-size: 11px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    /* ── Variable highlight ───────────────────────────────────────────────── */
+    .var {
+      color: #0A0A0A;
+      font-weight: 600;
+    }
+
+    /* ── Investment callout ───────────────────────────────────────────────── */
+    .investment-box {
+      background: #0A0A0A;
+      border-radius: 6px;
+      padding: 18px 22px;
+      margin: 14px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .investment-label {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #888;
+    }
+
+    .investment-amount {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #C9A84C;
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
+
+    /* ── Guarantee box ────────────────────────────────────────────────────── */
+    .guarantee-box {
+      border: 1.5px solid rgba(201,168,76,0.5);
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin: 14px 0;
+      background: rgba(201,168,76,0.04);
+    }
+
+    .guarantee-box .guarantee-title {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #C9A84C;
+      margin-bottom: 8px;
+    }
+
+    .guarantee-box p {
+      font-size: 11pt;
+      color: #2a2a2a;
+    }
+
+    /* ── Bullet list ──────────────────────────────────────────────────────── */
+    .item-list {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0 0;
+    }
+
+    .item-list li {
+      padding: 5px 0 5px 18px;
+      position: relative;
+      color: #2a2a2a;
+      border-bottom: 1px solid #f0ece4;
+    }
+
+    .item-list li:last-child { border-bottom: none; }
+
+    .item-list li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: #C9A84C;
+      font-weight: 700;
+    }
+
+    /* ── Warning box ──────────────────────────────────────────────────────── */
+    .warning-box {
+      background: #fff8f8;
+      border-left: 3px solid #E05252;
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 12px 0;
+    }
+
+    .warning-box p {
+      font-size: 10.5pt;
+      color: #4a2020;
+    }
+
+    /* ── Signature section ────────────────────────────────────────────────── */
+    .sig-section {
+      margin-top: 36px;
+      padding-top: 0;
+    }
+
+    .sig-section h2 {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #0A0A0A;
+      margin-bottom: 18px;
+      padding-bottom: 7px;
+      border-bottom: 1px solid #e8e0d0;
+    }
+
+    .sig-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-top: 12px;
+    }
+
+    .sig-block { }
+
+    .sig-role {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #C9A84C;
+      margin-bottom: 32px;
+    }
+
+    .sig-line {
+      height: 1px;
+      background: #1a1a1a;
+      margin-bottom: 6px;
+    }
+
+    .sig-label {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 9.5px;
+      color: #777;
+      letter-spacing: 0.06em;
+    }
+
+    .sig-field {
+      margin-top: 22px;
+    }
+
+    .sig-field .sig-line {
+      background: #ccc;
+    }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding-top: 16px;
+      border-top: 1px solid #e8e0d0;
+      text-align: center;
+    }
+
+    .footer p {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 9px;
+      color: #aaa;
+      letter-spacing: 0.08em;
+    }
+
+    .footer .gold { color: #C9A84C; font-weight: 700; }
+
+    /* ── Screen wrapper padding ───────────────────────────────────────────── */
+    @media screen {
+      body { background: #f4f1eb; padding: 32px 16px 64px; }
+      .wrapper {
+        background: #ffffff;
+        box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+        border-radius: 8px;
+      }
+      .header { border-radius: 8px 8px 0 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="print-btn no-print" onclick="window.print()">Save as PDF</button>
+
+  <div class="wrapper">
+
+    <!-- ── Header ── -->
+    <div class="header">
+      <div class="header-logo-row">
+        <div class="header-bars">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div class="header-brand">Huddyer Trades</div>
+      </div>
+      <h1>Mentorship Agreement</h1>
+      <div class="header-meta">
+        Date: <span>{{date}}</span>
+      </div>
+    </div>
+
+    <div style="padding: 36px 40px 48px; background:#fff;">
+
+      <!-- ── 1. Parties ── -->
+      <div class="section avoid-break">
+        <div class="section-number">Section 1</div>
+        <h2>Parties to This Agreement</h2>
+        <p>This Mentorship Agreement ("Agreement") is entered into as of <strong class="var">{{date}}</strong> between the following parties:</p>
+        <div class="parties-grid">
+          <div class="party-card">
+            <div class="party-label">Mentor / Provider</div>
+            <div class="party-name">Hudson Shaffer</div>
+            <div class="party-detail">
+              Huddyer Trades<br/>
+              @huddyertrades
+            </div>
+          </div>
+          <div class="party-card">
+            <div class="party-label">Student / Client</div>
+            <div class="party-name">{{student_name}}</div>
+            <div class="party-detail">
+              {{student_email}}<br/>
+              {{student_phone}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gold-line"></div>
+
+      <!-- ── 2. Program Description ── -->
+      <div class="section avoid-break">
+        <div class="section-number">Section 2</div>
+        <h2>Program Description</h2>
+        <p>
+          The Huddyer Trades Mentorship Program ("Program") is a private, high-level futures trading education
+          and coaching experience led by Hudson Shaffer. The Program is designed to equip students with a
+          comprehensive understanding of professional futures trading strategies, risk management principles,
+          and the mindset required to operate consistently in live markets.
+        </p>
+        <p>Program deliverables include, but are not limited to:</p>
+        <ul class="item-list">
+          <li>Live and recorded trading sessions and market breakdowns</li>
+          <li>Direct access to Hudson Shaffer for personalized coaching and strategy reviews</li>
+          <li>Private community access (Discord or equivalent platform)</li>
+          <li>Proprietary educational materials, frameworks, and playbooks</li>
+          <li>Ongoing curriculum updates for the duration of the enrollment period</li>
+        </ul>
+        <p style="margin-top:12px;">
+          The scope and structure of the Program may be updated at the Mentor's discretion to reflect current
+          market conditions and best practices. Students will receive advance notice of any material changes.
+        </p>
+      </div>
+
+      <div class="gold-line"></div>
+
+      <!-- ── 3. Investment & Payment Terms ── -->
+      <div class="section avoid-break">
+        <div class="section-number">Section 3</div>
+        <h2>Investment &amp; Payment Terms</h2>
+        <p>The total investment for enrollment in the Program is:</p>
+
+        <div class="investment-box">
+          <div>
+            <div class="investment-label">Total Program Investment</div>
+          </div>
+          <div class="investment-amount">{{offer_price}}</div>
+        </div>
+
+        <p>
+          Payment terms, including any installment schedule, have been agreed upon verbally or in writing prior
+          to the execution of this Agreement. All payments are due in accordance with the agreed schedule.
+          Failure to remit payment as agreed may result in suspension or termination of Program access without
+          refund of amounts already paid.
+        </p>
+        <p>
+          Accepted payment methods include credit/debit card, bank transfer, and other methods as specified by
+          Huddyer Trades. All prices are in United States Dollars (USD).
+        </p>
+      </div>
+
+      <div class="gold-line"></div>
+
+      <!-- ── 4. 90-Day Results Guarantee ── -->
+      <div class="section avoid-break">
+        <div class="section-number">Section 4</div>
+        <h2>90-Day Results Guarantee</h2>
+
+        <div class="guarantee-box">
+          <div class="guarantee-title">Our Commitment to Your Success</div>
+          <p>
+            If the Student fully completes all assigned coursework, attends all scheduled coaching calls,
+            actively participates in the community, and implements the strategies as taught — and does not
+            see measurable progress in their trading within <strong>90 days</strong> of their program start
+            date — Huddyer Trades will continue to work with the Student at no additional charge until the
+            agreed results are achieved, or provide a full refund at its sole discretion.
+          </p>
+        </div>
+
+        <p>Eligibility for this guarantee requires the Student to:</p>
+        <ul class="item-list">
+          <li>Complete 100% of assigned modules and educational materials within the 90-day window</li>
+          <li>Attend no fewer than 80% of all scheduled live sessions and coaching calls</li>
+          <li>Submit all requested trading journals, homework, and accountability check-ins on time</li>
+          <li>Actively apply the strategies, risk management rules, and frameworks provided</li>
+          <li>Maintain consistent, documented trading activity throughout the Program</li>
+        </ul>
+        <p style="margin-top:12px;">
+          Students who do not satisfy all eligibility criteria above forfeit the right to invoke this guarantee.
+          This guarantee is available only to first-time enrollments and may not be combined with any other offer
+          or promotion.
+        </p>
+      </div>
+
+      <div class="gold-line"></div>
+
+      <!-- ── 5. No Refund Policy ── -->
+      <div class="section avoid-break">
+        <div class="section-number">Section 5</div>
+        <h2>Refund Policy</h2>
+
+        <div class="warning-box">
+          <p>
+            <strong>All sales are final.</strong> Due to the immediate delivery of digital content, proprietary
+            materials, and live access upon enrollment, Huddyer Trades does not offer refunds outside of the
+            conditions expressly stated in Section 4 (90-Day Results Guarantee) of this Agreement.
+          </p>
+        </div>
+
+        <p>
+          By signing this Agreement, the Student acknowledges and agrees that no refund will be issued based
+          on: change of mind, failure to engage with Program materials, personal financial circumstances
+          arising after enrollment, dissatisfaction with trading outcomes not attributable to the Program's
+          instruction, or any other reason not covered under Section 4.
+        </p>
+        <p>
+          Chargebacks filed outside of legitimate fraud claims are considered a breach of this Agreement.
+          Huddyer Trades reserves the right to pursue all available legal remedies in the event of an
+          unauthorized chargeback.
+        </p>
+      </div>
+
+      <div class="gold-line"></div>
+
+      <!-- ── 6. Confidentiality ── -->
+      <div class="section avoid-break">
+        <div class="section-number">Section 6</div>
+        <h2>Confidentiality</h2>
+        <p>
+          The Student agrees to keep all proprietary trading strategies, methodologies, frameworks, indicators,
+          course materials, and any other non-public information shared within the Program strictly confidential.
+          This obligation applies during and after the enrollment period and survives termination of this
+          Agreement indefinitely.
+        </p>
+        <p>
+          The Student shall not: share, reproduce, resell, sublicense, or redistribute any Program materials
+          in any format; replicate or teach the Program's proprietary methodology under any other brand or
+          individual identity; or disclose confidential information to any third party without the prior written
+          consent of Hudson Shaffer / Huddyer Trades.
+        </p>
+        <p>
+          Violation of this confidentiality clause may result in immediate termination of Program access without
+          refund and may subject the Student to civil liability for damages sustained by Huddyer Trades.
+        </p>
+      </div>
+
+      <div class="gold-line"></div>
+
+      <!-- ── 7. Trading Risk Disclaimer ── -->
+      <div class="section avoid-break">
+        <div class="section-number">Section 7</div>
+        <h2>Trading Risk Disclaimer</h2>
+
+        <div class="warning-box">
+          <p>
+            <strong>Trading futures and financial instruments involves substantial risk of loss and is not
+            suitable for all investors.</strong> Past performance is not indicative of future results.
+          </p>
+        </div>
+
+        <p>
+          The Student acknowledges and understands that:
+        </p>
+        <ul class="item-list">
+          <li>Futures trading carries significant financial risk, including the potential loss of all capital invested</li>
+          <li>No representation is being made that any account will or is likely to achieve profits or losses similar to those discussed in the Program</li>
+          <li>The educational content provided is for informational purposes only and does not constitute financial, investment, or legal advice</li>
+          <li>Hudson Shaffer and Huddyer Trades are not registered investment advisors and are not providing personalized investment advice</li>
+          <li>The Student is solely responsible for all trading decisions and their financial consequences</li>
+        </ul>
+        <p style="margin-top:12px;">
+          The Student agrees that Huddyer Trades, Hudson Shaffer, and any affiliated entities shall not be
+          liable for any trading losses, damages, or adverse financial outcomes resulting from the application
+          of Program content.
+        </p>
+      </div>
+
+      <div class="gold-line"></div>
+
+      <!-- ── 8. General Terms ── -->
+      <div class="section avoid-break">
+        <div class="section-number">Section 8</div>
+        <h2>General Terms</h2>
+        <ul class="item-list">
+          <li><strong>Governing Law.</strong> This Agreement shall be governed by the laws of the State of Texas, without regard to conflict of law principles.</li>
+          <li><strong>Entire Agreement.</strong> This Agreement constitutes the entire agreement between the parties and supersedes all prior discussions, representations, and understandings.</li>
+          <li><strong>Amendments.</strong> Any modification to this Agreement must be made in writing and signed by both parties.</li>
+          <li><strong>Severability.</strong> If any provision of this Agreement is found to be unenforceable, the remaining provisions shall remain in full force and effect.</li>
+          <li><strong>Assignment.</strong> The Student may not assign or transfer rights under this Agreement to any third party.</li>
+          <li><strong>Waiver.</strong> Failure to enforce any provision of this Agreement shall not constitute a waiver of future enforcement of that or any other provision.</li>
+        </ul>
+      </div>
+
+      <div class="gold-line"></div>
+
+      <!-- ── Signatures ── -->
+      <div class="sig-section avoid-break">
+        <h2>Acknowledgment &amp; Signatures</h2>
+        <p style="margin-bottom:22px;">
+          By signing below, both parties confirm they have read, understood, and agree to all terms and
+          conditions set forth in this Mentorship Agreement.
+        </p>
+
+        <div class="sig-grid">
+
+          <!-- Student -->
+          <div class="sig-block">
+            <div class="sig-role">Student / Client</div>
+
+            <div class="sig-line"></div>
+            <div class="sig-label">Signature</div>
+
+            <div class="sig-field">
+              <div class="sig-line"></div>
+              <div class="sig-label">Printed Name — <span class="var">{{student_name}}</span></div>
+            </div>
+
+            <div class="sig-field">
+              <div class="sig-line"></div>
+              <div class="sig-label">Date — <span class="var">{{date}}</span></div>
+            </div>
+
+            <div class="sig-field">
+              <div class="sig-line"></div>
+              <div class="sig-label">Email — <span class="var">{{student_email}}</span></div>
+            </div>
+
+            <div class="sig-field">
+              <div class="sig-line"></div>
+              <div class="sig-label">Phone — <span class="var">{{student_phone}}</span></div>
+            </div>
+          </div>
+
+          <!-- Mentor -->
+          <div class="sig-block">
+            <div class="sig-role">Mentor / Huddyer Trades</div>
+
+            <div class="sig-line"></div>
+            <div class="sig-label">Signature</div>
+
+            <div class="sig-field">
+              <div class="sig-line"></div>
+              <div class="sig-label">Printed Name — Hudson Shaffer</div>
+            </div>
+
+            <div class="sig-field">
+              <div class="sig-line"></div>
+              <div class="sig-label">Date</div>
+            </div>
+
+            <div class="sig-field">
+              <div class="sig-line"></div>
+              <div class="sig-label">Title — Founder, Huddyer Trades</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Footer ── -->
+      <div class="footer">
+        <p><span class="gold">HUDDYER TRADES</span> &nbsp;·&nbsp; Mentorship Agreement &nbsp;·&nbsp; {{date}}</p>
+        <p style="margin-top:4px;">This document is confidential and intended solely for the named parties.</p>
+      </div>
+
+    </div><!-- /inner -->
+  </div><!-- /wrapper -->
+
+</body>
+</html>
