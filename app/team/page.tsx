@@ -282,9 +282,6 @@ export default function TeamPage() {
   const upcomingCallsList = allMyCalls
     .filter(c => new Date(c.startTime) > now && !c.cancelled)
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-  const recentCallsList = allMyCalls
-    .filter(c => new Date(c.startTime) <= now)
-    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
   const hasCalls = allMyCalls.length > 0;
 
   const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "20px 22px", width: "100%" };
@@ -332,6 +329,28 @@ export default function TeamPage() {
 
         {!loading && hasAnyData && (
           <>
+            {/* ── Upcoming Calls ── */}
+            {hasCalls && (
+              <section>
+                <SLabel>Upcoming Calls</SLabel>
+                {upcomingCallsList.length > 0 ? (
+                  <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
+                    {upcomingCallsList.map((c, i) => (
+                      <CallCard key={i} call={c} last={i === upcomingCallsList.length - 1} />
+                    ))}
+                  </div>
+                ) : (
+                  <div style={card}>
+                    <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 13, color: "#555", fontStyle: "italic", margin: 0, textAlign: "center" }}>
+                      No upcoming calls scheduled
+                    </p>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {hasCalls && <GoldDiv />}
+
             {/* ── Setter Performance ── */}
             {isSetter && (
               <section>
@@ -433,49 +452,8 @@ export default function TeamPage() {
               </>
             )}
 
-            {/* ── Calls ── */}
-            {hasCalls && (
-              <>
-                <GoldDiv />
-                <section>
-                  {/* Upcoming calls */}
-                  {upcomingCallsList.length > 0 && (
-                    <>
-                      <SLabel>Upcoming Calls</SLabel>
-                      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
-                        {upcomingCallsList.map((c, i) => (
-                          <CallCard key={i} call={c} last={i === upcomingCallsList.length - 1} />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  {upcomingCallsList.length === 0 && (
-                    <>
-                      <SLabel>Upcoming Calls</SLabel>
-                      <div style={{ ...card, marginBottom: 16 }}>
-                        <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 13, color: "#555", fontStyle: "italic", margin: 0, textAlign: "center" }}>
-                          No upcoming calls scheduled
-                        </p>
-                      </div>
-                    </>
-                  )}
 
-                  {/* Recent calls */}
-                  {recentCallsList.length > 0 && (
-                    <>
-                      <SLabel>Recent Calls</SLabel>
-                      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
-                        {recentCallsList.slice(0, 20).map((c, i) => (
-                          <CallCard key={i} call={c} last={i === Math.min(recentCallsList.length, 20) - 1} />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </section>
-              </>
-            )}
-
-          </>
+</>
         )}
       </div>
     </div>
