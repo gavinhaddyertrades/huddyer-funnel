@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import type { DashboardData, UpcomingCall } from "@/lib/fetchDashboard";
-
-// Calendly display-name mapping: EOD sheet name (lowercase) → Calendly host name
-const CALENDLY_NAME_MAP: Record<string, string> = {
-  "nahom fikru": "Hudson",
-};
+import type { DashboardData } from "@/lib/fetchDashboard";
 
 const TEAM_AUTH_KEY = "huddyer_team_auth";
 const AUTH_TTL_MS   = 24 * 3_600_000;
@@ -16,14 +11,6 @@ const fmt$ = (n: number) =>
 const fmt$Exact = (n: number) =>
   "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (n: number) => n + "%";
-
-function fmtCallTime(iso: string): { date: string; time: string } {
-  const d = new Date(iso);
-  return {
-    date: d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
-    time: d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-  };
-}
 
 // ── Atoms ─────────────────────────────────────────────────────────────────────
 
@@ -71,45 +58,6 @@ function CommRow({ label, value, highlight, dim }: { label: string; value: strin
         color:      dim ? "#666" : highlight ? "#C9A84C" : "#F2EDE6",
         lineHeight: 1,
       }}>{value}</span>
-    </div>
-  );
-}
-
-function CallCard({ call, last }: { call: UpcomingCall; last: boolean }) {
-  const { date, time } = fmtCallTime(call.startTime);
-  const isPast = new Date(call.startTime) < new Date();
-
-  let statusLabel = "";
-  let statusColor = "";
-  if (call.noShow)      { statusLabel = "No Show";   statusColor = "#E05252"; }
-  else if (call.cancelled && !call.rescheduled) { statusLabel = "Cancelled"; statusColor = "#E05252"; }
-  else if (call.rescheduled) { statusLabel = "Rescheduled"; statusColor = "#C9A84C"; }
-  else if (!isPast)     { statusLabel = "Upcoming";  statusColor = "#4CAF50"; }
-  else                  { statusLabel = "Completed"; statusColor = "#4CAF50"; }
-
-  return (
-    <div style={{
-      display: "flex", justifyContent: "space-between", alignItems: "center",
-      padding: "14px 18px",
-      borderBottom: last ? "none" : "1px solid rgba(255,255,255,0.05)",
-      opacity: (call.cancelled && !call.rescheduled) || call.noShow ? 0.55 : 1,
-    }}>
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 14, color: "#F2EDE6", margin: "0 0 3px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {call.inviteeName}
-        </p>
-        <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 11, color: "#666", margin: 0 }}>
-          {date} · {time}
-        </p>
-      </div>
-      <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
-        <span style={{
-          fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 10, fontWeight: 700,
-          letterSpacing: "0.1em", textTransform: "uppercase",
-          color: statusColor, padding: "3px 8px",
-          background: statusColor + "18", borderRadius: 4,
-        }}>{statusLabel}</span>
-      </div>
     </div>
   );
 }
@@ -226,7 +174,6 @@ export default function TeamPage() {
   const isCloser = myCloserRows.length > 0;
 
   // All paid payment rows for this person (paymentDate ≤ today, pre-filtered server-side)
-  // Already sorted newest-first by paymentDate
   const allMyPaymentRows = (sh?.teamDealRows ?? []).filter(d =>
     d.closerName.trim().toLowerCase() === nameLow ||
     d.setterName.trim().toLowerCase() === nameLow
@@ -273,18 +220,10 @@ export default function TeamPage() {
 
   const hasAnyData = isSetter || isCloser || currTotal > 0 || prevTotal > 0;
 
-  // ── Calls ─────────────────────────────────────────────────────────────────
-  const calendlyName = CALENDLY_NAME_MAP[nameLow] ?? authedName;
-  const allMyCalls   = (data?.calendly?.upcomingCalls ?? []).filter(c =>
-    c.hostName.trim().toLowerCase() === calendlyName.trim().toLowerCase()
-  );
-  const now = new Date();
-  const upcomingCallsList = allMyCalls
-    .filter(c => new Date(c.startTime) > now && !c.cancelled)
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-  const hasCalls = allMyCalls.length > 0;
-
   const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "20px 22px", width: "100%" };
+
+  // suppress unused-variable warnings
+  void eodDealsClosed; void closerNoShows;
 
   return (
     <div style={{ ...base, justifyContent: "flex-start", paddingTop: 40, paddingBottom: 60 }}>
@@ -329,28 +268,6 @@ export default function TeamPage() {
 
         {!loading && hasAnyData && (
           <>
-            {/* ── Upcoming Calls ── */}
-            {hasCalls && (
-              <section>
-                <SLabel>Upcoming Calls</SLabel>
-                {upcomingCallsList.length > 0 ? (
-                  <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
-                    {upcomingCallsList.map((c, i) => (
-                      <CallCard key={i} call={c} last={i === upcomingCallsList.length - 1} />
-                    ))}
-                  </div>
-                ) : (
-                  <div style={card}>
-                    <p style={{ fontFamily: "var(--font-dm-sans,sans-serif)", fontSize: 13, color: "#555", fontStyle: "italic", margin: 0, textAlign: "center" }}>
-                      No upcoming calls scheduled
-                    </p>
-                  </div>
-                )}
-              </section>
-            )}
-
-            {hasCalls && <GoldDiv />}
-
             {/* ── Setter Performance ── */}
             {isSetter && (
               <section>
@@ -451,9 +368,7 @@ export default function TeamPage() {
                 </section>
               </>
             )}
-
-
-</>
+          </>
         )}
       </div>
     </div>
