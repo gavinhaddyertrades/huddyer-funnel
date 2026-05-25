@@ -909,18 +909,19 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
       e.created_at && new Date(e.created_at) >= calTodayStart
     ).length;
 
-    // No-shows + cancellations with a start time today.
-    // Count cancelled events directly from the raw array (all 100 results, not
-    // limited by the invitee-fetch slice) so we never miss a cancellation.
-    const cancelledToday = upcomingCancelled.filter(e =>
-      new Date(e.start_time) >= calTodayStart
-    ).length;
-    // Active events where the invitee was flagged as a no-show (requires the
-    // invitee fetch, but active events are prioritised in the slice so this
-    // should be complete).
+    // No-shows + cancellations with a start time TODAY only.
+    // upcomingCancelled spans 30 days into the future — without an upper bound
+    // a call cancelled for tomorrow would be counted as "today". Clamp to
+    // [calTodayStart, calTodayEnd) so only today's scheduled slots count.
+    const calTodayEnd = new Date(calTodayStart.getTime() + 86_400_000); // exclusive
+    const cancelledToday = upcomingCancelled.filter(e => {
+      const t = new Date(e.start_time);
+      return t >= calTodayStart && t < calTodayEnd;
+    }).length;
+    // Active events where the invitee was flagged as a no-show (today only).
     const noShowActiveToday = upcomingCalls.filter(c => {
       const s = new Date(c.startTime);
-      return s >= calTodayStart && c.noShow && !c.cancelled;
+      return s >= calTodayStart && s < calTodayEnd && c.noShow && !c.cancelled;
     }).length;
     const noShowsCancelsToday = cancelledToday + noShowActiveToday;
 
