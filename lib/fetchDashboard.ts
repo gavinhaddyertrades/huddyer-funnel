@@ -182,6 +182,7 @@ export type HuddlePeriodData = {
   noShows:         number;
   callsCanceled:   number;
   liveCallsPushed: number;
+  dnqs:            number;
   setterBreakdown: HuddleSetterStat[];
   closerBreakdown: HuddleCloserStat[];
 };
@@ -1083,24 +1084,39 @@ async function fetchWhopData(): Promise<WhopData | null> {
   }
 }
 
-// ── DNQs today (Close CRM) ────────────────────────────────────────────────────
+// ── DNQs (Close CRM) ─────────────────────────────────────────────────────────
 
-async function fetchDnqsToday(): Promise<number> {
+async function fetchDnqCounts(): Promise<{ today: number; thisWeek: number; yesterday: number }> {
   try {
     const CLOSE_API_KEY = process.env.CLOSE_API_KEY!;
-    const auth    = "Basic " + Buffer.from(CLOSE_API_KEY + ":").toString("base64");
+    const auth       = "Basic " + Buffer.from(CLOSE_API_KEY + ":").toString("base64");
     const todayStart = startOfTodayUS();
-    const todayISO   = todayStart.toISOString(); // UTC midnight of US date
+    const weekStart  = startOfWeekUS();
+    const yesterdayStart = new Date(todayStart.getTime() - 86_400_000);
 
-    const res = await fetch(
-      `https://api.close.com/api/v1/lead/?query=${encodeURIComponent('status_label:"DNQ"')}&date_created__gte=${encodeURIComponent(todayISO)}&_limit=100&_fields=id`,
-      { headers: { Authorization: auth }, cache: "no-store" }
-    );
-    if (!res.ok) return 0;
-    const json = await res.json() as { data?: unknown[] };
-    return json.data?.length ?? 0;
+    const q = encodeURIComponent('status_label:"DNQ"');
+    const todayISO = encodeURIComponent(todayStart.toISOString());
+    const weekISO  = encodeURIComponent(weekStart.toISOString());
+    const yesterdayISO = encodeURIComponent(yesterdayStart.toISOString());
+    const headers  = { Authorization: auth };
+    const base     = `https://api.close.com/api/v1/lead/?query=${q}&_limit=100&_fields=id`;
+
+    const [todayRes, weekRes, yesterdayRes] = await Promise.all([
+      fetch(`${base}&date_created__gte=${todayISO}`,                                    { headers, cache: "no-store" }),
+      fetch(`${base}&date_created__gte=${weekISO}`,                                     { headers, cache: "no-store" }),
+      fetch(`${base}&date_created__gte=${yesterdayISO}&date_created__lte=${todayISO}`,  { headers, cache: "no-store" }),
+    ]);
+
+    const parse = async (r: Response) => {
+      if (!r.ok) return 0;
+      const j = await r.json() as { data?: unknown[] };
+      return j.data?.length ?? 0;
+    };
+
+    const [today, thisWeek, yesterday] = await Promise.all([parse(todayRes), parse(weekRes), parse(yesterdayRes)]);
+    return { today, thisWeek, yesterday };
   } catch {
-    return 0;
+    return { today: 0, thisWeek: 0, yesterday: 0 };
   }
 }
 
@@ -1124,13 +1140,14 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
     fetchCalendlyData(start, end),
     fetchTypeformData(start, end),
     fetchWhopData(),
-    fetchDnqsToday(),
+    fetchDnqCounts(),
   ]);
 
   const sheets   = sh.status   === "fulfilled" ? sh.value   : ({ connected: false, error: "rejected" } as SheetsData);
   const calendly = cal.status  === "fulfilled" ? cal.value  : null;
   const typeform = tf.status   === "fulfilled" ? tf.value   : null;
   const whopVal  = whop.status === "fulfilled" ? whop.value : null;
+  const dnqs     = dnqResult.status === "fulfilled" ? dnqResult.value : { today: 0, thisWeek: 0, yesterday: 0 };
 
   const apps   = typeform?.totalInRange ?? 0;
   const booked = calendly?.bookedInRange ?? 0;
@@ -1146,6 +1163,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
           noShows:         sheets.morningHuddleEod.thisWeek.noShows,
           callsCanceled:   sheets.morningHuddleEod.thisWeek.callsCanceled,
           liveCallsPushed: sheets.morningHuddleEod.thisWeek.liveCallsPushed,
+          dnqs:            dnqs.thisWeek,
           setterBreakdown: sheets.morningHuddleEod.thisWeek.setterBreakdown,
           closerBreakdown: sheets.morningHuddleEod.thisWeek.closerBreakdown,
         },
@@ -1155,6 +1173,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
           noShows:         sheets.morningHuddleEod.yesterday.noShows,
           callsCanceled:   sheets.morningHuddleEod.yesterday.callsCanceled,
           liveCallsPushed: sheets.morningHuddleEod.yesterday.liveCallsPushed,
+          dnqs:            dnqs.yesterday,
           setterBreakdown: sheets.morningHuddleEod.yesterday.setterBreakdown,
           closerBreakdown: sheets.morningHuddleEod.yesterday.closerBreakdown,
         },
@@ -1168,7 +1187,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
     whop:           whopVal,
     conversionRate: apps   > 0 ? Math.round((booked / apps)   * 100) : null,
     closeRate:      booked > 0 ? Math.round((closed / booked) * 100) : null,
-    dnqsToday:      dnqResult.status === "fulfilled" ? dnqResult.value : 0,
+    dnqsToday:      dnqs.today,
     morningHuddle,
     lastUpdated:    new Date().toISOString(),
   };

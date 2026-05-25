@@ -787,6 +787,7 @@ function HuddlePeriodCard({ label, d }: { label: string; d: HuddlePeriodData }) 
     { key: "noShows",         label: "No Shows",          value: d.noShows,         color: "#E05252" },
     { key: "callsCanceled",   label: "Calls Canceled",    value: d.callsCanceled,   color: "#E05252" },
     { key: "liveCallsPushed", label: "Live Calls Pushed", value: d.liveCallsPushed, color: "#C9A84C" },
+    { key: "dnqs",            label: "DNQs",              value: d.dnqs,            color: "#E05252" },
   ];
   return (
     <Card>
