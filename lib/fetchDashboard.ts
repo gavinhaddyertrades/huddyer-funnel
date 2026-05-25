@@ -577,11 +577,12 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
   }
 
   const hudFmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const hudWeekLabel = `${hudFmt(hudWeekStart)} – ${hudFmt(new Date(hudTodayEnd.getTime() - 1))}`;
+  // "This week" = Sunday → yesterday (today excluded)
+  const hudWeekLabel = `${hudFmt(hudWeekStart)} – ${hudFmt(hudYestStart)}`;
   const hudYestLabel = hudFmt(hudYestStart);
 
-  const ws = aggSetterD(setterRawD.filter(r => r.date && r.date >= hudWeekStart && r.date < hudTodayEnd));
-  const wc = aggCloserD(closerRawD.filter(r => r.date && r.date >= hudWeekStart && r.date < hudTodayEnd));
+  const ws = aggSetterD(setterRawD.filter(r => r.date && r.date >= hudWeekStart && r.date < hudTodayStart));
+  const wc = aggCloserD(closerRawD.filter(r => r.date && r.date >= hudWeekStart && r.date < hudTodayStart));
   const ys = aggSetterD(setterRawD.filter(r => r.date && r.date >= hudYestStart && r.date < hudTodayStart));
   const yc = aggCloserD(closerRawD.filter(r => r.date && r.date >= hudYestStart && r.date < hudTodayStart));
 
@@ -972,7 +973,8 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
       const date = parseGvizDate(c[0]);
       if (!date) continue;
       if (date >= appTodayStart) applicationsToday++;
-      if (date >= appWeekStart)  applicationsThisWeek++;
+      // "This week" excludes today — Sunday through yesterday
+      if (date >= appWeekStart && date < appTodayStart) applicationsThisWeek++;
       if (date >= appYestStart && date < appTodayStart) applicationsYesterday++;
       if (date < start || date > end) continue;
       totalInRange++;
@@ -1116,9 +1118,10 @@ async function fetchDnqCounts(): Promise<{ today: number; thisWeek: number; yest
     const base     = `https://api.close.com/api/v1/lead/?query=${q}&_limit=100&_fields=id`;
 
     const [todayRes, weekRes, yesterdayRes] = await Promise.all([
-      fetch(`${base}&date_created__gte=${todayISO}`,                                    { headers, cache: "no-store" }),
-      fetch(`${base}&date_created__gte=${weekISO}`,                                     { headers, cache: "no-store" }),
-      fetch(`${base}&date_created__gte=${yesterdayISO}&date_created__lte=${todayISO}`,  { headers, cache: "no-store" }),
+      fetch(`${base}&date_created__gte=${todayISO}`,                                          { headers, cache: "no-store" }),
+      // "This week" = Sunday → yesterday (today excluded)
+      fetch(`${base}&date_created__gte=${weekISO}&date_created__lte=${yesterdayISO}`,         { headers, cache: "no-store" }),
+      fetch(`${base}&date_created__gte=${yesterdayISO}&date_created__lte=${todayISO}`,        { headers, cache: "no-store" }),
     ]);
 
     const parse = async (r: Response) => {
