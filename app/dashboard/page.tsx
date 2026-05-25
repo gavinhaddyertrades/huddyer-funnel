@@ -997,7 +997,7 @@ function FunnelView({data}:{data:DashboardData}){
                   { label:"Total Spend",  value:`$${meta.totalSpend.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`, color:"#C9A84C" },
                   { label:"ROAS",
                     value: meta.roas != null ? `${meta.roas.toFixed(2)}x` : "—",
-                    sub:   meta.cashFromAdLeads > 0 ? `$${(meta.cashFromAdLeads*0.65).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})} @ 65%` : undefined,
+                    sub:   meta.cashFromAdLeads > 0 ? `$${(meta.cashFromAdLeads*0.65).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})} collected` : undefined,
                     color: meta.roas != null && meta.roas >= 1 ? "#4CAF50" : meta.roas != null ? "#E05252" : "#888",
                   },
                   { label:"Total Clicks", value:meta.totalClicks.toLocaleString(),   color:"#F2EDE6" },
