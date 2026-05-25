@@ -591,13 +591,20 @@ function DashboardView({data}:{data:DashboardData}){
 
                   // Check Close CRM for ALL prev/live calls — including cancelled ones,
                   // so a lead that cancelled but then closed still shows "Closed".
+                  // Gate on (isPrev || isLive) so future/upcoming calls never
+                  // inherit a "Closed" label just because their email already
+                  // exists in leadInfoMap from an older past entry.
                   const closeStatus = ((isPrev || isLive) && info && info !== "loading")
                     ? (info.statusLabel ?? "").toLowerCase() : "";
                   const isPitched   = closeStatus.includes("pitched");
-                  // isClosedWon: prefer the explicit isWon flag (opportunity status_type==="won")
-                  // so custom status label names don't break detection.
-                  const isClosedWon = (info && info !== "loading" && !!info.isWon)
-                    || closeStatus.includes("closed") || closeStatus.includes("won");
+                  // isClosedWon: ONLY for prev/live rows. Prefer the explicit isWon
+                  // flag (opportunity status_type==="won") so custom label names
+                  // like "Active Client" don't break detection.
+                  const isClosedWon = (isPrev || isLive) && (
+                    (info && info !== "loading" && !!info.isWon)
+                    || closeStatus.includes("closed")
+                    || closeStatus.includes("won")
+                  );
                   const isNoShowCRM = closeStatus.includes("no show") || closeStatus.includes("no-show");
 
                   const oppVal = isClosedWon && info && info !== "loading" && info.opportunityValue
