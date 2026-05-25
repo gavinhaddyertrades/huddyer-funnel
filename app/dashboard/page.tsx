@@ -992,16 +992,22 @@ function FunnelView({data}:{data:DashboardData}){
           return (
             <>
               {/* ── Summary KPIs ── */}
-              <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:10,marginBottom:14}}>
+              <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:10,marginBottom:14}}>
                 {[
-                  { label:"Total Spend",  value:`$${meta.totalSpend.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`, accent:true },
-                  { label:"Total Clicks", value:meta.totalClicks.toLocaleString() },
-                  { label:"Avg CPC",      value:`$${meta.avgCpc.toFixed(2)}` },
-                  { label:"Avg CTR",      value:`${meta.avgCtr.toFixed(2)}%` },
+                  { label:"Total Spend",  value:`$${meta.totalSpend.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`, color:"#C9A84C" },
+                  { label:"ROAS",
+                    value: meta.roas != null ? `${meta.roas.toFixed(2)}x` : "—",
+                    sub:   meta.cashFromAdLeads > 0 ? `$${meta.cashFromAdLeads.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})} collected` : undefined,
+                    color: meta.roas != null && meta.roas >= 1 ? "#4CAF50" : meta.roas != null ? "#E05252" : "#888",
+                  },
+                  { label:"Total Clicks", value:meta.totalClicks.toLocaleString(),   color:"#F2EDE6" },
+                  { label:"Avg CPC",      value:`$${meta.avgCpc.toFixed(2)}`,          color:"#F2EDE6" },
+                  { label:"Avg CTR",      value:`${meta.avgCtr.toFixed(2)}%`,          color:"#F2EDE6" },
                 ].map(k=>(
                   <div key={k.label} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"14px 16px"}}>
                     <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#666",margin:"0 0 6px"}}>{k.label}</p>
-                    <p style={{fontFamily:"var(--font-body)",fontSize:22,fontWeight:700,color:k.accent?"#C9A84C":"#F2EDE6",margin:0,lineHeight:1}}>{k.value}</p>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:22,fontWeight:700,color:k.color,margin:0,lineHeight:1}}>{k.value}</p>
+                    {"sub" in k && k.sub && <p style={{fontFamily:"var(--font-body)",fontSize:10,color:"#555",margin:"5px 0 0"}}>{k.sub}</p>}
                   </div>
                 ))}
               </div>

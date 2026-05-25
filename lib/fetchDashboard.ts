@@ -952,6 +952,8 @@ export type TypeformData = {
   applicationsYesterday: number;
   trafficSources:        { source: string; count: number }[];
   metaCampaigns:         { campaign: string; count: number }[];
+  /** All-time lead names that applied via Meta ads (for ROAS cross-reference) */
+  metaLeadNames:         string[];
 };
 
 async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData | null> {
@@ -961,6 +963,7 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
 
     const sourceMap   = new Map<string, number>();
     const campaignMap = new Map<string, number>();
+    const metaLeadNames: string[] = [];
     let totalInRange       = 0;
     let applicationsToday  = 0;
     let applicationsThisWeek  = 0;
@@ -976,9 +979,16 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
       // "This week" excludes today — Sunday through yesterday
       if (date >= appWeekStart && date < appTodayStart) applicationsThisWeek++;
       if (date >= appYestStart && date < appTodayStart) applicationsYesterday++;
+
+      // Collect ALL meta lead names regardless of date range (for all-time ROAS)
+      const src = String(c[4] ?? "").trim().toLowerCase() || "organic";
+      if (src === "meta") {
+        const name = String(c[1] ?? "").trim();
+        if (name) metaLeadNames.push(name);
+      }
+
       if (date < start || date > end) continue;
       totalInRange++;
-      const src = String(c[4] ?? "").trim().toLowerCase() || "organic";
       sourceMap.set(src, (sourceMap.get(src) ?? 0) + 1);
       if (src === "meta") {
         const campaign = String(c[6] ?? "").trim() || "(no campaign)";
@@ -997,6 +1007,7 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
       metaCampaigns: Array.from(campaignMap.entries())
         .sort((a, b) => b[1] - a[1])
         .map(([campaign, count]) => ({ campaign, count })),
+      metaLeadNames,
     };
   } catch (e) {
     console.error("Applications sheet error:", (e as Error).message);
@@ -1151,13 +1162,17 @@ export type MetaAdsetRow = {
 };
 
 export type MetaAdsData = {
-  adsets:        MetaAdsetRow[];
-  totalSpend:    number;
-  totalClicks:   number;
+  adsets:           MetaAdsetRow[];
+  totalSpend:       number;
+  totalClicks:      number;
   totalImpressions: number;
-  avgCpc:        number;
-  avgCtr:        number;
-  dateRange:     string;   // e.g. "May 18 – May 24"
+  avgCpc:           number;
+  avgCtr:           number;
+  dateRange:        string;
+  /** Cash collected to date from leads who applied via Meta ads */
+  cashFromAdLeads:  number;
+  /** ROAS = cashFromAdLeads / totalSpend */
+  roas:             number | null;
 };
 
 async function fetchMetaAdsData(): Promise<MetaAdsData | null> {
@@ -1210,7 +1225,9 @@ async function fetchMetaAdsData(): Promise<MetaAdsData | null> {
     const dateRange = first?.date_start && first?.date_stop
       ? `${fmtMeta(first.date_start)} – ${fmtMeta(first.date_stop)}` : "All time";
 
-    return { adsets: rows, totalSpend, totalClicks, totalImpressions, avgCpc, avgCtr, dateRange };
+    // cashFromAdLeads and roas are computed in fetchAllDashboardData after cross-referencing
+    // the Applications sheet — return zeroes/null here as placeholders.
+    return { adsets: rows, totalSpend, totalClicks, totalImpressions, avgCpc, avgCtr, dateRange, cashFromAdLeads: 0, roas: null };
   } catch (e) {
     console.error("Meta Ads fetch error:", (e as Error).message);
     return null;
@@ -1247,7 +1264,28 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
   const typeform = tf.status   === "fulfilled" ? tf.value   : null;
   const whopVal  = whop.status === "fulfilled" ? whop.value : null;
   const dnqs     = dnqResult.status === "fulfilled" ? dnqResult.value : { today: 0, thisWeek: 0, yesterday: 0 };
-  const metaAds  = metaResult.status === "fulfilled" ? metaResult.value : null;
+  const metaAdsRaw = metaResult.status === "fulfilled" ? metaResult.value : null;
+
+  // ── ROAS: cross-reference meta lead names → Deals sheet cash collected ────
+  // Build a lowercase name set from the Applications sheet meta leads, then
+  // sum cashCollected from teamDealRows for matching lead names.
+  const metaLeadSet = new Set(
+    (typeform?.metaLeadNames ?? []).map(n => n.toLowerCase().trim())
+  );
+  const cashFromAdLeads = sheets.connected
+    ? round2(
+        sheets.teamDealRows
+          .filter(r => metaLeadSet.has(r.leadName.toLowerCase().trim()))
+          .reduce((s, r) => s + r.cashCollected, 0)
+      )
+    : 0;
+  const metaAds = metaAdsRaw
+    ? {
+        ...metaAdsRaw,
+        cashFromAdLeads,
+        roas: metaAdsRaw.totalSpend > 0 ? round2(cashFromAdLeads / metaAdsRaw.totalSpend) : null,
+      }
+    : null;
 
   const apps   = typeform?.totalInRange ?? 0;
   const booked = calendly?.bookedInRange ?? 0;
