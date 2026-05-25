@@ -49,11 +49,17 @@ export async function GET(req: Request) {
     const topOpp  = bestOpp.sort((a, b) => (b.value ?? 0) - (a.value ?? 0))[0];
     // Close stores value in cents
     const opportunityValue = topOpp?.value != null ? Math.round(topOpp.value / 100) : null;
+    // isWon = true if any opportunity is marked "won" in Close — more reliable
+    // than checking statusLabel text which can be any custom string.
+    const isWon = wonOpps.length > 0;
+
+    console.log(`[lead-info] email=${email} status="${lead.status_label}" isWon=${isWon} oppValue=${opportunityValue}`);
 
     return NextResponse.json({
       found:            true,
       leadName:         lead.display_name,
       statusLabel:      lead.status_label ?? null,
+      isWon,
       opportunityValue,
       age:              (activity?.[FIELD_AGE]    as string) ?? null,
       budget:           (activity?.[FIELD_BUDGET] as string) ?? null,

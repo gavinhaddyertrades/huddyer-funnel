@@ -438,7 +438,7 @@ function BottomNav({current,onChange}:{current:PageKey;onChange:(k:PageKey)=>voi
 // ── Page views ────────────────────────────────────────────────────────────────
 const PROG_COLORS=["#A07830","#C9A84C","#D4AF37","#8B6914","#E8C878","#7A5C1E"];
 
-type LeadInfo = { found: boolean; statusLabel?: string|null; opportunityValue?: number|null; age?: string|null; budget?: string|null; credit?: string|null };
+type LeadInfo = { found: boolean; statusLabel?: string|null; isWon?: boolean; opportunityValue?: number|null; age?: string|null; budget?: string|null; credit?: string|null };
 
 function DashboardView({data}:{data:DashboardData}){
   const mobile=useMobile();
@@ -573,7 +573,10 @@ function DashboardView({data}:{data:DashboardData}){
                   const closeStatus = ((isPrev || isLive) && info && info !== "loading")
                     ? (info.statusLabel ?? "").toLowerCase() : "";
                   const isPitched   = closeStatus.includes("pitched");
-                  const isClosedWon = closeStatus.includes("closed");
+                  // isClosedWon: prefer the explicit isWon flag (opportunity status_type==="won")
+                  // so custom status label names don't break detection.
+                  const isClosedWon = (info && info !== "loading" && !!info.isWon)
+                    || closeStatus.includes("closed") || closeStatus.includes("won");
                   const isNoShowCRM = closeStatus.includes("no show") || closeStatus.includes("no-show");
 
                   const oppVal = isClosedWon && info && info !== "loading" && info.opportunityValue
