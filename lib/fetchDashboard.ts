@@ -841,8 +841,12 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
       fetch(`https://api.calendly.com/scheduled_events?organization=${org}&min_start_time=${past30ISO}&max_start_time=${future30}&status=canceled&count=100`, { headers, cache: "no-store" }),
     ]);
 
-    const active    = ((await activeRes.json()).collection ?? []) as unknown[];
-    const cancelled = ((await cancelRes.json()).collection ?? []) as Array<{ cancellation?: { reason?: string } }>;
+    // Only count "1:1 Mentorship Call" events — ignore discovery calls, etc.
+    const isMentorshipEvent = (e: unknown) =>
+      ((e as { name?: string }).name ?? "").toLowerCase().includes("1:1 mentorship");
+
+    const active    = ((await activeRes.json()).collection ?? []).filter(isMentorshipEvent) as unknown[];
+    const cancelled = ((await cancelRes.json()).collection ?? []).filter(isMentorshipEvent) as Array<{ cancellation?: { reason?: string } }>;
     const total     = active.length + cancelled.length;
 
     type CalEvent = {
@@ -851,8 +855,8 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
       event_memberships?: Array<{ user_name?: string }>;
       cancellation?: { reason?: string; canceled_by?: string };
     };
-    const upcomingActive   = ((await upcomingRes.json()).collection        ?? []) as CalEvent[];
-    const upcomingCancelled= ((await upcomingCancelRes.json()).collection  ?? []) as CalEvent[];
+    const upcomingActive    = (((await upcomingRes.json()).collection        ?? []) as CalEvent[]).filter(e => e.name.toLowerCase().includes("1:1 mentorship"));
+    const upcomingCancelled = (((await upcomingCancelRes.json()).collection  ?? []) as CalEvent[]).filter(e => e.name.toLowerCase().includes("1:1 mentorship"));
     // Combine: active first, cancelled second (both sorted by start_time below)
     const upcomingEvents = [
       ...upcomingActive.map(e  => ({ ...e, _cancelled: false })),

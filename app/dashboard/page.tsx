@@ -568,7 +568,9 @@ function DashboardView({data}:{data:DashboardData}){
                   const hasNewCall    = call.rescheduled && futureEmailSet.has(call.inviteeEmail);
                   const reschedActive = call.rescheduled && !hasNewCall && (_now.getTime()-new Date(call.startTime).getTime()) < 24*3600_000;
 
-                  const closeStatus = (!isCancelled && (isPrev || isLive) && info && info !== "loading")
+                  // Check Close CRM for ALL prev/live calls — including cancelled ones,
+                  // so a lead that cancelled but then closed still shows "Closed".
+                  const closeStatus = ((isPrev || isLive) && info && info !== "loading")
                     ? (info.statusLabel ?? "").toLowerCase() : "";
                   const isPitched   = closeStatus.includes("pitched");
                   const isClosedWon = closeStatus.includes("closed");
@@ -576,13 +578,18 @@ function DashboardView({data}:{data:DashboardData}){
 
                   const oppVal = isClosedWon && info && info !== "loading" && info.opportunityValue
                     ? " · " + fmt$(info.opportunityValue) : "";
-                  const statusLabel = isCancelled
+                  const statusLabel = isClosedWon && isCancelled
+                    // Cancelled but deal closed → surface the win
+                    ? "Closed" + oppVal
+                    : isCancelled
                     ? (hasNewCall ? "Rescheduled" : reschedActive ? "Rescheduling" : call.noShow ? "No Show" : "Cancelled")
                     : call.noShow || isNoShowCRM ? "No Show"
                     : isPitched   ? "Pitched"
                     : isClosedWon ? "Closed" + oppVal
                     : fromNow;
-                  const statusColor = isCancelled
+                  const statusColor = isClosedWon && isCancelled
+                    ? "#4CAF50"
+                    : isCancelled
                     ? (hasNewCall ? "#4CAF50" : reschedActive ? "#C9A84C" : "#E05252")
                     : call.noShow || isNoShowCRM ? "#E05252"
                     : isPitched   ? "#E08020"
