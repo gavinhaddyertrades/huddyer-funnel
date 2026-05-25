@@ -480,8 +480,29 @@ function DashboardView({data}:{data:DashboardData}){
     if (end && _now >= end) return true; // fully ended
     return false;
   };
-  const prevCalls   = indexedCalls.filter(({ call: c }) => isInPrevious(c)).reverse(); // most recent first
-  const futureCalls = indexedCalls.filter(({ call: c }) => !isInPrevious(c));
+  // Raw split — most recent prev first, future ascending
+  const prevCallsRaw   = indexedCalls.filter(({ call: c }) => isInPrevious(c)).reverse();
+  const futureCallsRaw = indexedCalls.filter(({ call: c }) => !isInPrevious(c));
+
+  // Deduplicate by invitee email:
+  // 1. Future: keep only the soonest upcoming call per email (ascending order → first wins)
+  const seenFutureEmails = new Set<string>();
+  const futureCalls = futureCallsRaw.filter(({ call: c }) => {
+    if (!c.inviteeEmail) return true;
+    if (seenFutureEmails.has(c.inviteeEmail)) return false;
+    seenFutureEmails.add(c.inviteeEmail);
+    return true;
+  });
+  // 2. Previous: suppress any entry whose email has a future call (they rebooked),
+  //    then keep only the most recent past/cancelled entry per email.
+  const seenPrevEmails = new Set<string>();
+  const prevCalls = prevCallsRaw.filter(({ call: c }) => {
+    if (!c.inviteeEmail) return true;
+    if (seenFutureEmails.has(c.inviteeEmail)) return false; // has a new upcoming call
+    if (seenPrevEmails.has(c.inviteeEmail))   return false; // older duplicate
+    seenPrevEmails.add(c.inviteeEmail);
+    return true;
+  });
 
   const fetchLeadInfo = useCallback((email: string) => {
     if (!email || fetchInitiatedRef.current.has(email)) return;
