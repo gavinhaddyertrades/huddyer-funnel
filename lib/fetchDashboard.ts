@@ -1279,13 +1279,11 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
           .reduce((s, r) => s + r.cashCollected, 0)
       )
     : 0;
-  // Hudson keeps 65% of cash collected — ROAS is calculated on his share
-  const hudsonShare = round2(cashFromAdLeads * 0.65);
   const metaAds = metaAdsRaw
     ? {
         ...metaAdsRaw,
         cashFromAdLeads,
-        roas: metaAdsRaw.totalSpend > 0 ? round2(hudsonShare / metaAdsRaw.totalSpend) : null,
+        roas: metaAdsRaw.totalSpend > 0 ? round2(cashFromAdLeads / metaAdsRaw.totalSpend) : null,
       }
     : null;
 
