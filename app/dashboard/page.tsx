@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, createContext, useContext } from "react";
-import type { DashboardData, CommissionLine, MorningHuddleData, HuddlePeriodData } from "@/lib/fetchDashboard";
+import type { DashboardData, CommissionLine, MorningHuddleData, HuddlePeriodData, MetaAdsetRow } from "@/lib/fetchDashboard";
 
 // ── Mobile context ────────────────────────────────────────────────────────────
 const MobileCtx = createContext(false);
@@ -976,34 +976,101 @@ function FunnelView({data}:{data:DashboardData}){
 
       <GoldDivider/>
 
-      {/* ── Meta Ads ── */}
+      {/* ── Meta Ads Spend ── */}
       <section>
-        <SectionLabel>Meta Ads</SectionLabel>
-        <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
-          <Card>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-              <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",margin:0}}>Leads by Campaign</p>
-              {metaTotal>0&&(
-                <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888"}}>{metaTotal} total</span>
-              )}
-            </div>
-            {metaCampaigns.length===0?(
-              <p style={{color:"#777",fontSize:12}}>No Meta leads in range</p>
-            ):(
-              <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                {metaCampaigns.map(c=>(
-                  <div key={c.campaign} style={{display:"flex",alignItems:"center",gap:10}}>
-                    <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#888",minWidth:0,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.campaign}</p>
-                    <div style={{width:100,flexShrink:0,height:5,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
-                      <div style={{width:`${Math.round((c.count/campMax)*100)}%`,height:"100%",background:"#1877F2",borderRadius:3,transition:"width 0.5s ease"}}/>
-                    </div>
-                    <span style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",minWidth:20,textAlign:"right"}}>{c.count}</span>
+        <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:14}}>
+          <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"#AAA",margin:0}}>Meta Ads</p>
+          {data.metaAds && (
+            <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#666",letterSpacing:"0.04em"}}>{data.metaAds.dateRange}</span>
+          )}
+        </div>
+        {!data.metaAds ? (
+          <Card><p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#777",fontStyle:"italic"}}>Meta Ads data unavailable</p></Card>
+        ) : (()=>{
+          const meta = data.metaAds;
+          const spendMax = Math.max(...meta.adsets.map(a=>a.spend), 1);
+          return (
+            <>
+              {/* ── Summary KPIs ── */}
+              <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:10,marginBottom:14}}>
+                {[
+                  { label:"Total Spend",  value:`$${meta.totalSpend.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`, accent:true },
+                  { label:"Total Clicks", value:meta.totalClicks.toLocaleString() },
+                  { label:"Avg CPC",      value:`$${meta.avgCpc.toFixed(2)}` },
+                  { label:"Avg CTR",      value:`${meta.avgCtr.toFixed(2)}%` },
+                ].map(k=>(
+                  <div key={k.label} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"14px 16px"}}>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#666",margin:"0 0 6px"}}>{k.label}</p>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:22,fontWeight:700,color:k.accent?"#C9A84C":"#F2EDE6",margin:0,lineHeight:1}}>{k.value}</p>
                   </div>
                 ))}
               </div>
-            )}
-          </Card>
-        </div>
+
+              {/* ── Adset breakdown ── */}
+              <Card style={{padding:0,overflow:"hidden"}}>
+                {/* Header */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 90px 70px 70px 70px",gap:8,padding:"10px 20px",borderBottom:"1px solid rgba(255,255,255,0.07)"}}>
+                  {["Ad Set","Spend","Clicks","CPC","CTR"].map(h=>(
+                    <span key={h} style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",textAlign:h==="Ad Set"?"left":"right"}}>{h}</span>
+                  ))}
+                </div>
+                {meta.adsets.map((row:MetaAdsetRow, i:number)=>(
+                  <div key={row.adsetId} style={{
+                    display:"grid",gridTemplateColumns:"1fr 90px 70px 70px 70px",gap:8,
+                    padding:"13px 20px",
+                    borderBottom:i<meta.adsets.length-1?"1px solid rgba(255,255,255,0.05)":"none",
+                    background:i%2===0?"transparent":"rgba(255,255,255,0.01)",
+                  }}>
+                    {/* Ad set name + campaign */}
+                    <div style={{minWidth:0}}>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:600,color:"#F2EDE6",margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{row.adsetName}</p>
+                      <p style={{fontFamily:"var(--font-body)",fontSize:10,color:"#555",margin:"2px 0 6px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{row.campaignName}</p>
+                      {/* spend bar */}
+                      <div style={{height:3,borderRadius:2,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+                        <div style={{width:`${Math.round((row.spend/spendMax)*100)}%`,height:"100%",background:"#1877F2",borderRadius:2,transition:"width 0.6s ease"}}/>
+                      </div>
+                    </div>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:600,color:"#C9A84C",margin:0,textAlign:"right",alignSelf:"center"}}>
+                      ${row.spend.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+                    </p>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0,textAlign:"right",alignSelf:"center"}}>{row.clicks.toLocaleString()}</p>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0,textAlign:"right",alignSelf:"center"}}>${row.cpc.toFixed(2)}</p>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0,textAlign:"right",alignSelf:"center"}}>{row.ctr.toFixed(2)}%</p>
+                  </div>
+                ))}
+                {/* Totals row */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 90px 70px 70px 70px",gap:8,padding:"12px 20px",borderTop:"1px solid rgba(201,168,76,0.2)",background:"rgba(201,168,76,0.04)"}}>
+                  <span style={{fontFamily:"var(--font-body)",fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",color:"#C9A84C",alignSelf:"center"}}>Total</span>
+                  <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#C9A84C",textAlign:"right"}}>${meta.totalSpend.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+                  <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6",textAlign:"right"}}>{meta.totalClicks.toLocaleString()}</span>
+                  <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6",textAlign:"right"}}>${meta.avgCpc.toFixed(2)}</span>
+                  <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6",textAlign:"right"}}>{meta.avgCtr.toFixed(2)}%</span>
+                </div>
+              </Card>
+
+              {/* ── Leads by Meta campaign (from Applications sheet) ── */}
+              {metaCampaigns.length>0&&(
+                <Card style={{marginTop:14}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                    <p style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",margin:0}}>Applications by Campaign</p>
+                    <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#888"}}>{metaTotal} total</span>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                    {metaCampaigns.map(c=>(
+                      <div key={c.campaign} style={{display:"flex",alignItems:"center",gap:10}}>
+                        <p style={{fontFamily:"var(--font-body)",fontSize:12,color:"#888",minWidth:0,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.campaign}</p>
+                        <div style={{width:100,flexShrink:0,height:4,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+                          <div style={{width:`${Math.round((c.count/campMax)*100)}%`,height:"100%",background:"#1877F2",borderRadius:3,transition:"width 0.5s ease"}}/>
+                        </div>
+                        <span style={{fontFamily:"var(--font-body)",fontSize:12,fontWeight:600,color:"#F2EDE6",minWidth:20,textAlign:"right"}}>{c.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+            </>
+          );
+        })()}
       </section>
     </div>
   );

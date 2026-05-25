@@ -1134,6 +1134,86 @@ async function fetchDnqCounts(): Promise<{ today: number; thisWeek: number; yest
   }
 }
 
+// ── Meta Ads (Marketing API) ──────────────────────────────────────────────────
+
+export type MetaAdsetRow = {
+  adsetId:      string;
+  adsetName:    string;
+  campaignName: string;
+  spend:        number;
+  clicks:       number;
+  impressions:  number;
+  cpc:          number;
+  ctr:          number;
+};
+
+export type MetaAdsData = {
+  adsets:        MetaAdsetRow[];
+  totalSpend:    number;
+  totalClicks:   number;
+  totalImpressions: number;
+  avgCpc:        number;
+  avgCtr:        number;
+  dateRange:     string;   // e.g. "May 18 – May 24"
+};
+
+async function fetchMetaAdsData(): Promise<MetaAdsData | null> {
+  try {
+    const token   = process.env.META_ADS_TOKEN!;
+    const account = process.env.META_ADS_ACCOUNT!;
+    const fields  = "adset_id,adset_name,campaign_name,spend,clicks,impressions,cpc,ctr";
+    const url     = `https://graph.facebook.com/v19.0/${account}/insights?level=adset&fields=${fields}&date_preset=last_7d&access_token=${token}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      console.error(`Meta Ads API HTTP ${res.status}`);
+      return null;
+    }
+    const json = await res.json() as {
+      data?: Array<{
+        adset_id?: string; adset_name?: string; campaign_name?: string;
+        spend?: string; clicks?: string; impressions?: string; cpc?: string; ctr?: string;
+        date_start?: string; date_stop?: string;
+      }>;
+      error?: { message: string };
+    };
+    if (json.error) {
+      console.error("Meta Ads API error:", json.error.message);
+      return null;
+    }
+
+    const rows: MetaAdsetRow[] = (json.data ?? []).map(r => ({
+      adsetId:      r.adset_id      ?? "",
+      adsetName:    r.adset_name    ?? "",
+      campaignName: r.campaign_name ?? "",
+      spend:        parseFloat(r.spend       ?? "0") || 0,
+      clicks:       parseInt  (r.clicks      ?? "0", 10) || 0,
+      impressions:  parseInt  (r.impressions ?? "0", 10) || 0,
+      cpc:          parseFloat(r.cpc         ?? "0") || 0,
+      ctr:          parseFloat(r.ctr         ?? "0") || 0,
+    })).sort((a, b) => b.spend - a.spend);
+
+    const totalSpend       = round2(rows.reduce((s, r) => s + r.spend,       0));
+    const totalClicks      = rows.reduce((s, r) => s + r.clicks,      0);
+    const totalImpressions = rows.reduce((s, r) => s + r.impressions, 0);
+    const avgCpc  = totalClicks      > 0 ? round2(totalSpend / totalClicks)                              : 0;
+    const avgCtr  = totalImpressions > 0 ? round2((totalClicks / totalImpressions) * 100) : 0;
+
+    // Build date range label from first row
+    const first = json.data?.[0];
+    const fmtMeta = (s: string) => {
+      const d = new Date(s + "T00:00:00");
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    };
+    const dateRange = first?.date_start && first?.date_stop
+      ? `${fmtMeta(first.date_start)} – ${fmtMeta(first.date_stop)}` : "Last 7 days";
+
+    return { adsets: rows, totalSpend, totalClicks, totalImpressions, avgCpc, avgCtr, dateRange };
+  } catch (e) {
+    console.error("Meta Ads fetch error:", (e as Error).message);
+    return null;
+  }
+}
+
 // ── Aggregate ─────────────────────────────────────────────────────────────────
 
 export type DashboardData = {
@@ -1141,6 +1221,7 @@ export type DashboardData = {
   calendly:       CalendlyData | null;
   typeform:       TypeformData | null;
   whop:           WhopData | null;
+  metaAds:        MetaAdsData | null;
   conversionRate: number | null;
   closeRate:      number | null;
   dnqsToday:      number;
@@ -1149,12 +1230,13 @@ export type DashboardData = {
 };
 
 export async function fetchAllDashboardData(start: Date, end: Date): Promise<DashboardData> {
-  const [sh, cal, tf, whop, dnqResult] = await Promise.allSettled([
+  const [sh, cal, tf, whop, dnqResult, metaResult] = await Promise.allSettled([
     fetchSheetsData(start, end),
     fetchCalendlyData(start, end),
     fetchTypeformData(start, end),
     fetchWhopData(),
     fetchDnqCounts(),
+    fetchMetaAdsData(),
   ]);
 
   const sheets   = sh.status   === "fulfilled" ? sh.value   : ({ connected: false, error: "rejected" } as SheetsData);
@@ -1162,6 +1244,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
   const typeform = tf.status   === "fulfilled" ? tf.value   : null;
   const whopVal  = whop.status === "fulfilled" ? whop.value : null;
   const dnqs     = dnqResult.status === "fulfilled" ? dnqResult.value : { today: 0, thisWeek: 0, yesterday: 0 };
+  const metaAds  = metaResult.status === "fulfilled" ? metaResult.value : null;
 
   const apps   = typeform?.totalInRange ?? 0;
   const booked = calendly?.bookedInRange ?? 0;
@@ -1199,6 +1282,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
     calendly,
     typeform,
     whop:           whopVal,
+    metaAds,
     conversionRate: apps   > 0 ? Math.round((booked / apps)   * 100) : null,
     closeRate:      booked > 0 ? Math.round((closed / booked) * 100) : null,
     dnqsToday:      dnqs.today,
