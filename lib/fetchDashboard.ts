@@ -859,9 +859,9 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
       ...upcomingCancelled.map(e => ({ ...e, _cancelled: true  })),
     ];
 
-    // Fetch invitees for every upcoming event in parallel
+    // Fetch invitees for every upcoming event in parallel (up to 100)
     const inviteeResults = await Promise.allSettled(
-      upcomingEvents.slice(0, 50).map(async (event) => {
+      upcomingEvents.slice(0, 100).map(async (event) => {
         const uuid = event.uri.split("/").pop();
         const r = await fetch(
           `https://api.calendly.com/scheduled_events/${uuid}/invitees?count=10`,
@@ -905,11 +905,20 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
       e.created_at && new Date(e.created_at) >= calTodayStart
     ).length;
 
-    // No-shows + cancellations with a start time today
-    const noShowsCancelsToday = upcomingCalls.filter(c => {
+    // No-shows + cancellations with a start time today.
+    // Count cancelled events directly from the raw array (all 100 results, not
+    // limited by the invitee-fetch slice) so we never miss a cancellation.
+    const cancelledToday = upcomingCancelled.filter(e =>
+      new Date(e.start_time) >= calTodayStart
+    ).length;
+    // Active events where the invitee was flagged as a no-show (requires the
+    // invitee fetch, but active events are prioritised in the slice so this
+    // should be complete).
+    const noShowActiveToday = upcomingCalls.filter(c => {
       const s = new Date(c.startTime);
-      return s >= calTodayStart && (c.noShow || c.cancelled);
+      return s >= calTodayStart && c.noShow && !c.cancelled;
     }).length;
+    const noShowsCancelsToday = cancelledToday + noShowActiveToday;
 
     return {
       bookedInRange:    active.length,
