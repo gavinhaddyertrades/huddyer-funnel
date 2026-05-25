@@ -36,6 +36,13 @@ function startOfTodayUS(): Date {
   return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()));
 }
 
+function startOfWeekUS(): Date {
+  const shifted = new Date(Date.now() - 8 * 3_600_000);
+  const dow = shifted.getUTCDay(); // 0 = Sunday
+  const ms = Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()) - dow * 86_400_000;
+  return new Date(ms);
+}
+
 function round2(n: number) { return Math.round(n * 100) / 100; }
 
 // ── Google Sheets gviz helpers ────────────────────────────────────────────────
@@ -64,6 +71,17 @@ function parseGvizDatetime(v: unknown): string {
   return plain
     ? plain.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : v; // already a readable string — return as-is
+}
+
+function parseGvizDatetimeToDate(v: unknown): Date | null {
+  if (!v || typeof v !== "string") return null;
+  // gviz Date(year,month0,day[,hour,min]) → strip to date part
+  const m = v.match(/Date\((\d+),(\d+),(\d+)/);
+  if (m) return new Date(+m[1], +m[2], +m[3]);
+  // Pre-formatted string e.g. "May 19, 2026 at 10:11 PM"
+  const dt = new Date(v.replace(" at ", " "));
+  if (!isNaN(dt.getTime())) return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+  return null;
 }
 
 async function fetchGviz(sheet: string): Promise<unknown[][] | null> {
@@ -156,6 +174,24 @@ async function fetchDealRows(sheet = SHEET_DEALS): Promise<DealRow[] | null> {
 
 export type CommissionLine = { name: string; amount: number };
 
+export type HuddleSetterStat = { name: string; callsBooked: number; liveCallsPushed: number };
+export type HuddleCloserStat = { name: string; noShows: number; callsCanceled: number };
+export type HuddlePeriodData = {
+  applications:    number;
+  callsBooked:     number;
+  noShows:         number;
+  callsCanceled:   number;
+  liveCallsPushed: number;
+  setterBreakdown: HuddleSetterStat[];
+  closerBreakdown: HuddleCloserStat[];
+};
+export type MorningHuddleData = {
+  weekLabel:      string;
+  yesterdayLabel: string;
+  thisWeek:       HuddlePeriodData;
+  yesterday:      HuddlePeriodData;
+};
+
 export type AddOnRow = {
   date:        Date;
   description: string;
@@ -231,6 +267,28 @@ export type SheetsData =
       // ── EOD reports ──
       setterEod:          { submitted: boolean; rows: EodRow[] };
       closerEod:          { submitted: boolean; rows: CloserEodRow[] };
+
+      // ── Morning Huddle (pre-computed EOD portion; apps added in aggregate) ──
+      morningHuddleEod: {
+        weekLabel:      string;
+        yesterdayLabel: string;
+        thisWeek: {
+          callsBooked:     number;
+          liveCallsPushed: number;
+          noShows:         number;
+          callsCanceled:   number;
+          setterBreakdown: HuddleSetterStat[];
+          closerBreakdown: HuddleCloserStat[];
+        };
+        yesterday: {
+          callsBooked:     number;
+          liveCallsPushed: number;
+          noShows:         number;
+          callsCanceled:   number;
+          setterBreakdown: HuddleSetterStat[];
+          closerBreakdown: HuddleCloserStat[];
+        };
+      };
 
       // ── Add ons ──
       addOns:             AddOnRow[];   // all rows (not range-filtered)
@@ -476,6 +534,77 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     });
   }
 
+  // ── Morning Huddle EOD computation ─────────────────────────────────────────
+  // Parse raw rows with actual Date objects (not the formatted timestamp string)
+  const hudTodayStart = startOfTodayUS();
+  const hudWeekStart  = startOfWeekUS();
+  const hudYestStart  = new Date(hudTodayStart.getTime() - 86_400_000);
+  const hudTodayEnd   = new Date(hudTodayStart.getTime() + 86_400_000); // exclusive bound
+
+  type SetterRawD = { name: string; callsBooked: number; liveCalls: number; date: Date | null };
+  type CloserRawD = { name: string; noShows: number; cancellations: number; date: Date | null };
+
+  const setterRawD: SetterRawD[] = (setterEodRaw ?? []).flatMap(c =>
+    c[0] ? [{ name: String(c[1] ?? ""), callsBooked: Number(c[3] ?? 0), liveCalls: Number(c[4] ?? 0), date: parseGvizDatetimeToDate(c[0]) }] : []
+  );
+  const closerRawD: CloserRawD[] = (closerEodRaw ?? []).flatMap(c =>
+    c[0] ? [{ name: String(c[1] ?? ""), noShows: Number(c[3] ?? 0), cancellations: Number(c[5] ?? 0), date: parseGvizDatetimeToDate(c[0]) }] : []
+  );
+
+  function aggSetterD(rows: SetterRawD[]) {
+    const m = new Map<string, { callsBooked: number; liveCallsPushed: number }>();
+    for (const r of rows) {
+      const k = r.name.trim();
+      if (!k) continue;
+      const p = m.get(k) ?? { callsBooked: 0, liveCallsPushed: 0 };
+      m.set(k, { callsBooked: p.callsBooked + r.callsBooked, liveCallsPushed: p.liveCallsPushed + r.liveCalls });
+    }
+    const bd = Array.from(m.entries()).map(([name, v]) => ({ name, ...v })).sort((a, b) => b.callsBooked - a.callsBooked);
+    return { callsBooked: bd.reduce((s, r) => s + r.callsBooked, 0), liveCallsPushed: bd.reduce((s, r) => s + r.liveCallsPushed, 0), setterBreakdown: bd };
+  }
+
+  function aggCloserD(rows: CloserRawD[]) {
+    const m = new Map<string, { noShows: number; callsCanceled: number }>();
+    for (const r of rows) {
+      const k = r.name.trim();
+      if (!k) continue;
+      const p = m.get(k) ?? { noShows: 0, callsCanceled: 0 };
+      m.set(k, { noShows: p.noShows + r.noShows, callsCanceled: p.callsCanceled + r.cancellations });
+    }
+    const bd = Array.from(m.entries()).map(([name, v]) => ({ name, ...v })).sort((a, b) => b.noShows - a.noShows);
+    return { noShows: bd.reduce((s, r) => s + r.noShows, 0), callsCanceled: bd.reduce((s, r) => s + r.callsCanceled, 0), closerBreakdown: bd };
+  }
+
+  const hudFmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const hudWeekLabel = `${hudFmt(hudWeekStart)} – ${hudFmt(new Date(hudTodayEnd.getTime() - 1))}`;
+  const hudYestLabel = hudFmt(hudYestStart);
+
+  const ws = aggSetterD(setterRawD.filter(r => r.date && r.date >= hudWeekStart && r.date < hudTodayEnd));
+  const wc = aggCloserD(closerRawD.filter(r => r.date && r.date >= hudWeekStart && r.date < hudTodayEnd));
+  const ys = aggSetterD(setterRawD.filter(r => r.date && r.date >= hudYestStart && r.date < hudTodayStart));
+  const yc = aggCloserD(closerRawD.filter(r => r.date && r.date >= hudYestStart && r.date < hudTodayStart));
+
+  const morningHuddleEod = {
+    weekLabel:      hudWeekLabel,
+    yesterdayLabel: hudYestLabel,
+    thisWeek: {
+      callsBooked:     ws.callsBooked,
+      liveCallsPushed: ws.liveCallsPushed,
+      noShows:         wc.noShows,
+      callsCanceled:   wc.callsCanceled,
+      setterBreakdown: ws.setterBreakdown,
+      closerBreakdown: wc.closerBreakdown,
+    },
+    yesterday: {
+      callsBooked:     ys.callsBooked,
+      liveCallsPushed: ys.liveCallsPushed,
+      noShows:         yc.noShows,
+      callsCanceled:   yc.callsCanceled,
+      setterBreakdown: ys.setterBreakdown,
+      closerBreakdown: yc.closerBreakdown,
+    },
+  };
+
   // Subscriptions: gviz recognizes header → ROW 0 is data → no slice
   const subMap = new Map<string, number>();
   for (const c of (subRaw ?? [])) {
@@ -628,6 +757,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
     voidedLeads,
     setterEod:  { submitted: setterEodRows.length  > 0, rows: setterEodRows  },
     closerEod:  { submitted: closerEodRows.length  > 0, rows: closerEodRows  },
+    morningHuddleEod,
     addOns,
     addOnTotal,
     htCashCollectedByMonth,
@@ -800,10 +930,12 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
 // Columns: 0=Date, 1=Name, 2=Age, 3=Budget, 4=utm_source, 5=utm_medium
 
 export type TypeformData = {
-  totalInRange:      number;
-  applicationsToday: number;
-  trafficSources:    { source: string; count: number }[];
-  metaCampaigns:     { campaign: string; count: number }[];
+  totalInRange:          number;
+  applicationsToday:     number;
+  applicationsThisWeek:  number;
+  applicationsYesterday: number;
+  trafficSources:        { source: string; count: number }[];
+  metaCampaigns:         { campaign: string; count: number }[];
 };
 
 async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData | null> {
@@ -813,14 +945,20 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
 
     const sourceMap   = new Map<string, number>();
     const campaignMap = new Map<string, number>();
-    let totalInRange    = 0;
-    let applicationsToday = 0;
+    let totalInRange       = 0;
+    let applicationsToday  = 0;
+    let applicationsThisWeek  = 0;
+    let applicationsYesterday = 0;
     const appTodayStart = startOfTodayUS();
+    const appWeekStart  = startOfWeekUS();
+    const appYestStart  = new Date(appTodayStart.getTime() - 86_400_000);
 
     for (const c of raw) {
       const date = parseGvizDate(c[0]);
       if (!date) continue;
       if (date >= appTodayStart) applicationsToday++;
+      if (date >= appWeekStart)  applicationsThisWeek++;
+      if (date >= appYestStart && date < appTodayStart) applicationsYesterday++;
       if (date < start || date > end) continue;
       totalInRange++;
       const src = String(c[4] ?? "").trim().toLowerCase() || "organic";
@@ -834,6 +972,8 @@ async function fetchTypeformData(start: Date, end: Date): Promise<TypeformData |
     return {
       totalInRange,
       applicationsToday,
+      applicationsThisWeek,
+      applicationsYesterday,
       trafficSources: Array.from(sourceMap.entries())
         .sort((a, b) => b[1] - a[1])
         .map(([source, count]) => ({ source, count })),
@@ -974,6 +1114,7 @@ export type DashboardData = {
   conversionRate: number | null;
   closeRate:      number | null;
   dnqsToday:      number;
+  morningHuddle:  MorningHuddleData | null;
   lastUpdated:    string;
 };
 
@@ -995,6 +1136,31 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
   const booked = calendly?.bookedInRange ?? 0;
   const closed = sheets.connected ? sheets.dealsClosed : 0;
 
+  const morningHuddle: MorningHuddleData | null = sheets.connected
+    ? {
+        weekLabel:      sheets.morningHuddleEod.weekLabel,
+        yesterdayLabel: sheets.morningHuddleEod.yesterdayLabel,
+        thisWeek: {
+          applications:    typeform?.applicationsThisWeek  ?? 0,
+          callsBooked:     sheets.morningHuddleEod.thisWeek.callsBooked,
+          noShows:         sheets.morningHuddleEod.thisWeek.noShows,
+          callsCanceled:   sheets.morningHuddleEod.thisWeek.callsCanceled,
+          liveCallsPushed: sheets.morningHuddleEod.thisWeek.liveCallsPushed,
+          setterBreakdown: sheets.morningHuddleEod.thisWeek.setterBreakdown,
+          closerBreakdown: sheets.morningHuddleEod.thisWeek.closerBreakdown,
+        },
+        yesterday: {
+          applications:    typeform?.applicationsYesterday ?? 0,
+          callsBooked:     sheets.morningHuddleEod.yesterday.callsBooked,
+          noShows:         sheets.morningHuddleEod.yesterday.noShows,
+          callsCanceled:   sheets.morningHuddleEod.yesterday.callsCanceled,
+          liveCallsPushed: sheets.morningHuddleEod.yesterday.liveCallsPushed,
+          setterBreakdown: sheets.morningHuddleEod.yesterday.setterBreakdown,
+          closerBreakdown: sheets.morningHuddleEod.yesterday.closerBreakdown,
+        },
+      }
+    : null;
+
   return {
     sheets,
     calendly,
@@ -1003,6 +1169,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
     conversionRate: apps   > 0 ? Math.round((booked / apps)   * 100) : null,
     closeRate:      booked > 0 ? Math.round((closed / booked) * 100) : null,
     dnqsToday:      dnqResult.status === "fulfilled" ? dnqResult.value : 0,
+    morningHuddle,
     lastUpdated:    new Date().toISOString(),
   };
 }

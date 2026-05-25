@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, createContext, useContext } from "react";
-import type { DashboardData, CommissionLine } from "@/lib/fetchDashboard";
+import type { DashboardData, CommissionLine, MorningHuddleData, HuddlePeriodData } from "@/lib/fetchDashboard";
 
 // ── Mobile context ────────────────────────────────────────────────────────────
 const MobileCtx = createContext(false);
@@ -779,6 +779,78 @@ function RevenueView({data}:{data:DashboardData}){
   );
 }
 
+// ── Morning Huddle ────────────────────────────────────────────────────────────
+function HuddlePeriodCard({ label, d }: { label: string; d: HuddlePeriodData }) {
+  const metrics = [
+    { key: "applications",    label: "Applications",      value: d.applications,    color: "#F2EDE6" },
+    { key: "callsBooked",     label: "Calls Booked",      value: d.callsBooked,     color: "#C9A84C" },
+    { key: "noShows",         label: "No Shows",          value: d.noShows,         color: "#E05252" },
+    { key: "callsCanceled",   label: "Calls Canceled",    value: d.callsCanceled,   color: "#E05252" },
+    { key: "liveCallsPushed", label: "Live Calls Pushed", value: d.liveCallsPushed, color: "#C9A84C" },
+  ];
+  return (
+    <Card>
+      <p style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: "0.13em", textTransform: "uppercase", color: "#888", marginBottom: 16 }}>{label}</p>
+
+      {/* Metric rows */}
+      {metrics.map(({ key, label: ml, value, color }) => (
+        <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#AAA" }}>{ml}</span>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 22, color, lineHeight: 1 }}>{value}</span>
+        </div>
+      ))}
+
+      {/* Setter breakdown */}
+      {d.setterBreakdown.length > 0 && (
+        <div style={{ marginTop: 18 }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#666", marginBottom: 8 }}>Setters</p>
+          <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, overflow: "hidden" }}>
+            {d.setterBreakdown.map((r, i) => (
+              <div key={r.name} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, padding: "8px 12px", alignItems: "center", borderBottom: i < d.setterBreakdown.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#CCC", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "#888", whiteSpace: "nowrap" }}>{r.callsBooked} booked</span>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "#C9A84C", whiteSpace: "nowrap", minWidth: 46, textAlign: "right" }}>{r.liveCallsPushed} live</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Closer breakdown */}
+      {d.closerBreakdown.length > 0 && (
+        <div style={{ marginTop: 14 }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#666", marginBottom: 8 }}>Closers</p>
+          <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, overflow: "hidden" }}>
+            {d.closerBreakdown.map((r, i) => (
+              <div key={r.name} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, padding: "8px 12px", alignItems: "center", borderBottom: i < d.closerBreakdown.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#CCC", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "#E05252", whiteSpace: "nowrap" }}>{r.noShows} no shows</span>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "#888", whiteSpace: "nowrap", minWidth: 58, textAlign: "right" }}>{r.callsCanceled} canceled</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function MorningHuddleSection({ data }: { data: MorningHuddleData }) {
+  const mobile = useMobile();
+  return (
+    <section>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
+        <SectionLabel>Morning Huddle</SectionLabel>
+        <span style={{ fontFamily: "var(--font-body)", fontSize: 10, color: "#555", letterSpacing: "0.08em" }}>Week of {data.weekLabel}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 14 }}>
+        <HuddlePeriodCard label={`This Week · ${data.weekLabel}`} d={data.thisWeek} />
+        <HuddlePeriodCard label={`Yesterday · ${data.yesterdayLabel}`} d={data.yesterday} />
+      </div>
+    </section>
+  );
+}
+
 function FunnelView({data}:{data:DashboardData}){
   const mobile=useMobile();
   const sh=data.sheets.connected?data.sheets:null;
@@ -800,6 +872,15 @@ function FunnelView({data}:{data:DashboardData}){
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:28}}>
+
+      {/* ── Morning Huddle ── */}
+      {data.morningHuddle && (
+        <>
+          <MorningHuddleSection data={data.morningHuddle} />
+          <GoldDivider/>
+        </>
+      )}
+
       <section>
         <SectionLabel>Funnel</SectionLabel>
         <div style={{display:"grid",gridTemplateColumns:cardGrid,gap:14}}>
