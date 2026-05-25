@@ -1165,7 +1165,7 @@ async function fetchMetaAdsData(): Promise<MetaAdsData | null> {
     const token   = process.env.META_ADS_TOKEN!;
     const account = process.env.META_ADS_ACCOUNT!;
     const fields  = "adset_id,adset_name,campaign_name,spend,clicks,impressions,cpc,ctr";
-    const url     = `https://graph.facebook.com/v19.0/${account}/insights?level=adset&fields=${fields}&date_preset=last_7d&access_token=${token}`;
+    const url     = `https://graph.facebook.com/v19.0/${account}/insights?level=adset&fields=${fields}&date_preset=maximum&access_token=${token}`;
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
       console.error(`Meta Ads API HTTP ${res.status}`);
@@ -1208,7 +1208,7 @@ async function fetchMetaAdsData(): Promise<MetaAdsData | null> {
       return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     };
     const dateRange = first?.date_start && first?.date_stop
-      ? `${fmtMeta(first.date_start)} – ${fmtMeta(first.date_stop)}` : "Last 7 days";
+      ? `${fmtMeta(first.date_start)} – ${fmtMeta(first.date_stop)}` : "All time";
 
     return { adsets: rows, totalSpend, totalClicks, totalImpressions, avgCpc, avgCtr, dateRange };
   } catch (e) {
