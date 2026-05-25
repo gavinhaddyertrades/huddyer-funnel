@@ -22,6 +22,10 @@ export async function GET(req: Request) {
       `https://api.close.com/api/v1/lead/?query=${encodeURIComponent("email:" + email)}`,
       { headers, cache: "no-store" }
     );
+    if (!searchRes.ok) {
+      console.error(`[lead-info] search HTTP ${searchRes.status} for ${email}`);
+      return NextResponse.json({ found: false });
+    }
     const searchJson = await searchRes.json() as { data?: Array<{ id: string; display_name: string; status_label?: string }> };
     const lead = searchJson.data?.[0];
     if (!lead) return NextResponse.json({ found: false });
@@ -38,8 +42,14 @@ export async function GET(req: Request) {
       ),
     ]);
 
-    const oppJson  = await oppRes.json()  as { data?: Array<{ value?: number; value_period?: string; status_type?: string }> };
-    const actJson  = await actRes.json()  as { data?: Record<string, unknown>[] };
+    // Guard .json() calls — Close CRM can return HTML on rate-limit/errors,
+    // which throws "Unexpected token '<'" and crashes the whole route.
+    const oppJson = oppRes.ok
+      ? await oppRes.json() as { data?: Array<{ value?: number; value_period?: string; status_type?: string }> }
+      : { data: [] as Array<{ value?: number; value_period?: string; status_type?: string }> };
+    const actJson = actRes.ok
+      ? await actRes.json() as { data?: Record<string, unknown>[] }
+      : { data: [] as Record<string, unknown>[] };
     const activity = actJson.data?.[0];
 
     // Pick the won opportunity with the highest value; fall back to any opportunity
