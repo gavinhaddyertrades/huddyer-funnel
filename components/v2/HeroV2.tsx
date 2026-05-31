@@ -176,6 +176,7 @@ export default function HeroV2() {
             Student Results
           </p>
           <h2
+            className="students-say-heading"
             style={{
               fontFamily: "var(--font-display)",
               fontSize: "clamp(36px, 6vw, 72px)",

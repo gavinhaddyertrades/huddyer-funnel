@@ -302,6 +302,9 @@
   .testimonials-section {
     padding-top: 14px !important;
   }
+  .students-say-heading {
+    margin-bottom: 20px !important;
+  }
   .hero-section {
     min-height: unset !important;
     align-items: flex-start !important;
