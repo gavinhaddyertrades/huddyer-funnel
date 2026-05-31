@@ -82,16 +82,12 @@
   * { @apply border-border; }
   html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
     overscroll-behavior: none;
   }
   body {
     background-color: #0A0A0A;
     color: #F2EDE6;
-    overflow-x: hidden;
     overscroll-behavior: none;
-    width: 100%;
-    position: relative;
   }
 }
 
