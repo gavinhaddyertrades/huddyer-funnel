@@ -168,7 +168,7 @@ export default function HeroV2() {
       </section>
 
       {/* ── Testimonials ── */}
-      <section style={{ backgroundColor: "#0A0A0A", padding: "80px 20px 100px" }} className="testimonials-section">
+      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px 100px" }} className="testimonials-section">
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
           {/* Heading */}
