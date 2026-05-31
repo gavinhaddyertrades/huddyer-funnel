@@ -94,7 +94,7 @@ export default function HeroV2() {
 
         <div
           className="w-full flex flex-col items-center gap-5"
-          style={{ maxWidth: 700, position: "relative", zIndex: 1 }}
+          style={{ maxWidth: 860, position: "relative", zIndex: 1 }}
         >
 
           {/* Desktop logo — in flow */}
@@ -107,7 +107,7 @@ export default function HeroV2() {
             ref={headingRef}
             className="font-display leading-none text-center"
             style={{
-              fontSize: "clamp(38px, 7.5vw, 76px)",
+              fontSize: "clamp(34px, 6.5vw, 66px)",
               color: "#F2EDE6",
               letterSpacing: "0.02em",
             }}
