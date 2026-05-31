@@ -84,6 +84,7 @@
   body {
     background-color: #0A0A0A;
     color: #F2EDE6;
+    overscroll-behavior-y: none;
   }
 }
 
