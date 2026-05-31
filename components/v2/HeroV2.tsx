@@ -193,7 +193,7 @@ export default function HeroV2() {
             ].map((name) => (
               <div
                 key={name}
-                className="masonry-item"
+                className={`masonry-item${name === "IMG_3085" ? " hide-mobile" : ""}`}
                 style={{
                   breakInside: "avoid",
                   marginBottom: 16,
@@ -212,6 +212,11 @@ export default function HeroV2() {
                 />
               </div>
             ))}
+          </div>
+
+          {/* Logo lockup at bottom of testimonials */}
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 48 }}>
+            {logoMarkup}
           </div>
 
         </div>

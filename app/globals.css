@@ -299,6 +299,9 @@
     margin-bottom: 0 !important;
     break-inside: unset !important;
   }
+  .hide-mobile {
+    display: none !important;
+  }
   .testimonials-section {
     padding-top: 14px !important;
   }
