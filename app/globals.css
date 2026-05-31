@@ -303,6 +303,9 @@
     padding-top: 14px !important;
   }
   .hero-section {
-    padding-bottom: 8px !important;
+    min-height: unset !important;
+    align-items: flex-start !important;
+    padding-top: 72px !important;
+    padding-bottom: 40px !important;
   }
 }
