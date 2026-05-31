@@ -283,12 +283,20 @@
 
 }
 
+.masonry-grid {
+  columns: 3 280px;
+  column-gap: 16px;
+}
+
 @media (max-width: 640px) {
+  .masonry-grid {
+    columns: 2 !important;
+    column-gap: 8px !important;
+  }
   .testimonials-section {
-    padding-top: 28px !important;
+    padding-top: 14px !important;
   }
   .hero-section {
-    padding-bottom: 16px !important;
-    min-height: 100svh !important;
+    padding-bottom: 8px !important;
   }
 }

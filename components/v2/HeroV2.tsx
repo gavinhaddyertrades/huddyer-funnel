@@ -191,12 +191,7 @@ export default function HeroV2() {
           </h2>
 
           {/* Masonry-style grid */}
-          <div
-            style={{
-              columns: "3 280px",
-              columnGap: 16,
-            }}
-          >
+          <div className="masonry-grid">
             {[
               "IMG_3080","IMG_3081","IMG_3082","IMG_3083","IMG_3084","IMG_3085",
               "IMG_3086","IMG_3087","IMG_3088","IMG_3089","IMG_3090","IMG_3091",
