@@ -112,8 +112,8 @@ export default function HeroV2() {
               letterSpacing: "0.02em",
             }}
           >
-            FROM INCONSISTENT TO{" "}
-            <span className="gold-text-gradient">PROFITABLE IN 90 DAYS.</span>
+            FROM BLOWN ACCOUNTS TO{" "}
+            <span className="gold-text-gradient">PROFITABLE IN ONLY 90 DAYS.</span>
           </h1>
 
           {/* Subheadline */}
