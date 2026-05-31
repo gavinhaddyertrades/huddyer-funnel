@@ -206,7 +206,7 @@ export default function HeroV2() {
                   borderRadius: 14,
                   overflow: "hidden",
                   border: "1px solid rgba(255,255,255,0.07)",
-                  backgroundColor: "#313338",
+                  backgroundColor: "#1c1d22",
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
