@@ -25,23 +25,39 @@ export default function HeroV2() {
   const mobileLogoRef = useRef<HTMLDivElement>(null);
   const headingRef    = useRef<HTMLHeadingElement>(null);
 
-  // On mobile: position logo exactly halfway between top of viewport and top of heading
+  // Fire ViewContent once on mount
   useEffect(() => {
+    (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "ViewContent");
+  }, []);
+
+  // On mobile: position logo exactly halfway between top of viewport and top of heading.
+  // Only re-run on WIDTH changes — iOS fires resize on every scroll as the URL bar
+  // shows/hides (height change), which would cause the logo to jump mid-scroll.
+  useEffect(() => {
+    let lastWidth = window.innerWidth;
+
     function place() {
-      if (window.innerWidth >= 768) return; // desktop: leave in-flow logo as-is
+      if (window.innerWidth >= 768) return;
       const logo    = mobileLogoRef.current;
       const heading = headingRef.current;
       if (!logo || !heading) return;
-      const headingTop = heading.getBoundingClientRect().top; // relative to viewport top
+      const headingTop = heading.getBoundingClientRect().top;
       const logoH      = logo.offsetHeight;
-      // Center of logo should sit at headingTop / 2
-      const top = Math.max(8, headingTop / 2 - logoH / 2);
+      // 0.65 instead of 0.5 moves the logo ~30% closer to the heading
+      const top = Math.max(8, headingTop * 0.65 - logoH / 2);
       logo.style.top = `${top}px`;
     }
 
+    function onResize() {
+      const w = window.innerWidth;
+      if (w === lastWidth) return; // height-only change (iOS URL bar) — ignore
+      lastWidth = w;
+      place();
+    }
+
     place();
-    window.addEventListener("resize", place);
-    return () => window.removeEventListener("resize", place);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   const logoMarkup = (
@@ -63,7 +79,7 @@ export default function HeroV2() {
       />
 
       <section
-        className="min-h-screen flex items-center justify-center px-5"
+        className="min-h-screen flex items-center justify-center px-5 hero-section"
         style={{ backgroundColor: "#0A0A0A", paddingTop: 40, paddingBottom: 32, position: "relative" }}
       >
         <ChartBackground />
@@ -142,13 +158,72 @@ export default function HeroV2() {
             target="_blank"
             rel="noopener noreferrer"
             style={{ fontSize: "16px", padding: "14px 32px", maxWidth: 260 }}
-            onClick={() => { (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead"); }}
+            onClick={() => { (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "ApplyNowClicked"); }}
           >
             Apply Now
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </a>
+
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section style={{ backgroundColor: "#0A0A0A", padding: "80px 20px 100px" }} className="testimonials-section">
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+
+          {/* Heading */}
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
+            Student Results
+          </p>
+          <h2
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(36px, 6vw, 72px)",
+              color: "#F2EDE6",
+              textAlign: "center",
+              letterSpacing: "0.02em",
+              lineHeight: 1,
+              marginBottom: 56,
+            }}
+          >
+            WHAT MY{" "}
+            <span className="gold-text-gradient">STUDENTS SAY</span>
+          </h2>
+
+          {/* Masonry-style grid */}
+          <div
+            style={{
+              columns: "3 280px",
+              columnGap: 16,
+            }}
+          >
+            {[
+              "IMG_3080","IMG_3081","IMG_3082","IMG_3083","IMG_3084","IMG_3085",
+              "IMG_3086","IMG_3087","IMG_3088","IMG_3089","IMG_3090","IMG_3091",
+              "IMG_3092","IMG_3093","IMG_3094","IMG_3095","IMG_3096",
+            ].map((name) => (
+              <div
+                key={name}
+                style={{
+                  breakInside: "avoid",
+                  marginBottom: 16,
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/testimonials/${name}.jpg`}
+                  alt="Student result"
+                  style={{ width: "100%", display: "block" }}
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
 
         </div>
       </section>

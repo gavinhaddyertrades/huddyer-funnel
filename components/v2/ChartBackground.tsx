@@ -27,22 +27,17 @@ export default function ChartBackground() {
     <div
       id="chart-bg"
       style={{
-        position: "fixed",
+        position: "absolute",
         top: 0,
         left: 0,
         right: 0,
-        height: "100vh",
+        bottom: 0,
         overflow: "hidden",
         zIndex: 0,
         pointerEvents: "none",
       }}
     >
-      <style>{`
-        #chart-bg {
-          height: 100vh;
-          height: 100svh;
-        }
-      `}</style>
+      <style>{``}</style>
       <svg
         width="100%" height="100%"
         viewBox={`0 0 ${viewW} ${viewH}`}
