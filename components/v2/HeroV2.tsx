@@ -115,15 +115,6 @@ export default function HeroV2() {
           </h1>
 
           {/* Subheadline */}
-          <p
-            className="font-body text-center leading-snug"
-            style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#777", maxWidth: 480 }}
-          >
-            A private mentorship built for{" "}
-            <strong style={{ color: "#999", fontWeight: 700 }}>serious traders</strong>{" "}
-            who are done leaving money on the table.
-          </p>
-
           {/* Video */}
           <div
             style={{
