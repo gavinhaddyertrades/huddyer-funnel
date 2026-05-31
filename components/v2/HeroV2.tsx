@@ -199,6 +199,7 @@ export default function HeroV2() {
             ].map((name) => (
               <div
                 key={name}
+                className="masonry-item"
                 style={{
                   breakInside: "avoid",
                   marginBottom: 16,

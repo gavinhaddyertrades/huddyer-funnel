@@ -290,8 +290,14 @@
 
 @media (max-width: 640px) {
   .masonry-grid {
-    columns: 2 !important;
-    column-gap: 8px !important;
+    columns: unset !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .masonry-item {
+    margin-bottom: 0 !important;
+    break-inside: unset !important;
   }
   .testimonials-section {
     padding-top: 14px !important;
