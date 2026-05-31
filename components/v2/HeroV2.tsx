@@ -43,8 +43,8 @@ export default function HeroV2() {
       if (!logo || !heading) return;
       const headingTop = heading.getBoundingClientRect().top;
       const logoH      = logo.offsetHeight;
-      // 0.65 instead of 0.5 moves the logo ~30% closer to the heading
-      const top = Math.max(8, headingTop * 0.65 - logoH / 2);
+      // 0.30 doubles the gap between logo bottom and heading vs the previous 0.65
+      const top = Math.max(8, headingTop * 0.30);
       logo.style.top = `${top}px`;
     }
 
