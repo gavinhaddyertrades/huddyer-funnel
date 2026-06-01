@@ -270,29 +270,60 @@ function YoutubeFacade({ videoId }: { videoId: string }) {
 const sections = [
   {
     num: "01",
-    label: "What is this call exactly?",
-    body: "This is a strategy call with Hudson's team. They'll ask about your trading background, where you're at right now, and what you're trying to achieve. If the program is the right fit, you'll have the opportunity to get started. No pressure, no pitch. Just a real conversation.",
+    label: "Do I need any prior trading experience?",
+    body: "No. The program is built to take you from zero and walk you through everything step by step. The curriculum starts with the fundamentals and progresses into advanced execution. What matters is that you're serious and willing to put in the work — not where you're starting from.",
   },
   {
     num: "02",
-    label: "Do I need trading experience?",
-    body: "You don't need to be an expert, but you do need to be serious. Hudson works with traders at different levels. What matters is that you're committed to doing the work and ready to follow a proven system.",
+    label: "How much time do I need to commit each week?",
+    body: "Realistically, two to three hours per day is enough to make serious progress. The live sessions are twice a week, the curriculum is self-paced, and trading futures doesn't require you to be glued to a screen all day. The goal is building an efficient, repeatable process — not a second full-time job.",
   },
   {
     num: "03",
-    label: "What's the 90-day guarantee?",
-    body: "If you put in the work and don't hit profitability within 90 days, Hudson continues working with you at no extra cost. The guarantee exists because the system works. But only if you do.",
+    label: "How much money do I need to start trading?",
+    body: "This will be covered on your call based on your specific situation. What I can tell you is that the program focuses on skill development first. You don't need a large account to learn the system — and we don't put students in positions to take on unnecessary risk before they're ready.",
   },
   {
     num: "04",
-    label: "How much time do I need to commit?",
-    body: "Enough to trade and show up to the calls. The curriculum is self-paced so you can go through it on your schedule. The live calls are twice a week. Traders who get results are the ones who treat this like the business it is.",
+    label: "What exactly is the 90-day profitability guarantee?",
+    body: "If you complete the full curriculum, attend the live sessions, follow the system, and you're not profitable within 90 days — I keep working with you personally until you are. No fine print. I back this program because I've seen it work too many times not to.",
+  },
+  {
+    num: "05",
+    label: "What does the program actually include?",
+    body: "You get 9+ hours of structured video curriculum, two live direct calls with Hudson every week, access to the private student community, and direct support throughout your entire journey. Everything is built around one outcome — getting you to consistent profitability.",
+  },
+  {
+    num: "06",
+    label: "Is this a group program or do I get direct access to Hudson?",
+    body: "Both. The live calls are group sessions, but Hudson is present and engaged on every single one. You're not getting handed off to a coach or an assistant. Hudson personally reviews student progress and is directly involved in your development throughout the program.",
+  },
+  {
+    num: "07",
+    label: "What happens on the call I just booked?",
+    body: "It's a direct conversation with Hudson's team. We're going to look at where you're currently at, what your goals are, and whether this program is the right fit for you. There's no pressure and no hard sell. If it's a fit, we'll talk about next steps. If it's not, we'll tell you that too.",
+  },
+  {
+    num: "08",
+    label: "How soon can I expect results?",
+    body: "It depends entirely on how seriously you execute. Some students see their first profitable week within the first 30 days. Others take closer to 60-90 days to get fully dialed in. What's consistent across every student who gets results is that they follow the system instead of improvising.",
+  },
+  {
+    num: "09",
+    label: "What makes this different from free content on YouTube?",
+    body: "YouTube will give you concepts with no structure, no accountability, and no feedback. This program gives you a proven system, live sessions twice a week where you can ask real questions about real setups, and direct access to someone who trades this every single day. The gap between free content and a structured mentorship is the difference between staying stuck and actually getting somewhere.",
+  },
+  {
+    num: "10",
+    label: "I'm not sure if I can afford it. Should I still get on the call?",
+    body: "Yes. Show up to the call, be honest about your situation, and let's have a real conversation. There are options available and we work with people in different circumstances. The worst thing you can do is not show up because you assumed it wouldn't work for you before you even asked.",
   },
 ];
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function ConfirmedPage() {
+
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", position: "relative" }}>
       <ChartBackground />
@@ -333,31 +364,7 @@ export default function ConfirmedPage() {
 
         {/* Video */}
         <div className="relative mb-14">
-          <div
-            className="w-full rounded-2xl overflow-hidden"
-            style={{
-              aspectRatio: "16/9",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div className="text-center">
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
-                style={{ background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.3)" }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M8 5.14v14l11-7-11-7z" fill="#C9A84C" />
-                </svg>
-              </div>
-              <p className="font-body text-sm" style={{ color: "#555" }}>
-                Pre-call video from Hudson, coming soon
-              </p>
-            </div>
-          </div>
+          <YoutubeFacade videoId={CARMINE_VIDEO_ID} />
         </div>
 
         {/* Add to Calendar — only renders when Calendly passes event params */}
@@ -408,26 +415,6 @@ export default function ConfirmedPage() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Divider */}
-        <div className="mt-14 mb-14" style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent)" }} />
-
-        {/* Real Results */}
-        <p className="font-body text-xs uppercase tracking-widest mb-3" style={{ color: "#888" }}>
-          Student Results
-        </p>
-        <h2
-          className="font-display leading-none mb-12"
-          style={{ fontSize: "clamp(32px, 5vw, 56px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
-        >
-          REAL RESULTS FROM{" "}
-          <span className="gold-text-gradient">REAL MEMBERS</span>
-        </h2>
-
-        {/* Carmine video */}
-        <div className="mb-16">
-          <YoutubeFacade videoId={CARMINE_VIDEO_ID} />
         </div>
 
         {/* Footer */}
