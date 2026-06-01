@@ -271,27 +271,27 @@ const sections = [
   {
     num: "01",
     label: "Do I need any prior trading experience?",
-    body: "No. The program is built to take you from zero and walk you through everything step by step. The curriculum starts with the fundamentals and progresses into advanced execution. What matters is that you're serious and willing to put in the work — not where you're starting from.",
+    body: "No. The program is built to take you from zero and walk you through everything step by step. The curriculum starts with the fundamentals and progresses into advanced execution. What matters is that you're serious and willing to put in the work, not where you're starting from.",
   },
   {
     num: "02",
     label: "How much time do I need to commit each week?",
-    body: "Realistically, two to three hours per day is enough to make serious progress. The live sessions are three times a week, the curriculum is self-paced, and trading futures doesn't require you to be glued to a screen all day. The goal is building an efficient, repeatable process — not a second full-time job.",
+    body: "Realistically, two to three hours per day is enough to make serious progress. The live sessions are three times a week, the curriculum is self-paced, and trading futures doesn't require you to be glued to a screen all day. The goal is building an efficient, repeatable process. Not a second full-time job.",
   },
   {
     num: "03",
     label: "How much money do I need to start trading?",
-    body: "This will be covered on your call based on your specific situation. What I can tell you is that the program focuses on skill development first. You don't need a large account to learn the system — and we don't put students in positions to take on unnecessary risk before they're ready.",
+    body: "This will be covered on your call based on your specific situation. What I can tell you is that the program focuses on skill development first. You don't need a large account to learn the system, and we don't put students in positions to take on unnecessary risk before they're ready.",
   },
   {
     num: "04",
     label: "What exactly is the 90-day profitability guarantee?",
-    body: "If you complete the full curriculum, attend the live sessions, follow the system, and you're not profitable within 90 days — I keep working with you personally until you are. No fine print. I back this program because I've seen it work too many times not to.",
+    body: "If you complete the full curriculum, attend the live sessions, follow the system, and you're not profitable within 90 days, I keep working with you personally until you are. No fine print. I back this program because I've seen it work too many times not to.",
   },
   {
     num: "05",
     label: "What does the program actually include?",
-    body: "You get 9+ hours of structured video curriculum, three live direct calls with Hudson every week, access to the private student community, and direct support throughout your entire journey. Everything is built around one outcome — getting you to consistent profitability.",
+    body: "You get 9+ hours of structured video curriculum, three live direct calls with Hudson every week, access to the private student community, and direct support throughout your entire journey. Everything is built around one outcome: getting you to consistent profitability.",
   },
   {
     num: "06",
