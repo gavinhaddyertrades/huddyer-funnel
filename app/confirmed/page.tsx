@@ -276,7 +276,7 @@ const sections = [
   {
     num: "02",
     label: "How much time do I need to commit each week?",
-    body: "Realistically, two to three hours per day is enough to make serious progress. The live sessions are twice a week, the curriculum is self-paced, and trading futures doesn't require you to be glued to a screen all day. The goal is building an efficient, repeatable process — not a second full-time job.",
+    body: "Realistically, two to three hours per day is enough to make serious progress. The live sessions are three times a week, the curriculum is self-paced, and trading futures doesn't require you to be glued to a screen all day. The goal is building an efficient, repeatable process — not a second full-time job.",
   },
   {
     num: "03",
@@ -291,7 +291,7 @@ const sections = [
   {
     num: "05",
     label: "What does the program actually include?",
-    body: "You get 9+ hours of structured video curriculum, two live direct calls with Hudson every week, access to the private student community, and direct support throughout your entire journey. Everything is built around one outcome — getting you to consistent profitability.",
+    body: "You get 9+ hours of structured video curriculum, three live direct calls with Hudson every week, access to the private student community, and direct support throughout your entire journey. Everything is built around one outcome — getting you to consistent profitability.",
   },
   {
     num: "06",
@@ -311,7 +311,7 @@ const sections = [
   {
     num: "09",
     label: "What makes this different from free content on YouTube?",
-    body: "YouTube will give you concepts with no structure, no accountability, and no feedback. This program gives you a proven system, live sessions twice a week where you can ask real questions about real setups, and direct access to someone who trades this every single day. The gap between free content and a structured mentorship is the difference between staying stuck and actually getting somewhere.",
+    body: "YouTube will give you concepts with no structure, no accountability, and no feedback. This program gives you a proven system, live sessions three times a week where you can ask real questions about real setups, and direct access to someone who trades this every single day. The gap between free content and a structured mentorship is the difference between staying stuck and actually getting somewhere.",
   },
   {
     num: "10",
