@@ -5,18 +5,35 @@ import Script from "next/script";
 import ChartBackground from "@/components/v2/ChartBackground";
 
 const CALENDLY_URL =
-  "https://calendly.com/1on1-mentorship/1-1-mentorship-call?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0a&text_color=f2ede6&primary_color=c9a84c";
+  "https://calendly.com/d/cvw9-y2d-3t5/huddyer-trades-mentorship-call?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0a&text_color=f2ede6&primary_color=c9a84c";
+
+type CalendlyPrefill = {
+  name?: string;
+  email?: string;
+  customAnswers?: Record<string, string>;
+};
 
 type CalendlyGlobal = {
-  initInlineWidget: (opts: { url: string; parentElement: HTMLElement }) => void;
+  initInlineWidget: (opts: {
+    url: string;
+    parentElement: HTMLElement;
+    prefill?: CalendlyPrefill;
+  }) => void;
 };
 
 export default function BookPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Fire Lead event once on mount — visitor reached the booking page
+  // Fire Lead event once on mount and persist user data for /confirmed
   useEffect(() => {
-    (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead");
+    const p = new URLSearchParams(window.location.search);
+    const email = p.get("email") ?? "";
+    const phone = p.get("phone") ?? "";
+    const first = p.get("first") ?? "";
+    const last  = p.get("last")  ?? "";
+    sessionStorage.setItem("userData", JSON.stringify({ email, phone, first, last }));
+
+    (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", { currency: "USD", value: 0 });
   }, []);
 
   const initCalendly = useCallback(() => {
@@ -25,22 +42,22 @@ export default function BookPage() {
 
     const params = new URLSearchParams(window.location.search);
     const email     = params.get("email") ?? "";
+    const phone     = params.get("phone") ?? "";
     const firstName = params.get("first") ?? "";
     const lastName  = params.get("last")  ?? "";
     const name      = `${firstName} ${lastName}`.trim();
 
-    // Passing values as URL params locks the fields (Calendly won't allow editing them).
-    // The prefill object alone only fills without locking.
-    const url = new URL(CALENDLY_URL);
-    if (email) url.searchParams.set("email", email);
-    if (name)  url.searchParams.set("name", name);
-
-    // URLSearchParams encodes spaces as "+" but Calendly requires "%20"
-    const finalUrl = url.toString().replace(/\+/g, "%20");
+    // Use prefill object (not URL params) so fields are pre-filled but not
+    // locked — locked fields render in primary_color (gold), prefill stays black.
+    const prefill: CalendlyPrefill = {};
+    if (name)  prefill.name  = name;
+    if (email) prefill.email = email;
+    if (phone) prefill.customAnswers = { a1: phone };
 
     cal.initInlineWidget({
-      url: finalUrl,
+      url:           CALENDLY_URL,
       parentElement: containerRef.current,
+      prefill,
     });
   }, []);
 
