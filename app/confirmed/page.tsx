@@ -299,17 +299,17 @@ const sections = [
     body: "It's a direct conversation with Hudson's team. We're going to look at where you're currently at, what your goals are, and whether this program is the right fit for you. There's no pressure and no hard sell. If it's a fit, we'll talk about next steps. If it's not, we'll tell you that too.",
   },
   {
-    num: "08",
+    num: "07",
     label: "How soon can I expect results?",
     body: "It depends entirely on how seriously you execute. Some students see their first profitable week within the first 30 days. Others take closer to 60-90 days to get fully dialed in. What's consistent across every student who gets results is that they follow the system instead of improvising.",
   },
   {
-    num: "09",
+    num: "08",
     label: "What makes this different from free content on YouTube?",
     body: "YouTube will give you concepts with no structure, no accountability, and no feedback. This program gives you a proven system, live sessions three times a week where you can ask real questions about real setups, and direct access to someone who trades this every single day. The gap between free content and a structured mentorship is the difference between staying stuck and actually getting somewhere.",
   },
   {
-    num: "10",
+    num: "09",
     label: "I'm not sure if I can afford it. Should I still get on the call?",
     body: "Yes. Show up to the call, be honest about your situation, and let's have a real conversation. There are options available and we work with people in different circumstances. The worst thing you can do is not show up because you assumed it wouldn't work for you before you even asked.",
   },
