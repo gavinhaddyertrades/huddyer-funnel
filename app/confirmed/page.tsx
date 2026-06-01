@@ -295,11 +295,6 @@ const sections = [
   },
   {
     num: "06",
-    label: "Is this a group program or do I get direct access to Hudson?",
-    body: "Both. The live calls are group sessions, but Hudson is present and engaged on every single one. You're not getting handed off to a coach or an assistant. Hudson personally reviews student progress and is directly involved in your development throughout the program.",
-  },
-  {
-    num: "07",
     label: "What happens on the call I just booked?",
     body: "It's a direct conversation with Hudson's team. We're going to look at where you're currently at, what your goals are, and whether this program is the right fit for you. There's no pressure and no hard sell. If it's a fit, we'll talk about next steps. If it's not, we'll tell you that too.",
   },
