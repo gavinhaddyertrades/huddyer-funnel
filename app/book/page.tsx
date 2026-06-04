@@ -7,18 +7,8 @@ import ChartBackground from "@/components/v2/ChartBackground";
 const CALENDLY_URL =
   "https://calendly.com/d/cvw9-y2d-3t5/huddyer-trades-mentorship-call?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0a&text_color=f2ede6&primary_color=c9a84c";
 
-type CalendlyPrefill = {
-  name?: string;
-  email?: string;
-  customAnswers?: Record<string, string>;
-};
-
 type CalendlyGlobal = {
-  initInlineWidget: (opts: {
-    url: string;
-    parentElement: HTMLElement;
-    prefill?: CalendlyPrefill;
-  }) => void;
+  initInlineWidget: (opts: { url: string; parentElement: HTMLElement }) => void;
 };
 
 export default function BookPage() {
@@ -39,26 +29,7 @@ export default function BookPage() {
   const initCalendly = useCallback(() => {
     const cal = (window as Window & { Calendly?: CalendlyGlobal }).Calendly;
     if (!cal || !containerRef.current) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const email     = params.get("email") ?? "";
-    const phone     = params.get("phone") ?? "";
-    const firstName = params.get("first") ?? "";
-    const lastName  = params.get("last")  ?? "";
-    const name      = `${firstName} ${lastName}`.trim();
-
-    // Use prefill object (not URL params) so fields are pre-filled but not
-    // locked — locked fields render in primary_color (gold), prefill stays black.
-    const prefill: CalendlyPrefill = {};
-    if (name)  prefill.name  = name;
-    if (email) prefill.email = email;
-    if (phone) prefill.customAnswers = { a1: phone };
-
-    cal.initInlineWidget({
-      url:           CALENDLY_URL,
-      parentElement: containerRef.current,
-      prefill,
-    });
+    cal.initInlineWidget({ url: CALENDLY_URL, parentElement: containerRef.current });
   }, []);
 
   // Fallback: if the script was already cached and fired before this component

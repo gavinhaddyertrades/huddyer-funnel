@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useUTMUrl } from "@/hooks/useUTMUrl";
 
-const TYPEFORM_BASE = "https://form.typeform.com/to/AH6Qxmyu";
+const TYPEFORM_URL = "https://form.typeform.com/to/AH6Qxmyu";
 
 export default function ApplyCTA() {
-  const typeformUrl = useUTMUrl(TYPEFORM_BASE);
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -57,11 +55,11 @@ export default function ApplyCTA() {
 
         {/* Button — full width on mobile */}
         <a
-          href={typeformUrl}
+          href={TYPEFORM_URL}
           className="btn-gold w-full sm:w-auto justify-center"
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => { (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead"); }}
+          onClick={() => { (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "ApplyNowClicked"); }}
         >
           Apply Now
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
