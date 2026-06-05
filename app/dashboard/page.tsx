@@ -398,7 +398,7 @@ function Sidebar({current,onChange,refreshing,onRefresh,updated}:{current:PageKe
   return(
     <aside style={{width:200,minHeight:"100vh",background:"#0D0D0D",borderRight:"1px solid rgba(255,255,255,0.06)",display:"flex",flexDirection:"column",position:"sticky",top:0,height:"100vh",flexShrink:0}}>
       <div style={{padding:"22px 16px 16px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><Logo/><span style={{fontFamily:"var(--font-display)",fontSize:9,color:"#F2EDE6",letterSpacing:"0.16em"}}>HUDDYERTRADES</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><Logo/><span style={{fontFamily:"var(--font-display)",fontSize:9,color:"#F2EDE6",letterSpacing:"0.16em"}}>HUDDYERTRADES ELITE</span></div>
         <p style={{fontFamily:"var(--font-display)",fontSize:11,color:"#C9A84C",letterSpacing:"0.12em",margin:0}}>OPS DASHBOARD</p>
       </div>
       <nav style={{padding:"12px 8px",flex:1}}>
@@ -514,10 +514,13 @@ function DashboardView({data}:{data:DashboardData}){
       .catch(() => setLeadInfoMap(prev => new Map(prev).set(email, { found: false })));
   }, []);
 
-  // Auto-fetch Close CRM status for previous AND live calls
+  // Auto-fetch Close CRM status for previous AND live calls.
+  // Stagger by 150 ms per call so we don't fire 15+ requests simultaneously
+  // and hit Close CRM's rate limit — which causes opportunityValue to come back null.
   useEffect(() => {
     if (!cal?.upcomingCalls) return;
     const now2 = new Date();
+    let delay = 0;
     cal.upcomingCalls.forEach(c => {
       if (!c.inviteeEmail) return;
       const start  = new Date(c.startTime);
@@ -528,7 +531,10 @@ function DashboardView({data}:{data:DashboardData}){
       // (ended within 48h) — avoids hammering Close CRM for old history rows
       const endedRecently = inPrev && end && (now2.getTime() - end.getTime()) < 48 * 3600_000;
       if (isLive || endedRecently) fetchInitiatedRef.current.delete(c.inviteeEmail);
-      if (inPrev || isLive) fetchLeadInfo(c.inviteeEmail);
+      if (inPrev || isLive) {
+        setTimeout(() => fetchLeadInfo(c.inviteeEmail), delay);
+        delay += 150;
+      }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cal, fetchLeadInfo]);
@@ -609,11 +615,12 @@ function DashboardView({data}:{data:DashboardData}){
 
                   const oppVal = isClosedWon && info && info !== "loading" && info.opportunityValue
                     ? " · " + fmt$(info.opportunityValue) : "";
+                  const isDnq = isCancelled && call.cancelReason.toLowerCase().trim().includes("dnq");
                   const statusLabel = isClosedWon && isCancelled
                     // Cancelled but deal closed → surface the win
                     ? "Closed" + oppVal
                     : isCancelled
-                    ? (hasNewCall ? "Rescheduled" : reschedActive ? "Rescheduling" : call.noShow ? "No Show" : "Cancelled")
+                    ? (hasNewCall ? "Rescheduled" : reschedActive ? "Rescheduling" : call.noShow ? "No Show" : isDnq ? "DNQ" : "Cancelled")
                     : call.noShow || isNoShowCRM ? "No Show"
                     : isPitched   ? "Pitched"
                     : isClosedWon ? "Closed" + oppVal
@@ -621,7 +628,7 @@ function DashboardView({data}:{data:DashboardData}){
                   const statusColor = isClosedWon && isCancelled
                     ? "#4CAF50"
                     : isCancelled
-                    ? (hasNewCall ? "#4CAF50" : reschedActive ? "#C9A84C" : "#E05252")
+                    ? (hasNewCall ? "#4CAF50" : reschedActive ? "#C9A84C" : isDnq ? "#888" : "#E05252")
                     : call.noShow || isNoShowCRM ? "#E05252"
                     : isPitched   ? "#E08020"
                     : isClosedWon ? "#4CAF50"
@@ -984,11 +991,53 @@ function FunnelView({data}:{data:DashboardData}){
             <span style={{fontFamily:"var(--font-body)",fontSize:11,color:"#666",letterSpacing:"0.04em"}}>{data.metaAds.dateRange}</span>
           )}
         </div>
-        {!data.metaAds ? (
-          <Card><p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#777",fontStyle:"italic"}}>Meta Ads data unavailable</p></Card>
-        ) : (()=>{
+
+        {/* ── Ad KPIs from Google Sheet ── */}
+        {data.adKpis && (()=>{
+          const k = data.adKpis!;
+          const fmtDollar = (n: number) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const fmtPct    = (n: number) => Math.round(n * 100) + "%";
+          const pipeline = [
+            { label: "Calls Booked",  value: String(Math.round(k.callsBooked)),  color: "#C9A84C" },
+            { label: "Shows",         value: String(Math.round(k.shows)),         color: "#F2EDE6" },
+            { label: "No-Shows",      value: String(Math.round(k.noShows)),       color: "#E05252" },
+            { label: "Show Rate",     value: fmtPct(k.showRate),                  color: "#F2EDE6" },
+            { label: "Closes",        value: String(Math.round(k.closes)),        color: "#4CAF50" },
+            { label: "Close Rate",    value: fmtPct(k.closeRate),                 color: "#4CAF50" },
+          ];
+          const money = [
+            { label: "Ad Spend",          value: fmtDollar(k.adSpend),           color: "#C9A84C" },
+            { label: "Revenue Closed",    value: fmtDollar(k.revenueClosed),      color: "#4CAF50" },
+            { label: "Cost / Booked Call",value: fmtDollar(k.costPerBookedCall),  color: "#F2EDE6" },
+            { label: "CAC",               value: fmtDollar(k.cac),               color: "#F2EDE6" },
+            { label: "ROAS",              value: k.roas.toFixed(2) + "x",        color: k.roas >= 1 ? "#4CAF50" : "#E05252" },
+            { label: "Est. LTV (3×)",     value: fmtDollar(k.estLtv),            color: "#888" },
+          ];
+          const kpiCard = (item: { label: string; value: string; color: string }) => (
+            <div key={item.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "14px 16px" }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#666", margin: "0 0 6px" }}>{item.label}</p>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: 20, fontWeight: 700, color: item.color, margin: 0, lineHeight: 1 }}>{item.value}</p>
+            </div>
+          );
+          return (
+            <div style={{ marginBottom: 14 }}>
+              {/* Pipeline row */}
+              <p style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#555", margin: "0 0 8px" }}>Pipeline</p>
+              <div style={{ display: "grid", gridTemplateColumns: mobile ? "repeat(3,1fr)" : "repeat(6,1fr)", gap: 10, marginBottom: 14 }}>
+                {pipeline.map(kpiCard)}
+              </div>
+              {/* Money row */}
+              <p style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#555", margin: "0 0 8px" }}>Money</p>
+              <div style={{ display: "grid", gridTemplateColumns: mobile ? "repeat(3,1fr)" : "repeat(6,1fr)", gap: 10, marginBottom: 14 }}>
+                {money.map(kpiCard)}
+              </div>
+            </div>
+          );
+        })()}
+        {data.metaAds && (()=>{
           const meta = data.metaAds;
-          const spendMax = Math.max(...meta.adsets.map(a=>a.spend), 1);
+          const activeAdsets = meta.adsets.filter(a => a.isActive);
+          const spendMax = Math.max(...activeAdsets.map(a=>a.spend), 1);
           return (
             <>
               {/* ── Summary KPIs ── */}
@@ -1020,11 +1069,11 @@ function FunnelView({data}:{data:DashboardData}){
                     <span key={h} style={{fontFamily:"var(--font-body)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"#555",textAlign:h==="Ad Set"?"left":"right"}}>{h}</span>
                   ))}
                 </div>
-                {meta.adsets.map((row:MetaAdsetRow, i:number)=>(
+                {activeAdsets.map((row:MetaAdsetRow, i:number)=>(
                   <div key={row.adsetId} style={{
                     display:"grid",gridTemplateColumns:"1fr 90px 70px 70px 70px",gap:8,
                     padding:"13px 20px",
-                    borderBottom:i<meta.adsets.length-1?"1px solid rgba(255,255,255,0.05)":"none",
+                    borderBottom:i<activeAdsets.length-1?"1px solid rgba(255,255,255,0.05)":"none",
                     background:i%2===0?"transparent":"rgba(255,255,255,0.01)",
                   }}>
                     {/* Ad set name + campaign */}
@@ -1044,14 +1093,23 @@ function FunnelView({data}:{data:DashboardData}){
                     <p style={{fontFamily:"var(--font-body)",fontSize:13,color:"#F2EDE6",margin:0,textAlign:"right",alignSelf:"center"}}>{row.ctr.toFixed(2)}%</p>
                   </div>
                 ))}
-                {/* Totals row */}
-                <div style={{display:"grid",gridTemplateColumns:"1fr 90px 70px 70px 70px",gap:8,padding:"12px 20px",borderTop:"1px solid rgba(201,168,76,0.2)",background:"rgba(201,168,76,0.04)"}}>
-                  <span style={{fontFamily:"var(--font-body)",fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",color:"#C9A84C",alignSelf:"center"}}>Total</span>
-                  <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#C9A84C",textAlign:"right"}}>${meta.totalSpend.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
-                  <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6",textAlign:"right"}}>{meta.totalClicks.toLocaleString()}</span>
-                  <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6",textAlign:"right"}}>${meta.avgCpc.toFixed(2)}</span>
-                  <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6",textAlign:"right"}}>{meta.avgCtr.toFixed(2)}%</span>
-                </div>
+                {/* Totals row — active adsets only */}
+                {(()=>{
+                  const tSpend   = activeAdsets.reduce((s,r)=>s+r.spend,0);
+                  const tClicks  = activeAdsets.reduce((s,r)=>s+r.clicks,0);
+                  const tImpr    = activeAdsets.reduce((s,r)=>s+r.impressions,0);
+                  const tCpc     = tClicks > 0 ? tSpend/tClicks : 0;
+                  const tCtr     = tImpr   > 0 ? (tClicks/tImpr)*100 : 0;
+                  return (
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 90px 70px 70px 70px",gap:8,padding:"12px 20px",borderTop:"1px solid rgba(201,168,76,0.2)",background:"rgba(201,168,76,0.04)"}}>
+                      <span style={{fontFamily:"var(--font-body)",fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",color:"#C9A84C",alignSelf:"center"}}>Total</span>
+                      <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#C9A84C",textAlign:"right"}}>${tSpend.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+                      <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6",textAlign:"right"}}>{tClicks.toLocaleString()}</span>
+                      <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6",textAlign:"right"}}>${tCpc.toFixed(2)}</span>
+                      <span style={{fontFamily:"var(--font-body)",fontSize:13,fontWeight:700,color:"#F2EDE6",textAlign:"right"}}>{tCtr.toFixed(2)}%</span>
+                    </div>
+                  );
+                })()}
               </Card>
 
               {/* ── Leads by Meta campaign (from Applications sheet) ── */}

@@ -27,7 +27,7 @@ export default function FooterV2() {
             className="font-display text-sm tracking-widest"
             style={{ color: "#666", letterSpacing: "0.15em" }}
           >
-            HUDDYERTRADES
+            HUDDYERTRADES ELITE
           </span>
         </div>
 

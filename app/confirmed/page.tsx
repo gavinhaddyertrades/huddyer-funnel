@@ -329,7 +329,7 @@ export default function ConfirmedPage() {
         style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
       >
         <span className="font-display text-base" style={{ color: "#F2EDE6", letterSpacing: "0.12em" }}>
-          HUDDYERTRADES
+          HUDDYERTRADES ELITE
         </span>
       </div>
 
@@ -415,7 +415,7 @@ export default function ConfirmedPage() {
         {/* Footer */}
         <div className="text-center pt-4">
           <p className="font-body text-xs" style={{ color: "#444" }}>
-            © {new Date().getFullYear()} HuddyerTrades. All rights reserved.
+            © {new Date().getFullYear()} HuddyerTrades Elite. All rights reserved.
           </p>
         </div>
 

@@ -20,7 +20,7 @@ export default function StartPage() {
         style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
       >
         <span className="font-display text-base" style={{ color: "#F2EDE6", letterSpacing: "0.12em" }}>
-          HUDDYERTRADES
+          HUDDYERTRADES ELITE
         </span>
       </div>
 

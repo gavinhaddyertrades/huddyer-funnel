@@ -62,7 +62,7 @@ export default function HeroV2() {
     <div className="flex items-center gap-2">
       <TradingBarsLogo />
       <span className="font-display text-lg" style={{ color: "#F2EDE6", letterSpacing: "0.12em" }}>
-        HUDDYERTRADES
+        HUDDYERTRADES ELITE
       </span>
     </div>
   );
