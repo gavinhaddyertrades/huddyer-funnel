@@ -1261,7 +1261,7 @@ function EodView({data}:{data:DashboardData}){
         name:      sh.closerEod.rows.find(r => r.name.trim().toLowerCase() === Array.from(closerAgg.keys())[i])?.name ?? "",
         scheduled: v.scheduled,
         closed:    v.closed,
-        closeRate: shows > 0 ? Math.round((v.closed / shows) * 100) + "%" : "—",
+        closeRate: shows > 0 ? (v.closed / shows * 100).toFixed(1) + "%" : "—",
       };
     })
     .sort((a, b) => b.closed - a.closed);
