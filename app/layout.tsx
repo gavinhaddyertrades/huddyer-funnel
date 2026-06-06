@@ -23,10 +23,24 @@ export const metadata: Metadata = {
   title: "Huddyer | Become Consistently Profitable",
   description:
     "Hudson Shaffer's trading mentorship. The structured system serious traders use to become consistently profitable and pass funded evaluations.",
+  openGraph: {
+    title: "Huddyer | Become Consistently Profitable",
+    description:
+      "Hudson Shaffer's trading mentorship. The structured system serious traders use to become consistently profitable and pass funded evaluations.",
+    images: [{ url: "/og-image.png", width: 1080, height: 1080 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Huddyer | Become Consistently Profitable",
+    description:
+      "Hudson Shaffer's trading mentorship. The structured system serious traders use to become consistently profitable and pass funded evaluations.",
+    images: ["/og-image.png"],
+  },
 };
 
-// Raw Meta Pixel code — kept as a string so it can be inlined synchronously
-const META_PIXEL = `
+// Meta Pixel stub — sets up the fbq queue without calling init yet
+const META_PIXEL_STUB = `
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -35,8 +49,22 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','3139300056416271');
-fbq('track','PageView');
+`.trim();
+
+// Init call — reads URL params at runtime so Advanced Matching data is passed
+// when Meta redirects back with em/ph/first/last in the query string.
+// Only includes fields that are actually present (no empty strings).
+const META_PIXEL_INIT = `
+(function(){
+  var p=new URLSearchParams(window.location.search);
+  var ud={};
+  if(p.get('email')) ud.em=p.get('email');
+  if(p.get('phone')) ud.ph=p.get('phone');
+  if(p.get('first')) ud.fn=p.get('first');
+  if(p.get('last'))  ud.ln=p.get('last');
+  fbq('init','3139300056416271',ud);
+  fbq('track','PageView');
+})();
 `.trim();
 
 export default function RootLayout({
@@ -69,7 +97,9 @@ export default function RootLayout({
           This closes the gap between ad clicks and reported PageViews.
         */}
         {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
-        <script dangerouslySetInnerHTML={{ __html: META_PIXEL }} />
+        <script dangerouslySetInnerHTML={{ __html: META_PIXEL_STUB }} />
+        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+        <script dangerouslySetInnerHTML={{ __html: META_PIXEL_INIT }} />
         <noscript>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
