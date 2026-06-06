@@ -19,7 +19,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  icons: { icon: "/favicon.svg" },
+  icons: { icon: [{ url: "/favicon.svg", type: "image/svg+xml" }, { url: "/og-image.png", type: "image/png" }] },
   title: "Huddyer | Become Consistently Profitable",
   description:
     "Hudson Shaffer's trading mentorship. The structured system serious traders use to become consistently profitable and pass funded evaluations.",
