@@ -1241,20 +1241,29 @@ function EodView({data}:{data:DashboardData}){
     }))
     .sort((a, b) => b.booked - a.booked);
 
-  const closerAgg = new Map<string, { scheduled: number; closed: number }>();
+  const closerAgg = new Map<string, { scheduled: number; noShows: number; cancellations: number; reschedules: number; closed: number }>();
   for (const r of sh.closerEod.rows) {
     const key = r.name.trim().toLowerCase();
     if (!key) continue;
-    const prev = closerAgg.get(key) ?? { scheduled: 0, closed: 0 };
-    closerAgg.set(key, { scheduled: prev.scheduled + r.callsScheduled, closed: prev.closed + r.dealsClosed });
+    const prev = closerAgg.get(key) ?? { scheduled: 0, noShows: 0, cancellations: 0, reschedules: 0, closed: 0 };
+    closerAgg.set(key, {
+      scheduled:     prev.scheduled     + r.callsScheduled,
+      noShows:       prev.noShows       + r.noShows,
+      cancellations: prev.cancellations + r.cancellations,
+      reschedules:   prev.reschedules   + r.reschedules,
+      closed:        prev.closed        + r.dealsClosed,
+    });
   }
   const closerRows = Array.from(closerAgg.entries())
-    .map(([, v], i) => ({
-      name:      sh.closerEod.rows.find(r => r.name.trim().toLowerCase() === Array.from(closerAgg.keys())[i])?.name ?? "",
-      scheduled: v.scheduled,
-      closed:    v.closed,
-      closeRate: v.scheduled > 0 ? Math.round((v.closed / v.scheduled) * 100) + "%" : "—",
-    }))
+    .map(([, v], i) => {
+      const shows = v.scheduled - v.noShows - v.cancellations - v.reschedules;
+      return {
+        name:      sh.closerEod.rows.find(r => r.name.trim().toLowerCase() === Array.from(closerAgg.keys())[i])?.name ?? "",
+        scheduled: v.scheduled,
+        closed:    v.closed,
+        closeRate: shows > 0 ? Math.round((v.closed / shows) * 100) + "%" : "—",
+      };
+    })
     .sort((a, b) => b.closed - a.closed);
 
   return(
