@@ -1259,7 +1259,7 @@ function EodView({data}:{data:DashboardData}){
       const shows = v.scheduled - v.noShows - v.cancellations - v.reschedules;
       return {
         name:      sh.closerEod.rows.find(r => r.name.trim().toLowerCase() === Array.from(closerAgg.keys())[i])?.name ?? "",
-        scheduled: v.scheduled,
+        taken:     shows,
         closed:    v.closed,
         closeRate: shows > 0 ? (v.closed / shows * 100).toFixed(1) + "%" : "—",
       };
@@ -1274,7 +1274,7 @@ function EodView({data}:{data:DashboardData}){
           <EodTable title="Setter EOD" rows={setterRows as Record<string,string|number>[]} emptyMsg="No setter reports yet"
             columns={[{key:"name",label:"Setter"},{key:"contacted",label:"Contacted"},{key:"booked",label:"Calls Booked"},{key:"bookRate",label:"Book Rate"}]}/>
           <EodTable title="Closer EOD" rows={closerRows as Record<string,string|number>[]} emptyMsg="No closer reports yet"
-            columns={[{key:"name",label:"Closer"},{key:"scheduled",label:"Calls Scheduled"},{key:"closed",label:"Calls Closed"},{key:"closeRate",label:"Close Rate"}]}/>
+            columns={[{key:"name",label:"Closer"},{key:"taken",label:"Calls Taken"},{key:"closed",label:"Calls Closed"},{key:"closeRate",label:"Close Rate"}]}/>
         </div>
       </section>
     </div>
