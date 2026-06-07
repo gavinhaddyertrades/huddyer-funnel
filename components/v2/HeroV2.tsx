@@ -110,8 +110,8 @@ export default function HeroV2() {
               letterSpacing: "0.02em",
             }}
           >
-            FROM BLOWN ACCOUNTS TO{" "}
-            <span className="gold-text-gradient">PROFITABLE IN ONLY 90 DAYS.</span>
+            Become a Profitable Trader in 90 Days.{" "}
+            <span className="gold-text-gradient">Guaranteed.</span>
           </h1>
 
           {/* Subheadline */}
