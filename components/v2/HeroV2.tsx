@@ -110,8 +110,9 @@ export default function HeroV2() {
               letterSpacing: "0.02em",
             }}
           >
-            Become a Profitable Trader in 90 Days.{" "}
-            <span className="gold-text-gradient">Guaranteed.</span>
+            Become a{" "}
+            <span className="gold-text-gradient">Profitable Trader</span>
+            {" "}in 90 Days.
           </h1>
 
           {/* Subheadline */}
