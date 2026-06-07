@@ -15,6 +15,7 @@ const SHEET_SUBSCRIPTIONS = "Subscriptions";
 const SHEET_ADDONS        = "Add ons";
 const SHEET_LOW_TICKET    = "Low Ticket";
 const SHEET_APPLICATIONS  = "Applications";
+const SHEET_AD_KPIS       = "Ad KPIS";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const startOfMonth = () => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; };
@@ -216,6 +217,7 @@ export type EodRow = {
   callsBooked: number;
   liveCalls:   number;
   noShows:     number;
+  dnqs:        number;
 };
 
 export type CloserEodRow = {
@@ -278,6 +280,7 @@ export type SheetsData =
           liveCallsPushed: number;
           noShows:         number;
           callsCanceled:   number;
+          dnqs:            number;
           setterBreakdown: HuddleSetterStat[];
           closerBreakdown: HuddleCloserStat[];
         };
@@ -286,6 +289,7 @@ export type SheetsData =
           liveCallsPushed: number;
           noShows:         number;
           callsCanceled:   number;
+          dnqs:            number;
           setterBreakdown: HuddleSetterStat[];
           closerBreakdown: HuddleCloserStat[];
         };
@@ -517,6 +521,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
       callsBooked: Number(c[3] ?? 0),
       liveCalls:   Number(c[4] ?? 0),
       noShows:     Number(c[5] ?? 0),
+      dnqs:        Number(c[6] ?? 0),
     });
   }
 
@@ -542,26 +547,31 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
   const hudYestStart  = new Date(hudTodayStart.getTime() - 86_400_000);
   const hudTodayEnd   = new Date(hudTodayStart.getTime() + 86_400_000); // exclusive bound
 
-  type SetterRawD = { name: string; callsBooked: number; liveCalls: number; date: Date | null };
+  type SetterRawD = { name: string; callsBooked: number; liveCalls: number; dnqs: number; date: Date | null };
   type CloserRawD = { name: string; noShows: number; cancellations: number; date: Date | null };
 
   const setterRawD: SetterRawD[] = (setterEodRaw ?? []).flatMap(c =>
-    c[0] ? [{ name: String(c[1] ?? ""), callsBooked: Number(c[3] ?? 0), liveCalls: Number(c[4] ?? 0), date: parseGvizDatetimeToDate(c[0]) }] : []
+    c[0] ? [{ name: String(c[1] ?? ""), callsBooked: Number(c[3] ?? 0), liveCalls: Number(c[4] ?? 0), dnqs: Number(c[6] ?? 0), date: parseGvizDatetimeToDate(c[0]) }] : []
   );
   const closerRawD: CloserRawD[] = (closerEodRaw ?? []).flatMap(c =>
     c[0] ? [{ name: String(c[1] ?? ""), noShows: Number(c[3] ?? 0), cancellations: Number(c[5] ?? 0), date: parseGvizDatetimeToDate(c[0]) }] : []
   );
 
   function aggSetterD(rows: SetterRawD[]) {
-    const m = new Map<string, { callsBooked: number; liveCallsPushed: number }>();
+    const m = new Map<string, { callsBooked: number; liveCallsPushed: number; dnqs: number }>();
     for (const r of rows) {
       const k = r.name.trim();
       if (!k) continue;
-      const p = m.get(k) ?? { callsBooked: 0, liveCallsPushed: 0 };
-      m.set(k, { callsBooked: p.callsBooked + r.callsBooked, liveCallsPushed: p.liveCallsPushed + r.liveCalls });
+      const p = m.get(k) ?? { callsBooked: 0, liveCallsPushed: 0, dnqs: 0 };
+      m.set(k, { callsBooked: p.callsBooked + r.callsBooked, liveCallsPushed: p.liveCallsPushed + r.liveCalls, dnqs: p.dnqs + r.dnqs });
     }
     const bd = Array.from(m.entries()).map(([name, v]) => ({ name, ...v })).sort((a, b) => b.callsBooked - a.callsBooked);
-    return { callsBooked: bd.reduce((s, r) => s + r.callsBooked, 0), liveCallsPushed: bd.reduce((s, r) => s + r.liveCallsPushed, 0), setterBreakdown: bd };
+    return {
+      callsBooked:     bd.reduce((s, r) => s + r.callsBooked,     0),
+      liveCallsPushed: bd.reduce((s, r) => s + r.liveCallsPushed, 0),
+      dnqs:            bd.reduce((s, r) => s + r.dnqs,            0),
+      setterBreakdown: bd,
+    };
   }
 
   function aggCloserD(rows: CloserRawD[]) {
@@ -594,6 +604,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
       liveCallsPushed: ws.liveCallsPushed,
       noShows:         wc.noShows,
       callsCanceled:   wc.callsCanceled,
+      dnqs:            ws.dnqs,
       setterBreakdown: ws.setterBreakdown,
       closerBreakdown: wc.closerBreakdown,
     },
@@ -602,6 +613,7 @@ export async function fetchSheetsData(start: Date, end: Date): Promise<SheetsDat
       liveCallsPushed: ys.liveCallsPushed,
       noShows:         yc.noShows,
       callsCanceled:   yc.callsCanceled,
+      dnqs:            ys.dnqs,
       setterBreakdown: ys.setterBreakdown,
       closerBreakdown: yc.closerBreakdown,
     },
@@ -811,6 +823,7 @@ export type UpcomingCall = {
   cancelled:    boolean;
   noShow:       boolean;  // true when invitee was marked no-show OR cancel reason is "no show"
   rescheduled:  boolean;  // true when cancel reason contains "reschedule"
+  cancelReason: string;   // raw cancellation reason text (empty string if not cancelled)
 };
 
 export type CalendlyData = {
@@ -899,6 +912,7 @@ async function fetchCalendlyData(start: Date, end: Date): Promise<CalendlyData |
           cancelled:    event._cancelled,
           noShow,
           rescheduled,
+          cancelReason: event.cancellation?.reason ?? "",
         });
       }
     }
@@ -1159,7 +1173,65 @@ export type MetaAdsetRow = {
   impressions:  number;
   cpc:          number;
   ctr:          number;
+  /** true when the adset's effective_status is ACTIVE */
+  isActive:     boolean;
 };
+
+// ── Ad KPIs (Google Sheet "Ad KPIS" tab) ─────────────────────────────────────
+export type AdKpisData = {
+  // Pipeline
+  callsBooked:    number;
+  shows:          number;
+  noShows:        number;
+  showRate:       number;   // 0–1
+  closes:         number;
+  closeRate:      number;   // 0–1
+  // Money
+  adSpend:        number;
+  revenueClosed:  number;
+  costPerBookedCall: number;
+  cac:            number;
+  roas:           number;
+  estLtv:         number;
+};
+
+async function fetchAdKpisData(): Promise<AdKpisData | null> {
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_AD_KPIS)}&_=${Date.now()}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    const text = await res.text();
+    const json = JSON.parse(text.replace(/^[^{]*/, "").replace(/\);$/, ""));
+    const rows: Array<Array<number | null>> = (json.table?.rows ?? []).map(
+      (r: { c: Array<{ v: unknown } | null> }) => r.c.map((c) => (c ? Number(c.v ?? 0) : 0))
+    );
+    // Each row: [pipeline_label_ignored, pipeline_value, money_label_ignored, money_value]
+    // Row 0: Calls Booked / Ad Spend
+    // Row 1: Shows        / Revenue Closed
+    // Row 2: No-Shows     / Cost / Booked Call
+    // Row 3: Show Rate    / Cost / Close (CAC)
+    // Row 4: Closes       / ROAS
+    // Row 5: Close Rate   / Est. LTV
+    const v = (row: number, col: number) => rows[row]?.[col] ?? 0;
+    return {
+      callsBooked:      v(0, 1),
+      shows:            v(1, 1),
+      noShows:          v(2, 1),
+      showRate:         v(3, 1),
+      closes:           v(4, 1),
+      closeRate:        v(5, 1),
+      adSpend:          v(0, 3),
+      revenueClosed:    v(1, 3),
+      costPerBookedCall:v(2, 3),
+      cac:              v(3, 3),
+      roas:             v(4, 3),
+      estLtv:           v(5, 3),
+    };
+  } catch (e) {
+    console.error("fetchAdKpisData error:", (e as Error).message);
+    return null;
+  }
+}
 
 export type MetaAdsData = {
   adsets:           MetaAdsetRow[];
@@ -1180,8 +1252,14 @@ async function fetchMetaAdsData(): Promise<MetaAdsData | null> {
     const token   = process.env.META_ADS_TOKEN!;
     const account = process.env.META_ADS_ACCOUNT!;
     const fields  = "adset_id,adset_name,campaign_name,spend,clicks,impressions,cpc,ctr";
-    const url     = `https://graph.facebook.com/v19.0/${account}/insights?level=adset&fields=${fields}&date_preset=maximum&access_token=${token}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const insightsUrl = `https://graph.facebook.com/v19.0/${account}/insights?level=adset&fields=${fields}&date_preset=maximum&access_token=${token}`;
+    const statusUrl   = `https://graph.facebook.com/v19.0/${account}/adsets?fields=id,effective_status&limit=200&access_token=${token}`;
+
+    const [res, statusRes] = await Promise.all([
+      fetch(insightsUrl, { cache: "no-store" }),
+      fetch(statusUrl,   { cache: "no-store" }),
+    ]);
+
     if (!res.ok) {
       console.error(`Meta Ads API HTTP ${res.status}`);
       return null;
@@ -1199,6 +1277,17 @@ async function fetchMetaAdsData(): Promise<MetaAdsData | null> {
       return null;
     }
 
+    // Build a map of adset_id → effective_status from the management API
+    const activeStatusSet = new Set<string>();
+    if (statusRes.ok) {
+      const statusJson = await statusRes.json() as {
+        data?: Array<{ id?: string; effective_status?: string }>;
+      };
+      for (const s of statusJson.data ?? []) {
+        if (s.id && s.effective_status === "ACTIVE") activeStatusSet.add(s.id);
+      }
+    }
+
     const rows: MetaAdsetRow[] = (json.data ?? []).map(r => ({
       adsetId:      r.adset_id      ?? "",
       adsetName:    r.adset_name    ?? "",
@@ -1208,6 +1297,7 @@ async function fetchMetaAdsData(): Promise<MetaAdsData | null> {
       impressions:  parseInt  (r.impressions ?? "0", 10) || 0,
       cpc:          parseFloat(r.cpc         ?? "0") || 0,
       ctr:          parseFloat(r.ctr         ?? "0") || 0,
+      isActive:     activeStatusSet.has(r.adset_id ?? ""),
     })).sort((a, b) => b.spend - a.spend);
 
     const totalSpend       = round2(rows.reduce((s, r) => s + r.spend,       0));
@@ -1242,6 +1332,7 @@ export type DashboardData = {
   typeform:       TypeformData | null;
   whop:           WhopData | null;
   metaAds:        MetaAdsData | null;
+  adKpis:         AdKpisData | null;
   conversionRate: number | null;
   closeRate:      number | null;
   dnqsToday:      number;
@@ -1250,13 +1341,14 @@ export type DashboardData = {
 };
 
 export async function fetchAllDashboardData(start: Date, end: Date): Promise<DashboardData> {
-  const [sh, cal, tf, whop, dnqResult, metaResult] = await Promise.allSettled([
+  const [sh, cal, tf, whop, dnqResult, metaResult, adKpisResult] = await Promise.allSettled([
     fetchSheetsData(start, end),
     fetchCalendlyData(start, end),
     fetchTypeformData(start, end),
     fetchWhopData(),
     fetchDnqCounts(),
     fetchMetaAdsData(),
+    fetchAdKpisData(),
   ]);
 
   const sheets   = sh.status   === "fulfilled" ? sh.value   : ({ connected: false, error: "rejected" } as SheetsData);
@@ -1265,6 +1357,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
   const whopVal  = whop.status === "fulfilled" ? whop.value : null;
   const dnqs     = dnqResult.status === "fulfilled" ? dnqResult.value : { today: 0, thisWeek: 0, yesterday: 0 };
   const metaAdsRaw = metaResult.status === "fulfilled" ? metaResult.value : null;
+  const adKpis     = adKpisResult.status === "fulfilled" ? adKpisResult.value : null;
 
   // ── ROAS: cross-reference meta lead names → Deals sheet cash collected ────
   // Build a lowercase name set from the Applications sheet meta leads, then
@@ -1301,7 +1394,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
           noShows:         sheets.morningHuddleEod.thisWeek.noShows,
           callsCanceled:   sheets.morningHuddleEod.thisWeek.callsCanceled,
           liveCallsPushed: sheets.morningHuddleEod.thisWeek.liveCallsPushed,
-          dnqs:            dnqs.thisWeek,
+          dnqs:            sheets.morningHuddleEod.thisWeek.dnqs,
           setterBreakdown: sheets.morningHuddleEod.thisWeek.setterBreakdown,
           closerBreakdown: sheets.morningHuddleEod.thisWeek.closerBreakdown,
         },
@@ -1311,7 +1404,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
           noShows:         sheets.morningHuddleEod.yesterday.noShows,
           callsCanceled:   sheets.morningHuddleEod.yesterday.callsCanceled,
           liveCallsPushed: sheets.morningHuddleEod.yesterday.liveCallsPushed,
-          dnqs:            dnqs.yesterday,
+          dnqs:            sheets.morningHuddleEod.yesterday.dnqs,
           setterBreakdown: sheets.morningHuddleEod.yesterday.setterBreakdown,
           closerBreakdown: sheets.morningHuddleEod.yesterday.closerBreakdown,
         },
@@ -1324,6 +1417,7 @@ export async function fetchAllDashboardData(start: Date, end: Date): Promise<Das
     typeform,
     whop:           whopVal,
     metaAds,
+    adKpis,
     conversionRate: apps   > 0 ? Math.round((booked / apps)   * 100) : null,
     closeRate:      booked > 0 ? Math.round((closed / booked) * 100) : null,
     dnqsToday:      dnqs.today,
