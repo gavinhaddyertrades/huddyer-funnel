@@ -112,6 +112,7 @@ export default function HeroV2() {
           >
             Become a{" "}
             <span className="gold-text-gradient">Profitable Trader</span>
+            <br className="sm:hidden" />
             {" "}in 90 Days.
           </h1>
 
