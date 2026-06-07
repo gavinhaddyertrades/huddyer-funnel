@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { useEffect, useRef } from "react";
 import ChartBackground from "@/components/v2/ChartBackground";
+import { useUTMUrl } from "@/hooks/useUTMUrl";
 
 const TYPEFORM_URL = "https://form.typeform.com/to/AH6Qxmyu";
 const WISTIA_ID = "ht3wh0gzng";
@@ -22,6 +23,7 @@ function TradingBarsLogo() {
 export default function HeroV2() {
   const mobileLogoRef = useRef<HTMLDivElement>(null);
   const headingRef    = useRef<HTMLHeadingElement>(null);
+  const applyUrl      = useUTMUrl(TYPEFORM_URL);
 
   // Fire ViewContent once on mount
   useEffect(() => {
@@ -144,7 +146,7 @@ export default function HeroV2() {
 
           {/* CTA */}
           <a
-            href={TYPEFORM_URL}
+            href={applyUrl}
             className="btn-gold w-full justify-center"
             target="_blank"
             rel="noopener noreferrer"
