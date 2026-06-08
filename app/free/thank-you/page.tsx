@@ -106,33 +106,13 @@ export default function FreeThankYouPage() {
           <YoutubeFacade videoId="vxHRcR9xTFQ" />
         </div>
 
-        {/* Gold quote card */}
-        <div
-          style={{
-            border: "1px solid rgba(201,168,76,0.45)",
-            borderRadius: 16,
-            padding: "28px 32px",
-            background: "rgba(201,168,76,0.05)",
-            maxWidth: 540,
-            width: "100%",
-            textAlign: "left",
-          }}
-        >
-          <p
-            className="font-body leading-relaxed"
-            style={{ fontSize: "clamp(15px, 2vw, 17px)", color: "#F2EDE6" }}
-          >
-            &ldquo;Carmine was funded within one week and got his first payout{" "}
-            <span style={{ color: "#D4AF37", fontWeight: 600 }}>ONE month</span>{" "}inside Hudson&apos;s mentorship.&rdquo;
-          </p>
-        </div>
-
-        {/* CTA line */}
+        {/* Quote line */}
         <p
           className="font-body leading-relaxed"
-          style={{ fontSize: "clamp(14px, 1.8vw, 16px)", color: "#888", maxWidth: 460 }}
+          style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#B0B0B0", maxWidth: 480 }}
         >
-          If you&apos;re serious about trading futures consistently, this is your next step.
+          Carmine was funded within one week and got his first payout{" "}
+          <span style={{ color: "#D4AF37", fontWeight: 600 }}>ONE month</span>{" "}inside Hudson&apos;s mentorship.
         </p>
 
       </div>
