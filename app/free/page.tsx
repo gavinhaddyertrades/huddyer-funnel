@@ -43,6 +43,20 @@ export default function FreePage() {
           FOR FREE
         </h1>
 
+        {/* CTA */}
+        <a
+          href="https://form.typeform.com/to/G0KP1FTZ"
+          className="btn-gold"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ fontSize: "16px", padding: "16px 40px" }}
+        >
+          Get Free Instant Access
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </a>
+
         {/* Subheadline */}
         <p
           className="font-body leading-relaxed"
@@ -62,20 +76,6 @@ export default function FreePage() {
           className="w-full"
           style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent)" }}
         />
-
-        {/* CTA */}
-        <a
-          href="https://form.typeform.com/to/G0KP1FTZ"
-          className="btn-gold"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ fontSize: "16px", padding: "16px 40px" }}
-        >
-          Get Free Instant Access
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </a>
 
       </div>
     </main>
