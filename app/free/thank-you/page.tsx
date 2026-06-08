@@ -1,7 +1,53 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ChartBackground from "@/components/v2/ChartBackground";
+
+function YoutubeFacade({ videoId }: { videoId: string }) {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <div
+      className="relative w-full rounded-xl overflow-hidden"
+      style={{ aspectRatio: "16 / 9", border: "1px solid rgba(201,168,76,0.25)", background: "#111" }}
+    >
+      {playing ? (
+        <iframe
+          className="absolute inset-0 w-full h-full"
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&controls=1`}
+          title="Carmine's results"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+          style={{ border: "none" }}
+        />
+      ) : (
+        <div
+          className="absolute inset-0 cursor-pointer group"
+          onClick={() => setPlaying(true)}
+          role="button"
+          aria-label="Play Carmine's testimonial video"
+        >
+          <img
+            src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+            alt="Carmine's trading results"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 transition-opacity duration-200 group-hover:opacity-30" style={{ background: "rgba(0,0,0,0.4)" }} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="flex items-center justify-center w-16 h-16 rounded-full transition-transform duration-200 group-hover:scale-110"
+              style={{ background: "#C9A84C", boxShadow: "0 4px 30px rgba(201,168,76,0.6)" }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M7 5l10 5-10 5V5z" fill="#0A0A0A" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Logo() {
   return (
@@ -54,6 +100,11 @@ export default function FreeThankYouPage() {
         >
           While you wait, here&apos;s what one student did with this exact framework:
         </p>
+
+        {/* Carmine video */}
+        <div className="w-full">
+          <YoutubeFacade videoId="vxHRcR9xTFQ" />
+        </div>
 
         {/* Gold quote card */}
         <div
