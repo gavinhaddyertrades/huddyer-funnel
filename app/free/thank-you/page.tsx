@@ -89,7 +89,8 @@ export default function FreeThankYouPage() {
           className="font-display leading-none"
           style={{ fontSize: "clamp(32px, 6vw, 64px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
         >
-          CHECK YOUR INBOX —{" "}
+          CHECK YOUR INBOX
+          <br />
           <span className="gold-text-gradient">THE VIDEO IS ON ITS WAY.</span>
         </h1>
 
