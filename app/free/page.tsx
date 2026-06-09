@@ -1,7 +1,5 @@
 "use client";
 
-import ChartBackground from "@/components/v2/ChartBackground";
-
 function Logo() {
   return (
     <div className="flex items-center gap-2">
@@ -20,8 +18,7 @@ function Logo() {
 
 export default function FreePage() {
   return (
-    <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", position: "relative" }}>
-      <ChartBackground />
+    <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
 
       {/* Top bar */}
       <div
@@ -76,7 +73,7 @@ export default function FreePage() {
       </div>
 
       {/* Testimonials section */}
-      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px 100px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+      <section style={{ backgroundColor: "#0A0A0A", padding: "80px 20px 100px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
             Student Results
@@ -112,7 +109,7 @@ export default function FreePage() {
                   borderRadius: 14,
                   overflow: "hidden",
                   border: "1px solid rgba(255,255,255,0.07)",
-                  backgroundColor: "#1c1d22",
+                  backgroundColor: "#0A0A0A",
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
