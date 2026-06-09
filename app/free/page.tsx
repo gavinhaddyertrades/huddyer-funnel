@@ -95,7 +95,7 @@ export default function FreePage() {
                   borderRadius: 14,
                   overflow: "hidden",
                   border: "1px solid rgba(255,255,255,0.07)",
-                  backgroundColor: "#0A0A0A",
+                  backgroundColor: "#1c1d22",
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
