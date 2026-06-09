@@ -1,5 +1,9 @@
 "use client";
 
+import { useUTMUrl } from "@/hooks/useUTMUrl";
+
+const TYPEFORM_URL = "https://form.typeform.com/to/G0KP1FTZ";
+
 function Logo() {
   return (
     <div className="flex items-center gap-2">
@@ -17,6 +21,8 @@ function Logo() {
 }
 
 export default function FreePage() {
+  const ctaUrl = useUTMUrl(TYPEFORM_URL);
+
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
 
@@ -51,7 +57,7 @@ export default function FreePage() {
 
         {/* CTA */}
         <a
-          href="https://form.typeform.com/to/G0KP1FTZ"
+          href={ctaUrl}
           className="btn-gold"
           target="_blank"
           rel="noopener noreferrer"
