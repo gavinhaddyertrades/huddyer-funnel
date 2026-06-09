@@ -35,7 +35,7 @@ export default function FreePage() {
       </div>
 
       {/* Hero content */}
-      <div className="max-w-2xl mx-auto px-5 pt-14 pb-10 flex flex-col items-center text-center gap-6">
+      <div className="max-w-2xl mx-auto px-5 pt-14 pb-2 md:pb-10 flex flex-col items-center text-center gap-6">
 
         {/* Headline */}
         <h1
@@ -73,7 +73,7 @@ export default function FreePage() {
       </div>
 
       {/* Testimonials section */}
-      <section style={{ backgroundColor: "#0A0A0A", padding: "80px 20px 100px" }}>
+      <section className="px-5 pt-6 md:pt-20 pb-24" style={{ backgroundColor: "#0A0A0A" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
             Student Results
