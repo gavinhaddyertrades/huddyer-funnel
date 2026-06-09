@@ -41,6 +41,14 @@ export default function FreePage() {
           FOR FREE
         </h1>
 
+        {/* Thumbnail image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/trading-strategy-thumb.png"
+          alt="My Full Trading Strategy"
+          style={{ width: "100%", maxWidth: 560, borderRadius: 12, display: "block" }}
+        />
+
         {/* CTA */}
         <a
           href="https://form.typeform.com/to/G0KP1FTZ"
