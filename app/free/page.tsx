@@ -55,25 +55,11 @@ export default function FreePage() {
           </svg>
         </a>
 
-        {/* Subheadline */}
-        <p
-          className="font-body leading-relaxed"
-          style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#B0B0B0", maxWidth: 520 }}
-        >
-          The exact framework I used to get my student to{" "}
-          <span style={{ color: "#D4AF37", fontWeight: 600 }}>$30K his FIRST month</span> trading futures.
-        </p>
-
-        {/* Divider */}
-        <div
-          className="w-full"
-          style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent)" }}
-        />
 
       </div>
 
       {/* Testimonials section */}
-      <section style={{ backgroundColor: "#0A0A0A", padding: "80px 20px 100px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+      <section style={{ backgroundColor: "#0A0A0A", padding: "80px 20px 100px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
             Student Results
