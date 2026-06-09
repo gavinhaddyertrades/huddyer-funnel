@@ -1,6 +1,7 @@
 "use client";
 
 import ChartBackground from "@/components/v2/ChartBackground";
+import SocialProofV2 from "@/components/v2/SocialProofV2";
 
 function Logo() {
   return (
@@ -31,7 +32,8 @@ export default function FreePage() {
         <Logo />
       </div>
 
-      <div className="max-w-2xl mx-auto px-5 pt-14 pb-20 flex flex-col items-center text-center gap-6">
+      {/* Hero content */}
+      <div className="max-w-2xl mx-auto px-5 pt-14 pb-10 flex flex-col items-center text-center gap-6">
 
         {/* Headline */}
         <h1
@@ -66,11 +68,6 @@ export default function FreePage() {
           <span style={{ color: "#D4AF37", fontWeight: 600 }}>$30K his FIRST month</span> trading futures.
         </p>
 
-        {/* Social proof */}
-        <p className="font-body text-sm" style={{ color: "#666" }}>
-          Used by students who&apos;ve gone from zero to consistently profitable.
-        </p>
-
         {/* Divider */}
         <div
           className="w-full"
@@ -78,6 +75,24 @@ export default function FreePage() {
         />
 
       </div>
+
+      {/* Social proof section */}
+      <div className="px-6 md:px-12 pb-4" style={{ backgroundColor: "#0A0A0A" }}>
+        <div className="max-w-5xl mx-auto">
+          <p className="font-body text-xs uppercase tracking-widest mb-4 text-center" style={{ color: "#888" }}>
+            Student Results
+          </p>
+          <h2
+            className="font-display leading-none text-center mb-16"
+            style={{ fontSize: "clamp(28px, 5vw, 56px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
+          >
+            WHAT HAPPENS WHEN TRADERS ACTUALLY{" "}
+            <span className="gold-text-gradient">LEARN THE RIGHT FRAMEWORK</span>
+          </h2>
+        </div>
+      </div>
+      <SocialProofV2 />
+
     </main>
   );
 }
