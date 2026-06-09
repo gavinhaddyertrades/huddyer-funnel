@@ -1,7 +1,6 @@
 "use client";
 
 import ChartBackground from "@/components/v2/ChartBackground";
-import SocialProofV2 from "@/components/v2/SocialProofV2";
 
 function Logo() {
   return (
@@ -76,22 +75,58 @@ export default function FreePage() {
 
       </div>
 
-      {/* Social proof section */}
-      <div className="px-6 md:px-12 pb-4" style={{ backgroundColor: "#0A0A0A" }}>
-        <div className="max-w-5xl mx-auto">
-          <p className="font-body text-xs uppercase tracking-widest mb-4 text-center" style={{ color: "#888" }}>
+      {/* Testimonials section */}
+      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px 100px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
             Student Results
           </p>
           <h2
-            className="font-display leading-none text-center mb-16"
-            style={{ fontSize: "clamp(28px, 5vw, 56px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
+            className="students-say-heading"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(36px, 6vw, 72px)",
+              color: "#F2EDE6",
+              textAlign: "center",
+              letterSpacing: "0.02em",
+              lineHeight: 1,
+              marginBottom: 56,
+            }}
           >
-            WHAT HAPPENS WHEN TRADERS ACTUALLY{" "}
-            <span className="gold-text-gradient">LEARN THE RIGHT FRAMEWORK</span>
+            WHAT MY{" "}
+            <span className="gold-text-gradient">STUDENTS SAY</span>
           </h2>
+
+          <div className="masonry-grid">
+            {[
+              "IMG_3080","IMG_3081","IMG_3082","IMG_3083","IMG_3084","IMG_3085",
+              "IMG_3086","IMG_3087","IMG_3088","IMG_3089","IMG_3090","IMG_3091",
+              "IMG_3092","IMG_3093","IMG_3094","IMG_3095","IMG_3096",
+            ].map((name) => (
+              <div
+                key={name}
+                className={`masonry-item${name === "IMG_3085" ? " hide-mobile" : ""}`}
+                style={{
+                  breakInside: "avoid",
+                  marginBottom: 16,
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  backgroundColor: "#1c1d22",
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/testimonials/${name}.jpg`}
+                  alt="Student result"
+                  style={{ width: "100%", display: "block" }}
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      <SocialProofV2 />
+      </section>
 
     </main>
   );
