@@ -6,7 +6,7 @@ import ChartBackground from "@/components/v2/ChartBackground";
 import { useUTMUrl } from "@/hooks/useUTMUrl";
 
 const TYPEFORM_URL = "https://form.typeform.com/to/AH6Qxmyu";
-const WISTIA_ID = "ht3wh0gzng";
+const WISTIA_ID = "rjt17jvezs";
 
 function TradingBarsLogo() {
   return (
