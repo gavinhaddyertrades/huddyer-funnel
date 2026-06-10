@@ -112,10 +112,8 @@ export default function HeroV2() {
               letterSpacing: "0.02em",
             }}
           >
-            Become a{" "}
-            <span className="gold-text-gradient">Profitable Trader</span>
-            <br className="sm:hidden" />
-            {" "}in 90 Days.
+            The Trading System That Turns Complete Beginners Into{" "}
+            <span className="gold-text-gradient">Funded, Profitable Traders.</span>
           </h1>
 
           {/* Subheadline */}
