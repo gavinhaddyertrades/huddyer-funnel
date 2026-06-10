@@ -113,7 +113,7 @@ export default function HeroV2() {
             }}
           >
             The Trading System That Turns Complete Beginners Into{" "}
-            <span className="gold-text-gradient">Funded, Profitable Traders.</span>
+            <span className="gold-text-gradient">Profitable Traders.</span>
           </h1>
 
           {/* Subheadline */}
