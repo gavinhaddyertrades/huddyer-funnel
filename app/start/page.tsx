@@ -58,8 +58,8 @@ export default function StartPage() {
   }
 
   const subheadline = firstName
-    ? `Hey ${firstName}, join traders who skip the guesswork and watch a funded futures trader execute in real time — 9:30 AM EST, every single day.`
-    : `Join traders who skip the guesswork and watch a funded futures trader execute in real time — 9:30 AM EST, every single day.`;
+    ? `Hey ${firstName}, join traders who skip the guesswork and watch a funded futures trader execute in real time at 9:30 AM EST, every single day.`
+    : `Join traders who skip the guesswork and watch a funded futures trader execute in real time at 9:30 AM EST, every single day.`;
 
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
