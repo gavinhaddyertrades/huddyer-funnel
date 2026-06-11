@@ -92,6 +92,14 @@ export default function StartPage() {
           <span className="gold-text-gradient">Every Morning.</span>
         </h1>
 
+        {/* Dashboard image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/dashboard-laptop.png"
+          alt="HuddyerTrades live trading dashboard"
+          style={{ width: "100%", maxWidth: 700, display: "block", borderRadius: 12 }}
+        />
+
         <p
           className="font-body leading-relaxed"
           style={{ fontSize: "clamp(16px, 2vw, 19px)", color: "#999", maxWidth: 560 }}
