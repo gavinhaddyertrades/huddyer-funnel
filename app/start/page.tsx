@@ -97,7 +97,7 @@ export default function StartPage() {
         <img
           src="/dashboard-laptop.png"
           alt="HuddyerTrades live trading dashboard"
-          style={{ width: "100%", maxWidth: 700, display: "block", borderRadius: 12 }}
+          style={{ width: "100%", maxWidth: 580, display: "block", borderRadius: 12 }}
         />
 
         <p
