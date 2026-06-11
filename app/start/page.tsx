@@ -80,7 +80,7 @@ export default function StartPage() {
         >
           <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#C9A84C", boxShadow: "0 0 6px #C9A84C" }} />
           <span className="font-body text-xs uppercase tracking-widest" style={{ color: "#C9A84C" }}>
-            Live Trading Community · $79/mo
+            Live Trading Community
           </span>
         </div>
 
@@ -230,7 +230,7 @@ export default function StartPage() {
             className="font-body leading-relaxed"
             style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#888", maxWidth: 460 }}
           >
-            Join the community and trade alongside Hudson every morning. $79/month. Cancel anytime.
+            Join the community and trade alongside Hudson every morning. Cancel anytime.
           </p>
           <CTAButton url={ctaUrl} onClick={handleCTAClick} />
           <p className="font-body text-xs" style={{ color: "#555" }}>Cancel anytime.</p>
