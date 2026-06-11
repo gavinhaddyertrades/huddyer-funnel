@@ -120,29 +120,6 @@ export default function StartPage() {
             </h2>
           </div>
 
-          <div
-            className="rounded-2xl p-8 md:p-10"
-            style={{ border: "1px solid rgba(201,168,76,0.2)", background: "rgba(201,168,76,0.04)" }}
-          >
-            <div className="flex items-start gap-5">
-              <div
-                className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center mt-1"
-                style={{ background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.3)" }}
-              >
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <circle cx="9" cy="9" r="8" stroke="#C9A84C" strokeWidth="1.2" />
-                  <path d="M7 9l2 2 3-3" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <p
-                className="font-body leading-relaxed"
-                style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#C0BAB0" }}
-              >
-                Live trading sessions every morning at 9:30 EST — watch every entry, exit, and decision in real time. No recordings. No theory. Just live execution.
-              </p>
-            </div>
-          </div>
-
           {[
             { label: "Real-time execution", body: "Every trade Hudson takes — live, in front of you. You see the setup, the entry, the management, the exit." },
             { label: "Daily presence", body: "9:30 AM EST, every market morning. Not a weekly webinar. Not a monthly check-in. Every. Single. Day." },
@@ -174,33 +151,53 @@ export default function StartPage() {
       </section>
 
       {/* ── Social Proof ── */}
-      <section style={{ backgroundColor: "#0A0A0A", padding: "72px 20px" }}>
-        <div className="max-w-2xl mx-auto flex flex-col items-center text-center gap-6">
-          <p className="font-body text-xs uppercase tracking-widest" style={{ color: "#888" }}>
-            Student Result
+      <section style={{ backgroundColor: "#0A0A0A", padding: "72px 20px 100px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
+            Student Results
           </p>
-          <div
-            className="w-full rounded-2xl p-8 md:p-10 text-left"
-            style={{ border: "1px solid rgba(255,255,255,0.08)", background: "#111111" }}
+          <h2
+            className="students-say-heading"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(36px, 6vw, 72px)",
+              color: "#F2EDE6",
+              textAlign: "center",
+              letterSpacing: "0.02em",
+              lineHeight: 1,
+              marginBottom: 56,
+            }}
           >
-            <blockquote
-              className="font-body leading-relaxed mb-6"
-              style={{ fontSize: "clamp(16px, 2vw, 20px)", color: "#D4C9B8", fontStyle: "italic" }}
-            >
-              &ldquo;I had been trading for two years and spinning my wheels. One month inside this program and I had my first funded payout. The structure changed everything.&rdquo;
-            </blockquote>
-            <div className="flex items-center gap-3">
+            WHAT MY{" "}
+            <span className="gold-text-gradient">STUDENTS SAY</span>
+          </h2>
+          <div className="masonry-grid">
+            {[
+              "IMG_3080","IMG_3081","IMG_3082","IMG_3083","IMG_3084","IMG_3085",
+              "IMG_3086","IMG_3087","IMG_3088","IMG_3089","IMG_3090","IMG_3091",
+              "IMG_3092","IMG_3093","IMG_3094","IMG_3095","IMG_3096",
+            ].map((name) => (
               <div
-                className="w-9 h-9 rounded-full flex items-center justify-center font-display text-sm"
-                style={{ background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.3)", color: "#C9A84C" }}
+                key={name}
+                className={`masonry-item${name === "IMG_3085" ? " hide-mobile" : ""}`}
+                style={{
+                  breakInside: "avoid",
+                  marginBottom: 16,
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  backgroundColor: "#1c1d22",
+                }}
               >
-                C
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/testimonials/${name}.jpg`}
+                  alt="Student result"
+                  style={{ width: "100%", display: "block" }}
+                  loading="lazy"
+                />
               </div>
-              <div>
-                <p className="font-display text-sm" style={{ color: "#F2EDE6", letterSpacing: "0.06em" }}>CARMINE</p>
-                <p className="font-body text-xs" style={{ color: "#C9A84C" }}>First funded payout within one month</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
