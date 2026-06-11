@@ -108,16 +108,9 @@ export default function StartPage() {
       <section style={{ backgroundColor: "#111111", borderTop: "1px solid rgba(255,255,255,0.07)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "72px 20px" }}>
         <div className="max-w-3xl mx-auto flex flex-col gap-10">
           <div className="text-center">
-            <p className="font-body text-xs uppercase tracking-widest mb-3" style={{ color: "#888" }}>
+            <p className="font-body text-xs uppercase tracking-widest" style={{ color: "#888" }}>
               What You Get
             </p>
-            <h2
-              className="font-display leading-none"
-              style={{ fontSize: "clamp(30px, 5vw, 56px)", color: "#F2EDE6", letterSpacing: "0.02em" }}
-            >
-              NO RECORDINGS.{" "}
-              <span className="gold-text-gradient">NO THEORY.</span>
-            </h2>
           </div>
 
           {[
