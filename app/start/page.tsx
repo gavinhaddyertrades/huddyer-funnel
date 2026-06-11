@@ -100,8 +100,6 @@ export default function StartPage() {
         </p>
 
         <CTAButton url={ctaUrl} onClick={handleCTAClick} />
-
-        <p className="font-body text-xs" style={{ color: "#555" }}>Cancel anytime.</p>
       </div>
 
       {/* ── What You Get ── */}
@@ -230,10 +228,9 @@ export default function StartPage() {
             className="font-body leading-relaxed"
             style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#888", maxWidth: 460 }}
           >
-            Join the community and trade alongside Hudson every morning. Cancel anytime.
+            Join the community and trade alongside Hudson every morning.
           </p>
           <CTAButton url={ctaUrl} onClick={handleCTAClick} />
-          <p className="font-body text-xs" style={{ color: "#555" }}>Cancel anytime.</p>
         </div>
       </section>
 
