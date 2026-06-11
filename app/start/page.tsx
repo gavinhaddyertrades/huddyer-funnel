@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useUTMUrl } from "@/hooks/useUTMUrl";
 
-const WHOP_URL = "https://whop.com/huddyertrades-coaching-ea05/huddyer-trades-community/";
+const WHOP_URL = "https://whop.com/checkout/5RtaDGGnpBcp80pbj-pfYO-t6Bo-Q5fs-MC5aa34V3ksY/";
 
 function Logo() {
   return (
