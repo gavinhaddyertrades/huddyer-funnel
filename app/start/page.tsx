@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Script from "next/script";
 import { useUTMUrl } from "@/hooks/useUTMUrl";
+
+const WISTIA_ID = "tdahznsu57";
 
 const WHOP_URL = "https://whop.com/checkout/5RtaDGGnpBcp80pbj-pfYO-t6Bo-Q5fs-MC5aa34V3ksY/";
 
@@ -63,6 +66,8 @@ export default function StartPage() {
 
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
+      <Script src="https://fast.wistia.com/player.js" strategy="afterInteractive" />
+      <Script src={`https://fast.wistia.com/embed/${WISTIA_ID}.js`} strategy="afterInteractive" type="module" />
 
       {/* Top bar */}
       <div
@@ -92,13 +97,22 @@ export default function StartPage() {
           <span className="gold-text-gradient">Every Morning.</span>
         </h1>
 
-        {/* Dashboard image */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/dashboard-laptop.png"
-          alt="HuddyerTrades live trading dashboard"
-          style={{ width: "100%", maxWidth: 580, display: "block", borderRadius: 12 }}
-        />
+        {/* Pre-call video */}
+        <div style={{ width: "100%", maxWidth: 360, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(201,168,76,0.4)" }}>
+          <style>{`
+            wistia-player[media-id='${WISTIA_ID}']:not(:defined) {
+              background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${WISTIA_ID}/swatch');
+              display: block;
+              filter: blur(5px);
+              padding-top: 177.78%;
+            }
+          `}</style>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: `<wistia-player media-id="${WISTIA_ID}" aspect="0.5625"></wistia-player>`,
+            }}
+          />
+        </div>
 
         <p
           className="font-body leading-relaxed"
