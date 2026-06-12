@@ -67,6 +67,19 @@ export default function StartThankYouPage() {
           Welcome to the community. Check your email for access details — Hudson trades live every morning at 9:30 AM EST.
         </p>
 
+        <a
+          href="https://whop.com/huddyertrades-coaching-ea05/huddyer-trades-community/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-gold"
+          style={{ fontSize: "16px", padding: "16px 40px" }}
+        >
+          Go to Community
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </a>
+
       </div>
     </main>
   );
