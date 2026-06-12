@@ -2,9 +2,10 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Script from "next/script";
 import ChartBackground from "@/components/v2/ChartBackground";
 
-const CARMINE_VIDEO_ID = "vxHRcR9xTFQ";
+const WISTIA_ID = "g0n2dflm3a";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -219,51 +220,6 @@ function AddToCalendar() {
   );
 }
 
-// ── YouTube Facade ──────────────────────────────────────────────────────────
-
-function YoutubeFacade({ videoId }: { videoId: string }) {
-  const [playing, setPlaying] = useState(false);
-  const thumbUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&controls=1`;
-
-  return (
-    <div
-      className="relative w-full rounded-xl overflow-hidden"
-      style={{ aspectRatio: "16 / 9", border: "1px solid rgba(201,168,76,0.25)", background: "#111" }}
-    >
-      {playing ? (
-        <iframe
-          className="absolute inset-0 w-full h-full"
-          src={embedUrl}
-          title="Carmine's results"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          style={{ border: "none" }}
-        />
-      ) : (
-        <div
-          className="absolute inset-0 cursor-pointer group"
-          onClick={() => setPlaying(true)}
-          role="button"
-          aria-label="Play Carmine's testimonial video"
-        >
-          <img src={thumbUrl} alt="Carmine's trading results" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 transition-opacity duration-200 group-hover:opacity-30" style={{ background: "rgba(0,0,0,0.4)" }} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className="flex items-center justify-center w-16 h-16 rounded-full transition-transform duration-200 group-hover:scale-110"
-              style={{ background: "#C9A84C", boxShadow: "0 4px 30px rgba(201,168,76,0.6)" }}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M7 5l10 5-10 5V5z" fill="#0A0A0A" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── FAQ data ────────────────────────────────────────────────────────────────
 
@@ -321,6 +277,8 @@ export default function ConfirmedPage() {
 
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", position: "relative" }}>
+      <Script src="https://fast.wistia.com/player.js" strategy="afterInteractive" />
+      <Script src={`https://fast.wistia.com/embed/${WISTIA_ID}.js`} strategy="afterInteractive" type="module" />
       <ChartBackground />
 
       {/* Top bar */}
@@ -358,8 +316,24 @@ export default function ConfirmedPage() {
         </h1>
 
         {/* Video */}
-        <div className="relative mb-14">
-          <YoutubeFacade videoId={CARMINE_VIDEO_ID} />
+        <div
+          className="relative mb-14"
+          style={{ border: "1px solid rgba(201,168,76,0.5)", borderRadius: 12, padding: 5 }}
+        >
+          <style>{`
+            wistia-player[media-id='${WISTIA_ID}']:not(:defined) {
+              background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${WISTIA_ID}/swatch');
+              display: block;
+              filter: blur(5px);
+              padding-top: 56.25%;
+            }
+          `}</style>
+          <div
+            style={{ borderRadius: 8, overflow: "hidden" }}
+            dangerouslySetInnerHTML={{
+              __html: `<wistia-player media-id="${WISTIA_ID}" aspect="1.7777777777777777"></wistia-player>`,
+            }}
+          />
         </div>
 
         {/* Add to Calendar — only renders when Calendly passes event params */}
