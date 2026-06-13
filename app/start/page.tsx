@@ -98,7 +98,7 @@ export default function StartPage() {
         </h1>
 
         {/* Pre-call video */}
-        <div style={{ width: "100%", maxWidth: 360, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(201,168,76,0.4)" }}>
+        <div style={{ width: "100%", maxWidth: 260, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(201,168,76,0.4)" }}>
           <style>{`
             wistia-player[media-id='${WISTIA_ID}']:not(:defined) {
               background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${WISTIA_ID}/swatch');
