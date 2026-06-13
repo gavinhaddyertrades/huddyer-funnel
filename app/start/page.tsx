@@ -101,17 +101,6 @@ export default function StartPage() {
           <span className="gold-text-gradient">Every Morning.</span>
         </h1>
 
-        {/* Pricing line */}
-        <div className="flex flex-col items-center gap-1">
-          <div className="flex items-center gap-3 font-body">
-            <span style={{ color: "#555", textDecoration: "line-through", fontSize: "clamp(15px, 2vw, 18px)" }}>$79.99/mo</span>
-            <span style={{ color: "#C9A84C", fontWeight: 700, fontSize: "clamp(18px, 2.5vw, 22px)" }}>$24.99/mo</span>
-          </div>
-          <p className="font-body" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#666" }}>
-            Limited time offer
-          </p>
-        </div>
-
         {/* Videos side by side */}
         <style>{`
           wistia-player[media-id='${WISTIA_ID_1}']:not(:defined) {
@@ -145,6 +134,17 @@ export default function StartPage() {
         >
           {subheadline}
         </p>
+
+        {/* Pricing line */}
+        <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center gap-3 font-body">
+            <span style={{ color: "#555", textDecoration: "line-through", fontSize: "clamp(15px, 2vw, 18px)" }}>$79.99/mo</span>
+            <span style={{ color: "#C9A84C", fontWeight: 700, fontSize: "clamp(18px, 2.5vw, 22px)" }}>$24.99/mo</span>
+          </div>
+          <p className="font-body" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#666" }}>
+            Limited time offer
+          </p>
+        </div>
 
         <CTAButton url={ctaUrl} onClick={handleCTAClick} />
       </div>
