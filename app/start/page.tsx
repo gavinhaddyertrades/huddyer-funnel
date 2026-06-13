@@ -136,12 +136,10 @@ export default function StartPage() {
         </p>
 
         {/* Pricing line */}
-        <div className="flex flex-col items-center gap-1">
-          <div className="flex items-center gap-3 font-body">
-            <span style={{ color: "#555", textDecoration: "line-through", fontSize: "clamp(15px, 2vw, 18px)" }}>$79.99/mo</span>
-            <span className="gold-text-gradient" style={{ fontWeight: 700, fontSize: "clamp(18px, 2.5vw, 22px)" }}>$24.99/mo</span>
-          </div>
-          <p className="font-body" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#666" }}>
+        <div className="flex flex-col items-center gap-1 font-body">
+          <span style={{ color: "#555", textDecoration: "line-through", fontSize: "clamp(14px, 2vw, 17px)" }}>$79.99/mo</span>
+          <span className="gold-text-gradient" style={{ fontWeight: 700, fontSize: "clamp(22px, 3vw, 28px)" }}>$24.99/mo</span>
+          <p className="font-body" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#666", margin: 0 }}>
             Limited time offer
           </p>
         </div>
