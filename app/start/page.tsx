@@ -8,7 +8,7 @@ const WISTIA_ID_1 = "tdahznsu57";
 const WISTIA_ID_2 = "b9ln6n9ciu";
 const WISTIA_ID_3 = "nbu6p30vo4";
 
-const WHOP_URL = "https://whop.com/checkout/5RtaDGGnpBcp80pbj-pfYO-t6Bo-Q5fs-MC5aa34V3ksY/";
+const WHOP_URL = "https://whop.com/checkout/plan_RaPWkYqUSlJiF";
 
 function Logo() {
   return (
