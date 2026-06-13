@@ -6,6 +6,7 @@ import { useUTMUrl } from "@/hooks/useUTMUrl";
 
 const WISTIA_ID_1 = "tdahznsu57";
 const WISTIA_ID_2 = "b9ln6n9ciu";
+const WISTIA_ID_3 = "nbu6p30vo4";
 
 const WHOP_URL = "https://whop.com/checkout/5RtaDGGnpBcp80pbj-pfYO-t6Bo-Q5fs-MC5aa34V3ksY/";
 
@@ -70,6 +71,7 @@ export default function StartPage() {
       <Script src="https://fast.wistia.com/player.js" strategy="afterInteractive" />
       <Script src={`https://fast.wistia.com/embed/${WISTIA_ID_1}.js`} strategy="afterInteractive" type="module" />
       <Script src={`https://fast.wistia.com/embed/${WISTIA_ID_2}.js`} strategy="afterInteractive" type="module" />
+      <Script src={`https://fast.wistia.com/embed/${WISTIA_ID_3}.js`} strategy="afterInteractive" type="module" />
 
       {/* Top bar */}
       <div
@@ -109,9 +111,13 @@ export default function StartPage() {
             background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${WISTIA_ID_2}/swatch');
             display: block; filter: blur(5px); padding-top: 177.78%;
           }
+          wistia-player[media-id='${WISTIA_ID_3}']:not(:defined) {
+            background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${WISTIA_ID_3}/swatch');
+            display: block; filter: blur(5px); padding-top: 177.78%;
+          }
         `}</style>
         <div className="flex gap-3 w-full justify-center">
-          {[WISTIA_ID_1, WISTIA_ID_2].map((id) => (
+          {[WISTIA_ID_1, WISTIA_ID_2, WISTIA_ID_3].map((id) => (
             <div
               key={id}
               style={{ flex: "1 1 0", maxWidth: 280, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(201,168,76,0.4)" }}
