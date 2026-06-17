@@ -160,7 +160,11 @@ export default function HeroV2() {
               });
               const hashParams = new URLSearchParams();
               ["first_name","email","phone_number"].forEach((key) => {
-                const v = pageParams.get(key);
+                let v = pageParams.get(key);
+                // URLSearchParams decodes + as space; restore + for phone numbers
+                if (key === "phone_number" && v?.startsWith(" ")) {
+                  v = "+" + v.slice(1);
+                }
                 if (v) hashParams.set(key, v);
               });
               // Typeform redirects with full_name instead of first_name — map it

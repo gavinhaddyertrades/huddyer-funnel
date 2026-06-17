@@ -34,7 +34,11 @@ export function useUTMUrl(baseUrl: string): string {
 
     const hashParams = new URLSearchParams();
     HASH_KEYS.forEach((key) => {
-      const value = pageParams.get(key);
+      let value = pageParams.get(key);
+      // URLSearchParams decodes + as space; restore + for phone numbers
+      if (key === "phone_number" && value?.startsWith(" ")) {
+        value = "+" + value.slice(1);
+      }
       if (value) hashParams.set(key, value);
     });
     // Typeform redirects with full_name instead of first_name — map it
