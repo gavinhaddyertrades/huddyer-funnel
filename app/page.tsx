@@ -62,11 +62,11 @@ export default function HomePage() {
 
         <button
           className="btn-gold"
-          style={{ fontSize: "16px", padding: "16px 40px" }}
+          style={{ fontSize: "clamp(13px, 3.5vw, 16px)", padding: "clamp(10px, 2.5vw, 16px) clamp(20px, 5vw, 40px)", whiteSpace: "nowrap" }}
           onClick={() => setOpen(true)}
         >
           Learn My Trading Strategy
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
             <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
