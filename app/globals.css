@@ -317,31 +317,33 @@
   }
 }
 
-/* Typeform popup — bottom sheet on mobile instead of fullscreen */
+/* Typeform popup — compact centered modal on mobile */
 @media (max-width: 480px) {
   .tf-v1-popup {
-    align-items: flex-end !important;
+    align-items: center !important;
     justify-content: center !important;
+    padding: 24px !important;
+    box-sizing: border-box !important;
   }
   .tf-v1-popup .tf-v1-iframe-wrapper {
     min-width: unset !important;
-    width: calc(100% - 32px) !important;
-    max-width: calc(100% - 32px) !important;
-    min-height: 85vh !important;
-    max-height: 85vh !important;
-    border-radius: 20px 20px 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: unset !important;
+    height: 70vh !important;
+    max-height: 70vh !important;
+    border-radius: 16px !important;
     overflow: hidden !important;
     border: 2px solid #C9A84C !important;
-    border-bottom: none !important;
-    box-shadow: 0 -8px 40px rgba(201, 168, 76, 0.25) !important;
+    box-shadow: 0 8px 40px rgba(201, 168, 76, 0.2) !important;
   }
   .tf-v1-popup .tf-v1-iframe-wrapper iframe {
-    border-radius: 18px 18px 0 0 !important;
-    height: 85vh !important;
+    border-radius: 14px !important;
+    height: 70vh !important;
   }
   .tf-v1-popup .tf-v1-close {
     top: 12px !important;
-    right: 16px !important;
+    right: 12px !important;
     color: #333 !important;
   }
 }
