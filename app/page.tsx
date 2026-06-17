@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import PhoneInput from "react-phone-number-input";
 
 function Logo() {
   return (
@@ -23,7 +22,7 @@ export default function HomePage() {
   const [open, setOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState<string | undefined>(undefined);
+  const [phone, setPhone] = useState("");
 
   useEffect(() => {
     (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "ViewContent", {
@@ -167,38 +166,6 @@ export default function HomePage() {
                 .strategy-input::placeholder { color: #555; }
                 .strategy-input:focus { border-color: rgba(201,168,76,0.6); }
 
-                .PhoneInput {
-                  background: #1a1a1a;
-                  border: 1px solid rgba(255,255,255,0.1);
-                  border-radius: 8px;
-                  padding: 0 16px;
-                  display: flex;
-                  align-items: center;
-                  gap: 8px;
-                  transition: border-color 0.15s;
-                }
-                .PhoneInput:focus-within { border-color: rgba(201,168,76,0.6); }
-                .PhoneInputInput {
-                  background: transparent;
-                  border: none;
-                  outline: none;
-                  color: #F2EDE6;
-                  font-family: var(--font-body);
-                  font-size: 15px;
-                  padding: 12px 0;
-                  width: 100%;
-                }
-                .PhoneInputInput::placeholder { color: #555; }
-                .PhoneInputCountrySelect {
-                  background: transparent;
-                  border: none;
-                  outline: none;
-                  color: #F2EDE6;
-                  font-size: 15px;
-                  cursor: pointer;
-                }
-                .PhoneInputCountrySelect option { background: #1a1a1a; color: #F2EDE6; }
-                .PhoneInputCountrySelectArrow { color: #666; }
               `}</style>
 
               <input
@@ -217,23 +184,25 @@ export default function HomePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <PhoneInput
-                defaultCountry="US"
-                value={phone}
-                onChange={setPhone}
+              <input
+                className="strategy-input"
+                type="tel"
                 placeholder="Phone Number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
               />
 
               <button
                 type="submit"
-                disabled={!firstName.trim() || !email.trim() || !phone}
+                disabled={!firstName.trim() || !email.trim() || !phone.trim()}
                 className="btn-gold w-full justify-center"
                 style={{
                   fontSize: "16px",
                   padding: "14px 32px",
                   marginTop: 4,
-                  opacity: (!firstName.trim() || !email.trim() || !phone) ? 0.4 : 1,
-                  cursor: (!firstName.trim() || !email.trim() || !phone) ? "not-allowed" : "pointer",
+                  opacity: (!firstName.trim() || !email.trim() || !phone.trim()) ? 0.4 : 1,
+                  cursor: (!firstName.trim() || !email.trim() || !phone.trim()) ? "not-allowed" : "pointer",
                 }}
               >
                 Learn My Strategy
