@@ -163,6 +163,11 @@ export default function HeroV2() {
                 const v = pageParams.get(key);
                 if (v) hashParams.set(key, v);
               });
+              // Typeform redirects with full_name instead of first_name — map it
+              if (!hashParams.get("first_name")) {
+                const fullName = pageParams.get("full_name");
+                if (fullName) hashParams.set("first_name", fullName);
+              }
               const hashStr = hashParams.toString();
               if (hashStr) dest.hash = hashStr;
               window.open(dest.toString(), "_blank", "noopener,noreferrer");

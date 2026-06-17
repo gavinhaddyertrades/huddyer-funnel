@@ -37,6 +37,11 @@ export function useUTMUrl(baseUrl: string): string {
       const value = pageParams.get(key);
       if (value) hashParams.set(key, value);
     });
+    // Typeform redirects with full_name instead of first_name — map it
+    if (!hashParams.get("first_name")) {
+      const fullName = pageParams.get("full_name");
+      if (fullName) hashParams.set("first_name", fullName);
+    }
     const hashStr = hashParams.toString();
     if (hashStr) dest.hash = hashStr;
 
