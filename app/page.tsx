@@ -194,8 +194,15 @@ export default function HomePage() {
 
               <button
                 type="submit"
+                disabled={!firstName.trim() || !email.trim() || !phone.trim()}
                 className="btn-gold w-full justify-center"
-                style={{ fontSize: "16px", padding: "14px 32px", marginTop: 4 }}
+                style={{
+                  fontSize: "16px",
+                  padding: "14px 32px",
+                  marginTop: 4,
+                  opacity: (!firstName.trim() || !email.trim() || !phone.trim()) ? 0.4 : 1,
+                  cursor: (!firstName.trim() || !email.trim() || !phone.trim()) ? "not-allowed" : "pointer",
+                }}
               >
                 Learn My Strategy
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
