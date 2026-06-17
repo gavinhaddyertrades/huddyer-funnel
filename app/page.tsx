@@ -33,7 +33,7 @@ export default function HomePage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    fetch("https://hooks.zapier.com/hooks/catch/25843071/43qor4j/", {
+    fetch("/api/zapier", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: firstName, email, phone }),
