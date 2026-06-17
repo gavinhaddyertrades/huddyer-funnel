@@ -147,9 +147,6 @@ export default function HomePage() {
                 GET THE FULL{" "}
                 <span className="gold-text-gradient">STRATEGY</span>
               </h2>
-              <p className="font-body text-sm" style={{ color: "#666" }}>
-                Enter your info below and I&apos;ll send it to you instantly.
-              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
