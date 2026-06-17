@@ -81,7 +81,7 @@ export default function HomePage() {
             className="students-say-heading"
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: "clamp(36px, 6vw, 72px)",
+              fontSize: "clamp(24px, 4vw, 48px)",
               color: "#F2EDE6",
               textAlign: "center",
               letterSpacing: "0.02em",
