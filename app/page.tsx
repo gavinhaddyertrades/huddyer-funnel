@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { createPopup } from "@typeform/embed";
-import "@typeform/embed/build/css/popup.css";
+import { useState, useEffect } from "react";
 
-const TYPEFORM_ID = "01KVAVCAYFG225A8XWNKD7SZYC";
+const TYPEFORM_URL = "https://form.typeform.com/to/01KVAVCAYFG225A8XWNKD7SZYC";
 
 function Logo() {
   return (
@@ -23,19 +21,18 @@ function Logo() {
 }
 
 export default function HomePage() {
-  const popupRef = useRef<{ open: () => void } | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "ViewContent", {
       content_name: "Home Capture Page",
     });
-
-    popupRef.current = createPopup(TYPEFORM_ID, { opacity: 100 });
   }, []);
 
-  function openForm() {
-    popupRef.current?.open();
-  }
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
@@ -67,7 +64,7 @@ export default function HomePage() {
         <button
           className="btn-gold"
           style={{ fontSize: "clamp(13px, 3.5vw, 16px)", padding: "clamp(13px, 2.5vw, 16px) clamp(28px, 5vw, 40px)", whiteSpace: "nowrap" }}
-          onClick={openForm}
+          onClick={() => setOpen(true)}
         >
           Learn My Trading Strategy
           <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
@@ -127,6 +124,57 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Typeform iframe overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 flex items-center justify-center px-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.85)", zIndex: 50, backdropFilter: "blur(4px)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              maxWidth: 680,
+              height: "85vh",
+              borderRadius: 16,
+              overflow: "hidden",
+              border: "1px solid rgba(201,168,76,0.3)",
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setOpen(false)}
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                zIndex: 10,
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                background: "rgba(0,0,0,0.6)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                color: "#fff",
+                fontSize: 18,
+                lineHeight: 1,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              ×
+            </button>
+            <iframe
+              src={TYPEFORM_URL}
+              style={{ width: "100%", height: "100%", border: "none" }}
+              allow="camera; microphone; autoplay; encrypted-media; fullscreen"
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }
