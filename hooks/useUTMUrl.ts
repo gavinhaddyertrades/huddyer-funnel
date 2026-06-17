@@ -8,6 +8,9 @@ const UTM_KEYS = [
   "utm_campaign",
   "utm_content",
   "utm_term",
+  "first_name",
+  "email",
+  "phone_number",
 ] as const;
 
 /**

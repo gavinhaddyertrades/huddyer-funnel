@@ -35,7 +35,7 @@ export default function HomePage() {
     const params = new URLSearchParams();
     if (firstName) params.set("first_name", firstName);
     if (email) params.set("email", email);
-    if (phone) params.set("phone", phone);
+    if (phone) params.set("phone_number", phone);
     window.location.href = `/apply?${params.toString()}`;
   }
 
