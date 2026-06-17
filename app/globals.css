@@ -316,3 +316,26 @@
     padding-bottom: 40px !important;
   }
 }
+
+/* Typeform popup — bottom sheet on mobile instead of fullscreen */
+@media (max-width: 480px) {
+  .tf-v1-popup {
+    align-items: flex-end !important;
+  }
+  .tf-v1-popup .tf-v1-iframe-wrapper {
+    min-width: 100% !important;
+    min-height: 85vh !important;
+    max-height: 85vh !important;
+    border-radius: 20px 20px 0 0 !important;
+    overflow: hidden !important;
+  }
+  .tf-v1-popup .tf-v1-iframe-wrapper iframe {
+    border-radius: 20px 20px 0 0 !important;
+    height: 85vh !important;
+  }
+  .tf-v1-popup .tf-v1-close {
+    top: 12px !important;
+    right: 16px !important;
+    color: #333 !important;
+  }
+}
