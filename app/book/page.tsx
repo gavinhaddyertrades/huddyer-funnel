@@ -8,20 +8,29 @@ const CALENDLY_URL =
   "https://calendly.com/d/cvw9-y2d-3t5/huddyer-trades-mentorship-call?hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a0a0a&text_color=f2ede6&primary_color=c9a84c";
 
 type CalendlyGlobal = {
-  initInlineWidget: (opts: { url: string; parentElement: HTMLElement }) => void;
+  initInlineWidget: (opts: {
+    url: string;
+    parentElement: HTMLElement;
+    prefill?: { name?: string; email?: string; customAnswers?: Record<string, string> };
+  }) => void;
 };
 
 export default function BookPage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const prefillRef = useRef<{ name: string; email: string; phone: string }>({ name: "", email: "", phone: "" });
 
   // Fire Lead event once on mount and persist user data for /confirmed
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     const email = p.get("email") ?? "";
     const phone = p.get("phone") ?? "";
+    const fullName = p.get("full_name") ?? p.get("name") ?? "";
     const first = p.get("first") ?? "";
     const last  = p.get("last")  ?? "";
-    sessionStorage.setItem("userData", JSON.stringify({ email, phone, first, last }));
+    const name  = fullName || [first, last].filter(Boolean).join(" ");
+
+    prefillRef.current = { name, email, phone };
+    sessionStorage.setItem("userData", JSON.stringify({ email, phone, first: fullName || first, last }));
 
     (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", { currency: "USD", value: 0 });
   }, []);
@@ -29,7 +38,16 @@ export default function BookPage() {
   const initCalendly = useCallback(() => {
     const cal = (window as Window & { Calendly?: CalendlyGlobal }).Calendly;
     if (!cal || !containerRef.current) return;
-    cal.initInlineWidget({ url: CALENDLY_URL, parentElement: containerRef.current });
+    const { name, email, phone } = prefillRef.current;
+    cal.initInlineWidget({
+      url: CALENDLY_URL,
+      parentElement: containerRef.current,
+      prefill: {
+        name,
+        email,
+        customAnswers: phone ? { a1: phone } : undefined,
+      },
+    });
   }, []);
 
   // Fallback: if the script was already cached and fired before this component
