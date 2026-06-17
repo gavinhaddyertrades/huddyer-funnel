@@ -59,6 +59,13 @@ export default function HomePage() {
           <span className="gold-text-gradient">Every Single Day.</span>
         </h1>
 
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/Blueprint.png"
+          alt="Trading Blueprint"
+          style={{ width: "100%", maxWidth: 600, borderRadius: 12, display: "block" }}
+        />
+
         <button
           className="btn-gold"
           style={{ fontSize: "clamp(13px, 3.5vw, 16px)", padding: "clamp(13px, 2.5vw, 16px) clamp(28px, 5vw, 40px)", whiteSpace: "nowrap" }}
