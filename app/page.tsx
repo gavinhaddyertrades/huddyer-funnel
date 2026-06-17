@@ -1,12 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Script from "next/script";
-
-const TF_ID = "01KVAVCAYFG225A8XWNKD7SZYC";
-
-type TfPopup = { open: () => void; close: () => void };
-type TfGlobal = { createPopup: (id: string, opts?: object) => TfPopup };
 
 function Logo() {
   return (
@@ -25,8 +20,6 @@ function Logo() {
 }
 
 export default function HomePage() {
-  const popupRef = useRef<TfPopup | null>(null);
-
   useEffect(() => {
     (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "ViewContent", {
       content_name: "Home Capture Page",
@@ -34,18 +27,35 @@ export default function HomePage() {
   }, []);
 
   function openForm() {
-    const tf = (window as Window & { tf?: TfGlobal }).tf;
-    if (!tf) return;
-    if (!popupRef.current) {
-      popupRef.current = tf.createPopup(TF_ID, { opacity: 100 });
+    // Typeform's embed.js renders a trigger inside [data-tf-live] — click it programmatically
+    const trigger = document.querySelector<HTMLElement>(
+      "[data-tf-live] button, [data-tf-live] [role='button'], .tf-v1-sidetab__button, .tf-v1-popup__button"
+    );
+    if (trigger) {
+      trigger.click();
+    } else {
+      // Fallback: click the div itself (some versions use the container as trigger)
+      document.querySelector<HTMLElement>("[data-tf-live]")?.click();
     }
-    popupRef.current.open();
   }
 
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
-      {/* Load Typeform embed.js — no data-tf-live div so nothing auto-triggers */}
       <Script src="//embed.typeform.com/next/embed.js" strategy="afterInteractive" />
+
+      {/* Hide Typeform's auto-generated button; we trigger it ourselves */}
+      <style>{`
+        [data-tf-live] > *, .tf-v1-sidetab, .tf-v1-popup__button {
+          opacity: 0 !important;
+          pointer-events: none !important;
+          position: fixed !important;
+          bottom: -9999px !important;
+          right: -9999px !important;
+        }
+      `}</style>
+
+      {/* data-tf-live must be in the DOM for embed.js to initialise the popup */}
+      <div data-tf-live="01KVAVCAYFG225A8XWNKD7SZYC" />
 
       {/* Top bar */}
       <div
