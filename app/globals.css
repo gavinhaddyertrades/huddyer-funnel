@@ -321,16 +321,22 @@
 @media (max-width: 480px) {
   .tf-v1-popup {
     align-items: flex-end !important;
+    justify-content: center !important;
   }
   .tf-v1-popup .tf-v1-iframe-wrapper {
-    min-width: 100% !important;
+    min-width: unset !important;
+    width: calc(100% - 32px) !important;
+    max-width: calc(100% - 32px) !important;
     min-height: 85vh !important;
     max-height: 85vh !important;
     border-radius: 20px 20px 0 0 !important;
     overflow: hidden !important;
+    border: 2px solid #C9A84C !important;
+    border-bottom: none !important;
+    box-shadow: 0 -8px 40px rgba(201, 168, 76, 0.25) !important;
   }
   .tf-v1-popup .tf-v1-iframe-wrapper iframe {
-    border-radius: 20px 20px 0 0 !important;
+    border-radius: 18px 18px 0 0 !important;
     height: 85vh !important;
   }
   .tf-v1-popup .tf-v1-close {
