@@ -35,44 +35,37 @@ export default function HomePage() {
 
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
-      {/* Typeform embed.js — loaded once */}
-      <Script src="//embed.typeform.com/next/embed.js" strategy="afterInteractive" />
-
-      {/* Overlay — always in DOM so embed.js initialises the widget on load */}
-      <div
-        onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 50,
-          backgroundColor: "rgba(0,0,0,0.85)",
-          backdropFilter: "blur(4px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "16px",
-          opacity: open ? 1 : 0,
-          pointerEvents: open ? "auto" : "none",
-          transition: "opacity 0.2s",
-        }}
-      >
-        <div style={{ position: "relative", width: "100%", maxWidth: 680, height: "85vh", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(201,168,76,0.3)" }}>
-          <button
-            onClick={() => setOpen(false)}
-            style={{
-              position: "absolute", top: 12, right: 12, zIndex: 10,
-              width: 32, height: 32, borderRadius: "50%",
-              background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.2)",
-              color: "#fff", fontSize: 18, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            ×
-          </button>
-          {/* The actual Typeform live embed */}
-          <div data-tf-live="01KVAVCAYFG225A8XWNKD7SZYC" style={{ width: "100%", height: "100%" }} />
+      {/* Typeform popup — only renders when open */}
+      {open && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 50,
+            backgroundColor: "rgba(0,0,0,0.85)", backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+          }}
+        >
+          <div style={{ position: "relative", width: "100%", maxWidth: 680, height: "85vh", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(201,168,76,0.3)" }}>
+            <button
+              onClick={() => setOpen(false)}
+              style={{
+                position: "absolute", top: 12, right: 12, zIndex: 10,
+                width: 32, height: 32, borderRadius: "50%",
+                background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.2)",
+                color: "#fff", fontSize: 18, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              ×
+            </button>
+            <iframe
+              src="https://form.typeform.com/to/01KVAVCAYFG225A8XWNKD7SZYC"
+              style={{ width: "100%", height: "100%", border: "none" }}
+              allow="camera; microphone; autoplay; encrypted-media; fullscreen"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Top bar */}
       <div
