@@ -154,10 +154,17 @@ export default function HeroV2() {
               (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "ApplyNowClicked");
               const pageParams = new URLSearchParams(window.location.search);
               const dest = new URL(TYPEFORM_URL);
-              ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","first_name","email","phone_number"].forEach((key) => {
+              ["utm_source","utm_medium","utm_campaign","utm_content","utm_term"].forEach((key) => {
                 const v = pageParams.get(key);
                 if (v) dest.searchParams.set(key, v);
               });
+              const hashParams = new URLSearchParams();
+              ["first_name","email","phone_number"].forEach((key) => {
+                const v = pageParams.get(key);
+                if (v) hashParams.set(key, v);
+              });
+              const hashStr = hashParams.toString();
+              if (hashStr) dest.hash = hashStr;
               window.open(dest.toString(), "_blank", "noopener,noreferrer");
             }}
           >

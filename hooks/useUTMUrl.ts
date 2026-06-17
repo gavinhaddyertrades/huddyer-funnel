@@ -8,6 +8,9 @@ const UTM_KEYS = [
   "utm_campaign",
   "utm_content",
   "utm_term",
+] as const;
+
+const HASH_KEYS = [
   "first_name",
   "email",
   "phone_number",
@@ -28,6 +31,14 @@ export function useUTMUrl(baseUrl: string): string {
       const value = pageParams.get(key);
       if (value) dest.searchParams.set(key, value);
     });
+
+    const hashParams = new URLSearchParams();
+    HASH_KEYS.forEach((key) => {
+      const value = pageParams.get(key);
+      if (value) hashParams.set(key, value);
+    });
+    const hashStr = hashParams.toString();
+    if (hashStr) dest.hash = hashStr;
 
     setUrl(dest.toString());
   }, [baseUrl]);
