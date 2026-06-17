@@ -149,7 +149,17 @@ export default function HeroV2() {
             target="_blank"
             rel="noopener noreferrer"
             style={{ fontSize: "16px", padding: "14px 32px", maxWidth: 260 }}
-            onClick={() => { (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "ApplyNowClicked"); }}
+            onClick={(e) => {
+              e.preventDefault();
+              (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "ApplyNowClicked");
+              const pageParams = new URLSearchParams(window.location.search);
+              const dest = new URL(TYPEFORM_URL);
+              ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","first_name","email","phone_number"].forEach((key) => {
+                const v = pageParams.get(key);
+                if (v) dest.searchParams.set(key, v);
+              });
+              window.open(dest.toString(), "_blank", "noopener,noreferrer");
+            }}
           >
             Apply Now
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
