@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
+
+const TF_ID = "01KVAVCAYFG225A8XWNKD7SZYC";
 
 function Logo() {
   return (
@@ -20,42 +22,66 @@ function Logo() {
 }
 
 export default function HomePage() {
+  // Typeform div is NOT in the DOM on load — only injected on CTA click
+  const [tfMounted, setTfMounted] = useState(false);
+  const scriptReadyRef = useRef(false);
+  const clickPendingRef = useRef(false);
+
   useEffect(() => {
     (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "ViewContent", {
       content_name: "Home Capture Page",
     });
   }, []);
 
+  // When the div mounts, Typeform's embed.js should detect it via MutationObserver
+  // and auto-open the form. We also poll for the sidetab button as a fallback.
+  useEffect(() => {
+    if (!tfMounted) return;
+
+    const tryClick = (attempts = 0) => {
+      const btn = document.querySelector<HTMLElement>(
+        ".tf-v1-sidetab__button, .tf-v1-widget, [class*='tf-v1-sidetab'] button"
+      );
+      if (btn) {
+        btn.click();
+      } else if (attempts < 15) {
+        setTimeout(() => tryClick(attempts + 1), 200);
+      }
+    };
+
+    // Give embed.js a moment to detect the new div
+    setTimeout(() => tryClick(), 300);
+  }, [tfMounted]);
+
   function openForm() {
-    // Typeform's embed.js renders a trigger inside [data-tf-live] — click it programmatically
-    const trigger = document.querySelector<HTMLElement>(
-      "[data-tf-live] button, [data-tf-live] [role='button'], .tf-v1-sidetab__button, .tf-v1-popup__button"
-    );
-    if (trigger) {
-      trigger.click();
+    if (!tfMounted) {
+      // First click — mount the div (triggers Typeform initialisation)
+      setTfMounted(true);
     } else {
-      // Fallback: click the div itself (some versions use the container as trigger)
-      document.querySelector<HTMLElement>("[data-tf-live]")?.click();
+      // Subsequent clicks — find and click the sidetab button directly
+      const btn = document.querySelector<HTMLElement>(
+        ".tf-v1-sidetab__button, .tf-v1-widget, [class*='tf-v1-sidetab'] button"
+      );
+      btn?.click();
     }
   }
 
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
-      <Script src="//embed.typeform.com/next/embed.js" strategy="afterInteractive" />
+      {/* Script loaded eagerly so it's ready when user clicks */}
+      <Script
+        src="//embed.typeform.com/next/embed.js"
+        strategy="afterInteractive"
+        onReady={() => { scriptReadyRef.current = true; }}
+      />
 
-      {/* Hide Typeform's auto-generated button; we trigger it ourselves */}
+      {/* Hide Typeform's floating sidetab button — we trigger the popup ourselves */}
       <style>{`
-        [data-tf-live] > *, .tf-v1-sidetab, .tf-v1-popup__button {
-          opacity: 0 !important;
-          pointer-events: none !important;
-          position: fixed !important;
-          bottom: -9999px !important;
-          right: -9999px !important;
-        }
+        .tf-v1-sidetab { opacity: 0 !important; pointer-events: none !important; }
       `}</style>
 
-      {/* data-tf-live must be in the DOM for embed.js to initialise the popup */}
-      <div data-tf-live="01KVAVCAYFG225A8XWNKD7SZYC" />
+      {/* Typeform anchor — only added to DOM when CTA is clicked */}
+      {tfMounted && <div data-tf-live={TF_ID} />}
 
       {/* Top bar */}
       <div
