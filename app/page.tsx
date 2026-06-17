@@ -61,7 +61,7 @@ export default function HomePage() {
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/Blueprint.png"
+          src="/Blueprint 2.png"
           alt="Trading Blueprint"
           style={{ width: "100%", maxWidth: 600, borderRadius: 12, display: "block" }}
         />
