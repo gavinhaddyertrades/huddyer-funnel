@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import Script from "next/script";
+import { useEffect, useRef } from "react";
+import { createPopup } from "@typeform/embed";
+import "@typeform/embed/build/css/popup.css";
+
+const TYPEFORM_ID = "01KVAVCAYFG225A8XWNKD7SZYC";
 
 function Logo() {
   return (
@@ -20,16 +23,22 @@ function Logo() {
 }
 
 export default function HomePage() {
+  const popupRef = useRef<{ open: () => void } | null>(null);
+
   useEffect(() => {
     (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("track", "ViewContent", {
       content_name: "Home Capture Page",
     });
+
+    popupRef.current = createPopup(TYPEFORM_ID, { opacity: 100 });
   }, []);
+
+  function openForm() {
+    popupRef.current?.open();
+  }
 
   return (
     <main style={{ backgroundColor: "#0A0A0A", minHeight: "100vh" }}>
-      <Script src="//embed.typeform.com/next/embed.js" strategy="afterInteractive" />
-
       {/* Top bar */}
       <div
         className="flex items-center justify-center px-5 py-4"
@@ -57,10 +66,8 @@ export default function HomePage() {
 
         <button
           className="btn-gold"
-          data-tf-popup="01KVAVCAYFG225A8XWNKD7SZYC"
-          data-tf-opacity="100"
-          data-tf-iframe-props="title=Trading Strategy"
           style={{ fontSize: "clamp(13px, 3.5vw, 16px)", padding: "clamp(13px, 2.5vw, 16px) clamp(28px, 5vw, 40px)", whiteSpace: "nowrap" }}
+          onClick={openForm}
         >
           Learn My Trading Strategy
           <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
