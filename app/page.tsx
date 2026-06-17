@@ -32,6 +32,13 @@ export default function HomePage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    fetch("https://hooks.zapier.com/hooks/catch/25843071/43qor4j/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: firstName, email, phone }),
+    }).catch((err) => console.error("[Zapier] Webhook failed:", err));
+
     const params = new URLSearchParams();
     if (firstName) params.set("first_name", firstName);
     if (email) params.set("email", email);
