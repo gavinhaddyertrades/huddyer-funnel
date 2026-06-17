@@ -62,7 +62,7 @@ export default function HomePage() {
 
         <button
           className="btn-gold"
-          style={{ fontSize: "clamp(13px, 3.5vw, 16px)", padding: "clamp(10px, 2.5vw, 16px) clamp(20px, 5vw, 40px)", whiteSpace: "nowrap" }}
+          style={{ fontSize: "clamp(13px, 3.5vw, 16px)", padding: "clamp(13px, 2.5vw, 16px) clamp(28px, 5vw, 40px)", whiteSpace: "nowrap" }}
           onClick={() => setOpen(true)}
         >
           Learn My Trading Strategy
