@@ -8,7 +8,7 @@ const WISTIA_ID_1 = "tdahznsu57";
 const WISTIA_ID_2 = "b9ln6n9ciu";
 const WISTIA_ID_3 = "nbu6p30vo4";
 
-const WHOP_URL = "https://whop.com/checkout/plan_RaPWkYqUSlJiF";
+const WHOP_URL = "https://whop.com/checkout/plan_cueMIbvDNjXCE";
 
 function Logo() {
   return (
@@ -137,8 +137,8 @@ export default function StartPage() {
 
         {/* Pricing line */}
         <div className="flex flex-col items-center gap-1 font-body">
-          <span style={{ color: "#555", textDecoration: "line-through", fontSize: "clamp(14px, 2vw, 17px)" }}>$79.99/mo</span>
-          <span className="gold-text-gradient" style={{ fontWeight: 700, fontSize: "clamp(22px, 3vw, 28px)" }}>$24.99/mo</span>
+          <span style={{ color: "#555", textDecoration: "line-through", fontSize: "clamp(14px, 2vw, 17px)" }}>$199.99/mo</span>
+          <span className="gold-text-gradient" style={{ fontWeight: 700, fontSize: "clamp(22px, 3vw, 28px)" }}>$79.99/mo</span>
           <p className="font-body" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#666", margin: 0 }}>
             Limited time offer
           </p>
