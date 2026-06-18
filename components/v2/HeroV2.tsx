@@ -159,9 +159,10 @@ export default function HeroV2() {
               const { createPopup } = await import("@typeform/embed");
               popupRef.current = createPopup(TF_FORM_ID, {
                 hidden: {
-                  ...(firstName            && { first_name:    firstName }),
-                  ...(get("email")         && { email:         get("email") }),
-                  ...(get("phone_number")  && { phone_number:  get("phone_number") }),
+                  ...(firstName            && { first_name:   firstName }),
+                  ...(get("last_name")     && { last_name:    get("last_name") }),
+                  ...(get("email")         && { email:        get("email") }),
+                  ...(get("phone_number")  && { phone_number: get("phone_number") }),
                 },
                 opacity: 100,
               });

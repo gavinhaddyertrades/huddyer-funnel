@@ -12,6 +12,7 @@ const UTM_KEYS = [
 
 const HASH_KEYS = [
   "first_name",
+  "last_name",
   "email",
   "phone_number",
 ] as const;
