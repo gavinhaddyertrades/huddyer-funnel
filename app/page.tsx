@@ -32,7 +32,13 @@ export default function HomePage() {
   async function openForm() {
     if (!popupRef.current) {
       const { createPopup } = await import("@typeform/embed");
-      popupRef.current = createPopup(TF_FORM_ID, { opacity: 100 });
+      const p = new URLSearchParams(window.location.search);
+      const hidden: Record<string, string> = {};
+      ["utm_source","utm_medium","utm_campaign","utm_content","utm_term"].forEach((k) => {
+        const v = p.get(k);
+        if (v) hidden[k] = v;
+      });
+      popupRef.current = createPopup(TF_FORM_ID, { hidden, opacity: 100 });
     }
     popupRef.current.open();
   }
