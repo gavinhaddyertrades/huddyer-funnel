@@ -4,7 +4,7 @@ import Script from "next/script";
 import { useEffect, useRef } from "react";
 import ChartBackground from "@/components/v2/ChartBackground";
 
-const WISTIA_ID = "5hws7kpzzj";
+const WISTIA_ID = "brt54jahpj";
 
 function TradingBarsLogo() {
   return (
@@ -128,13 +128,13 @@ export default function HeroV2() {
                 background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${WISTIA_ID}/swatch');
                 display: block;
                 filter: blur(5px);
-                padding-top: 56.21%;
+                padding-top: 56.25%;
               }
             `}</style>
             <div
               style={{ borderRadius: 8, overflow: "hidden" }}
               dangerouslySetInnerHTML={{
-                __html: `<wistia-player media-id="${WISTIA_ID}" aspect="1.7791666666666666"></wistia-player>`,
+                __html: `<wistia-player media-id="${WISTIA_ID}" aspect="1.7777777777777777"></wistia-player>`,
               }}
             />
           </div>
