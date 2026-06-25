@@ -123,6 +123,43 @@ function DiscountModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      style={{
+        borderRadius: 12,
+        border: "1px solid rgba(255,255,255,0.07)",
+        backgroundColor: "#141414",
+        overflow: "hidden",
+      }}
+    >
+      <button
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 16, padding: "20px 24px",
+          background: "none", border: "none", cursor: "pointer", textAlign: "left",
+        }}
+      >
+        <span style={{ fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 600, color: "#F2EDE6", lineHeight: 1.4 }}>
+          {question}
+        </span>
+        <span style={{ color: "#C9A84C", fontSize: 22, lineHeight: 1, flexShrink: 0, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>
+          +
+        </span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 24px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 14, lineHeight: 1.75, color: "#999", margin: "16px 0 0" }}>
+            {answer}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TradingBarsLogo() {
   return (
     <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -273,6 +310,50 @@ export default function HeroV2() {
             </svg>
           </button>
 
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
+            FAQ
+          </p>
+          <h2
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(28px, 4vw, 48px)",
+              color: "#F2EDE6",
+              textAlign: "center",
+              letterSpacing: "0.02em",
+              lineHeight: 1,
+              marginBottom: 48,
+            }}
+          >
+            COMMON <span className="gold-text-gradient">QUESTIONS</span>
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {[
+              {
+                q: "Is this for beginners or experienced traders?",
+                a: "This mentorship is built for traders at any level. Whether you're just getting started or already trading and struggling with consistency, Hudson's system gives you a clear path to profitability.",
+              },
+              {
+                q: "What exactly do I get each month?",
+                a: "Live trading sessions every morning with Hudson at 9:30am EST, twice a week group coaching calls, and access to his complete video curriculum. Everything you need to trade his system from day one.",
+              },
+              {
+                q: "How is this different from a course?",
+                a: "You're not just watching videos. You're trading live with Hudson every single day and getting coached directly. This is active mentorship, not passive content.",
+              },
+              {
+                q: "How long until I see results?",
+                a: "Results vary based on your starting point and how consistently you apply the system. Hudson's students have passed prop firm evals and pulled their first payouts within 7 to 30 days of implementing his framework.",
+              },
+            ].map(({ q, a }) => (
+              <FAQItem key={q} question={q} answer={a} />
+            ))}
+          </div>
         </div>
       </section>
 
