@@ -71,7 +71,7 @@ function DiscountModal({ onClose }: { onClose: () => void }) {
 
         {/* Body */}
         <p style={{ fontFamily: "var(--font-body)", fontSize: 15, lineHeight: 1.7, color: "#c8c2b8", marginBottom: 28 }}>
-          Because this mentorship is brand new, I'm offering founding members an exclusive discount to get in at the lowest price this will ever be. Use the code below at checkout for <strong style={{ color: "#F2EDE6" }}>75% off your first month.</strong>
+          Because this mentorship is brand new, I'm offering founding members an exclusive discount to get in at the lowest price this will ever be. Use the code below at checkout for <strong style={{ color: "#F2EDE6" }}>50% off your first month.</strong>
         </p>
 
         {/* Code box */}
