@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import ChartBackground from "@/components/v2/ChartBackground";
 
 const WISTIA_ID = "brt54jahpj";
-const WHOP_URL = "https://whop.com/checkout/plan_Ez3v4LyxtUnPe";
+const WHOP_URL = "https://whop.com/checkout/plan_eQo22hOT09YbV";
 const PROMO_CODE = "HUDDY";
 
 function DiscountModal({ onClose }: { onClose: () => void }) {
