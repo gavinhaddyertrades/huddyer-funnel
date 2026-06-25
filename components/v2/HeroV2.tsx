@@ -4,7 +4,6 @@ import Script from "next/script";
 import { useEffect, useRef } from "react";
 import ChartBackground from "@/components/v2/ChartBackground";
 
-const TF_FORM_ID = "AH6Qxmyu";
 const WISTIA_ID = "rjt17jvezs";
 
 function TradingBarsLogo() {
@@ -22,7 +21,6 @@ function TradingBarsLogo() {
 export default function HeroV2() {
   const mobileLogoRef = useRef<HTMLDivElement>(null);
   const headingRef    = useRef<HTMLHeadingElement>(null);
-  const popupRef      = useRef<{ open: () => void } | null>(null);
 
   // Fire ViewContent once on mount
   useEffect(() => {
@@ -142,41 +140,21 @@ export default function HeroV2() {
           </div>
 
           {/* CTA */}
-          <button
+          <a
+            href="https://whop.com/checkout/plan_eQo22hOT09YbV"
+            target="_blank"
+            rel="noopener noreferrer"
             className="btn-gold w-full justify-center"
             style={{ fontSize: "16px", padding: "14px 32px", maxWidth: 260 }}
-            onClick={async () => {
-              (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "ApplyNowClicked");
-
-              const pageParams = new URLSearchParams(window.location.search);
-              const get = (key: string) => {
-                let v = pageParams.get(key);
-                if (key === "phone_number" && v?.startsWith(" ")) v = "+" + v.slice(1);
-                return v ?? undefined;
-              };
-              const firstName = get("first_name") ?? get("full_name") ?? undefined;
-
-              const { createPopup } = await import("@typeform/embed");
-              popupRef.current = createPopup(TF_FORM_ID, {
-                hidden: {
-                  ...(firstName               && { first_name:    firstName }),
-                  ...(get("last_name")        && { last_name:     get("last_name") }),
-                  ...(get("email")            && { email:         get("email") }),
-                  ...(get("phone_number")     && { phone_number:  get("phone_number") }),
-                  ...(get("utm_source")       && { utm_source:    get("utm_source") }),
-                  ...(get("utm_medium")       && { utm_medium:    get("utm_medium") }),
-                  ...(get("utm_campaign")     && { utm_campaign:  get("utm_campaign") }),
-                },
-                opacity: 100,
-              });
-              popupRef.current.open();
+            onClick={() => {
+              (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "GetAccessClicked");
             }}
           >
-            Apply Now
+            Get Access
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </button>
+          </a>
 
         </div>
       </section>
