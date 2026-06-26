@@ -229,7 +229,7 @@ export default function HeroV2() {
       </section>
 
       {/* ── Testimonials ── */}
-      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px 100px" }} className="testimonials-section">
+      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px 40px" }} className="testimonials-section">
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
           {/* Heading */}
@@ -286,7 +286,7 @@ export default function HeroV2() {
       </section>
 
       {/* ── FAQ ── */}
-      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px 100px" }}>
+      <section style={{ backgroundColor: "#1a1810", padding: "40px 20px 100px" }}>
         <div style={{ maxWidth: 680, margin: "0 auto" }}>
           <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
             FAQ
