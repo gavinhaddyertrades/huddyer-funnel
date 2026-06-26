@@ -141,8 +141,8 @@ export default function HeroV2() {
               letterSpacing: "0.02em",
             }}
           >
-            The Trading System That Turns Complete Beginners Into{" "}
-            <span className="gold-text-gradient">Profitable Traders.</span>
+            The Mentorship Where You Trade Live With Your Coach{" "}
+            <span className="gold-text-gradient">Every Single Day</span>
           </h1>
 
           {/* Subheadline */}
