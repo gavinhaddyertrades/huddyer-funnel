@@ -187,18 +187,41 @@ export default function HeroV2() {
           </button>
 
           {/* Whop inline checkout */}
-          <div id="whop-checkout" style={{ width: "100%", maxWidth: 480, borderRadius: 16, overflow: "hidden" }}>
+          <div
+            id="whop-checkout"
+            style={{
+              width: "100%",
+              maxWidth: 480,
+              marginTop: 48,
+              borderRadius: 20,
+              overflow: "hidden",
+              position: "relative",
+              boxShadow: "0 0 60px 20px rgba(201,168,76,0.25), 0 0 120px 40px rgba(201,168,76,0.12)",
+            }}
+          >
+            {/* Glow layer behind the embed */}
             <div
-              data-whop-checkout-plan-id="plan_eQo22hOT09YbV"
-              data-whop-checkout-theme-background-color="#000000"
-              data-whop-checkout-theme-accent-color="#ffffff"
-              data-whop-checkout-theme-border-radius="14"
-              data-whop-checkout-style-container-padding-x="20"
-              data-whop-checkout-style-container-padding-y="28"
-              data-whop-checkout-setup-future-usage="off_session"
-              data-whop-checkout-collect-phone-numbers="true"
-              data-whop-checkout-hide-tos="true"
+              style={{
+                position: "absolute",
+                inset: -2,
+                borderRadius: 22,
+                background: "linear-gradient(135deg, rgba(201,168,76,0.35) 0%, rgba(212,175,55,0.15) 50%, rgba(201,168,76,0.35) 100%)",
+                zIndex: 0,
+              }}
             />
+            <div style={{ position: "relative", zIndex: 1, borderRadius: 20, overflow: "hidden" }}>
+              <div
+                data-whop-checkout-plan-id="plan_eQo22hOT09YbV"
+                data-whop-checkout-theme-background-color="#000000"
+                data-whop-checkout-theme-accent-color="#ffffff"
+                data-whop-checkout-theme-border-radius="14"
+                data-whop-checkout-style-container-padding-x="20"
+                data-whop-checkout-style-container-padding-y="28"
+                data-whop-checkout-setup-future-usage="off_session"
+                data-whop-checkout-collect-phone-numbers="true"
+                data-whop-checkout-hide-tos="true"
+              />
+            </div>
           </div>
 
         </div>
