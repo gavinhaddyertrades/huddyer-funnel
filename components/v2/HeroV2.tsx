@@ -2,7 +2,6 @@
 
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
-import ChartBackground from "@/components/v2/ChartBackground";
 
 const WISTIA_ID = "brt54jahpj";
 
@@ -113,7 +112,6 @@ export default function HeroV2() {
         className="flex items-center justify-center px-5 hero-section"
         style={{ backgroundColor: "#1a1810", paddingTop: 40, paddingBottom: 32, position: "relative", minHeight: "100svh" }}
       >
-        <ChartBackground />
         {/* Mobile logo — absolutely positioned halfway between top and heading */}
         <div
           ref={mobileLogoRef}
@@ -173,8 +171,23 @@ export default function HeroV2() {
             />
           </div>
 
+          {/* CTA scrolls to checkout */}
+          <button
+            className="btn-gold w-full justify-center"
+            style={{ fontSize: "16px", padding: "14px 32px", maxWidth: 260 }}
+            onClick={() => {
+              (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "GetAccessClicked");
+              document.getElementById("whop-checkout")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }}
+          >
+            Get Access
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
           {/* Whop inline checkout */}
-          <div style={{ width: "100%", maxWidth: 480 }}>
+          <div id="whop-checkout" style={{ width: "100%", maxWidth: 480, borderRadius: 16, overflow: "hidden" }}>
             <div
               data-whop-checkout-plan-id="plan_eQo22hOT09YbV"
               data-whop-checkout-theme-background-color="#000000"
