@@ -282,11 +282,6 @@ export default function HeroV2() {
             ))}
           </div>
 
-          {/* Logo lockup at bottom of testimonials */}
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 48 }}>
-            {logoMarkup}
-          </div>
-
         </div>
       </section>
 
@@ -330,6 +325,11 @@ export default function HeroV2() {
             ].map(({ q, a }) => (
               <FAQItem key={q} question={q} answer={a} />
             ))}
+          </div>
+
+          {/* Logo lockup */}
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 64 }}>
+            {logoMarkup}
           </div>
         </div>
       </section>
