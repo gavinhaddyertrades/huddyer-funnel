@@ -227,50 +227,6 @@ export default function HeroV2() {
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px" }}>
-        <div style={{ maxWidth: 680, margin: "0 auto" }}>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
-            FAQ
-          </p>
-          <h2
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "clamp(28px, 4vw, 48px)",
-              color: "#F2EDE6",
-              textAlign: "center",
-              letterSpacing: "0.02em",
-              lineHeight: 1,
-              marginBottom: 48,
-            }}
-          >
-            COMMON <span className="gold-text-gradient">QUESTIONS</span>
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {[
-              {
-                q: "Is this for beginners or experienced traders?",
-                a: "This mentorship is built for traders at any level. Whether you're just getting started or already trading and struggling with consistency, Hudson's system gives you a clear path to profitability.",
-              },
-              {
-                q: "What exactly do I get each month?",
-                a: "Live trading sessions every morning with Hudson at 9:30am EST, twice a week group coaching calls, and access to his complete video curriculum. Everything you need to trade his system from day one.",
-              },
-              {
-                q: "How is this different from a course?",
-                a: "You're not just watching videos. You're trading live with Hudson every single day and getting coached directly. This is active mentorship, not passive content.",
-              },
-              {
-                q: "How long until I see results?",
-                a: "Results vary based on your starting point and how consistently you apply the system. Hudson's students have passed prop firm evals and pulled their first payouts within 7 to 30 days of implementing his framework.",
-              },
-            ].map(({ q, a }) => (
-              <FAQItem key={q} question={q} answer={a} />
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Testimonials ── */}
       <section style={{ backgroundColor: "#1a1810", padding: "80px 20px 100px" }} className="testimonials-section">
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
@@ -330,6 +286,50 @@ export default function HeroV2() {
             {logoMarkup}
           </div>
 
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px 100px" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
+            FAQ
+          </p>
+          <h2
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(28px, 4vw, 48px)",
+              color: "#F2EDE6",
+              textAlign: "center",
+              letterSpacing: "0.02em",
+              lineHeight: 1,
+              marginBottom: 48,
+            }}
+          >
+            COMMON <span className="gold-text-gradient">QUESTIONS</span>
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {[
+              {
+                q: "Is this for beginners or experienced traders?",
+                a: "This mentorship is built for traders at any level. Whether you're just getting started or already trading and struggling with consistency, Hudson's system gives you a clear path to profitability.",
+              },
+              {
+                q: "What exactly do I get each month?",
+                a: "Live trading sessions every morning with Hudson at 9:30am EST, twice a week group coaching calls, and access to his complete video curriculum. Everything you need to trade his system from day one.",
+              },
+              {
+                q: "How is this different from a course?",
+                a: "You're not just watching videos. You're trading live with Hudson every single day and getting coached directly. This is active mentorship, not passive content.",
+              },
+              {
+                q: "How long until I see results?",
+                a: "Results vary based on your starting point and how consistently you apply the system. Hudson's students have passed prop firm evals and pulled their first payouts within 7 to 30 days of implementing his framework.",
+              },
+            ].map(({ q, a }) => (
+              <FAQItem key={q} question={q} answer={a} />
+            ))}
+          </div>
         </div>
       </section>
     </>
