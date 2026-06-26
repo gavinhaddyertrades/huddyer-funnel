@@ -192,10 +192,11 @@ export default function HeroV2() {
             style={{
               width: "100%",
               maxWidth: 480,
-              marginTop: 48,
+              marginTop: 80,
               borderRadius: 20,
               overflow: "hidden",
               position: "relative",
+              border: "1.5px solid #d4af37",
               boxShadow: "0 0 60px 20px rgba(201,168,76,0.25), 0 0 120px 40px rgba(201,168,76,0.12)",
             }}
           >
