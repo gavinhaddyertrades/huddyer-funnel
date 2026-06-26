@@ -5,123 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import ChartBackground from "@/components/v2/ChartBackground";
 
 const WISTIA_ID = "brt54jahpj";
-const WHOP_URL = "https://whop.com/checkout/plan_eQo22hOT09YbV";
-const PROMO_CODE = "HUDDY";
-
-function DiscountModal({ onClose }: { onClose: () => void }) {
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [onClose]);
-
-  function copyCode() {
-    navigator.clipboard.writeText(PROMO_CODE).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(0,0,0,0.8)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "20px",
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          position: "relative",
-          width: "100%", maxWidth: 480,
-          background: "#111",
-          border: "1px solid rgba(201,168,76,0.35)",
-          borderRadius: 20,
-          padding: "40px 32px 32px",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
-        }}
-      >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          style={{
-            position: "absolute", top: 14, right: 16,
-            background: "none", border: "none",
-            color: "#888", fontSize: 24, cursor: "pointer", lineHeight: 1,
-          }}
-        >
-          ×
-        </button>
-
-        {/* Header */}
-        <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "#C9A84C", marginBottom: 8 }}>
-          A Note From Hudson
-        </p>
-        <div style={{ width: 36, height: 2, background: "#C9A84C", marginBottom: 20 }} />
-
-        {/* Body */}
-        <p style={{ fontFamily: "var(--font-body)", fontSize: 15, lineHeight: 1.7, color: "#c8c2b8", marginBottom: 28 }}>
-          Because this mentorship is brand new, I'm offering founding members an exclusive discount to get in at the lowest price this will ever be. Use the code below at checkout for <strong style={{ color: "#F2EDE6" }}>50% off your first month.</strong>
-        </p>
-
-        {/* Code box */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 12,
-          background: "#1a1a1a",
-          border: "1px solid rgba(201,168,76,0.4)",
-          borderRadius: 10, padding: "12px 16px",
-          marginBottom: 24,
-        }}>
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 28, letterSpacing: "0.15em", color: "#D4AF37", flex: 1 }}>
-            {PROMO_CODE}
-          </span>
-          <button
-            onClick={copyCode}
-            style={{
-              fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600,
-              letterSpacing: "0.08em", textTransform: "uppercase",
-              padding: "7px 14px", borderRadius: 6, cursor: "pointer",
-              background: copied ? "rgba(201,168,76,0.15)" : "rgba(201,168,76,0.1)",
-              border: "1px solid rgba(201,168,76,0.45)",
-              color: copied ? "#D4AF37" : "#C9A84C",
-              transition: "all 0.2s",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {copied ? "Copied ✓" : "Copy"}
-          </button>
-        </div>
-
-        {/* CTA */}
-        <a
-          href={WHOP_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-gold"
-          style={{ width: "100%", justifyContent: "center", fontSize: 15, padding: "15px 24px" }}
-          onClick={() => {
-            (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "GetAccessClicked");
-          }}
-        >
-          Get Access
-          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-            <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </a>
-      </div>
-    </div>
-  );
-}
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
@@ -175,7 +58,6 @@ function TradingBarsLogo() {
 export default function HeroV2() {
   const mobileLogoRef = useRef<HTMLDivElement>(null);
   const headingRef    = useRef<HTMLHeadingElement>(null);
-  const [modalOpen, setModalOpen] = useState(false);
 
   // Fire ViewContent once on mount
   useEffect(() => {
@@ -223,13 +105,9 @@ export default function HeroV2() {
 
   return (
     <>
-      {modalOpen && <DiscountModal onClose={() => setModalOpen(false)} />}
       <Script src="https://fast.wistia.com/player.js" strategy="afterInteractive" />
-      <Script
-        src={`https://fast.wistia.com/embed/${WISTIA_ID}.js`}
-        strategy="afterInteractive"
-        type="module"
-      />
+      <Script src={`https://fast.wistia.com/embed/${WISTIA_ID}.js`} strategy="afterInteractive" type="module" />
+      <Script src="https://js.whop.com/static/checkout/loader.js" strategy="afterInteractive" />
 
       <section
         className="flex items-center justify-center px-5 hero-section"
@@ -295,20 +173,20 @@ export default function HeroV2() {
             />
           </div>
 
-          {/* CTA */}
-          <button
-            className="btn-gold w-full justify-center"
-            style={{ fontSize: "16px", padding: "14px 32px", maxWidth: 260 }}
-            onClick={() => {
-              (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "GetAccessClicked");
-              setModalOpen(true);
-            }}
-          >
-            Get Access
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+          {/* Whop inline checkout */}
+          <div style={{ width: "100%", maxWidth: 480 }}>
+            <div
+              data-whop-checkout-plan-id="plan_eQo22hOT09YbV"
+              data-whop-checkout-theme-background-color="#000000"
+              data-whop-checkout-theme-accent-color="#ffffff"
+              data-whop-checkout-theme-border-radius="14"
+              data-whop-checkout-style-container-padding-x="20"
+              data-whop-checkout-style-container-padding-y="28"
+              data-whop-checkout-setup-future-usage="off_session"
+              data-whop-checkout-collect-phone-numbers="true"
+              data-whop-checkout-hide-tos="true"
+            />
+          </div>
 
         </div>
       </section>
