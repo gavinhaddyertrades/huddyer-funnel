@@ -140,8 +140,8 @@ export default function HeroV2() {
               letterSpacing: "0.02em",
             }}
           >
-            The Mentorship Where You Trade Live With Your Coach{" "}
-            <span className="gold-text-gradient">Every Single Day</span>
+            Trade Live With Hudson{" "}
+            <span className="gold-text-gradient">Every Single Day.</span>
           </h1>
 
           {/* Subheadline */}
