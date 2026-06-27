@@ -122,6 +122,25 @@ export default function CheckoutPage() {
               </div>
 
               <div style={{ backgroundColor: "#111008", padding: 24 }}>
+
+                {/* Social proof bar */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 2 }}>
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} style={{ color: "#F5A623", fontSize: 15 }}>★</span>
+                    ))}
+                  </div>
+                  <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 14 }}>4.9</span>
+                  <span style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 13 }}>(117 reviews)</span>
+                  <span style={{
+                    fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600,
+                    color: "#4ade80",
+                    backgroundColor: "rgba(74,222,128,0.12)",
+                    border: "1px solid rgba(74,222,128,0.3)",
+                    borderRadius: 999, padding: "3px 10px",
+                  }}>87% of buyers add this</span>
+                </div>
+
                 <h3 style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 16, lineHeight: 1.55, marginBottom: 12 }}>
                   Already joining the Trading Room? Add live coaching with Hudson twice a week for just $47 more.
                 </h3>
