@@ -106,7 +106,6 @@ export default function HeroV2() {
     <>
       <Script src="https://fast.wistia.com/player.js" strategy="afterInteractive" />
       <Script src={`https://fast.wistia.com/embed/${WISTIA_ID}.js`} strategy="afterInteractive" type="module" />
-      <Script src="https://js.whop.com/static/checkout/loader.js" strategy="afterInteractive" />
 
       <section
         className="flex items-center justify-center px-5 hero-section"
@@ -171,56 +170,22 @@ export default function HeroV2() {
             />
           </div>
 
-          {/* CTA scrolls to checkout */}
-          <button
+          {/* CTA */}
+          <a
+            href="https://whop.com/checkout/plan_IfzizvyXLSfgV"
+            target="_blank"
+            rel="noopener noreferrer"
             className="btn-gold w-full justify-center"
             style={{ fontSize: "16px", padding: "14px 32px", maxWidth: 260 }}
             onClick={() => {
               (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "GetAccessClicked");
-              document.getElementById("whop-checkout")?.scrollIntoView({ behavior: "smooth", block: "center" });
             }}
           >
             Get Access
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </button>
-
-          {/* Whop inline checkout */}
-          <div
-            id="whop-checkout"
-            style={{
-              width: "100%",
-              maxWidth: 480,
-              marginTop: 120,
-              borderRadius: 20,
-              overflow: "hidden",
-              position: "relative",
-              border: "1.5px solid #d4af37",
-              boxShadow: "0 0 60px 20px rgba(201,168,76,0.25), 0 0 120px 40px rgba(201,168,76,0.12)",
-            }}
-          >
-            {/* Glow layer behind the embed */}
-            <div
-              style={{
-                position: "absolute",
-                inset: -2,
-                borderRadius: 22,
-                background: "linear-gradient(135deg, rgba(201,168,76,0.35) 0%, rgba(212,175,55,0.15) 50%, rgba(201,168,76,0.35) 100%)",
-                zIndex: 0,
-              }}
-            />
-            <div style={{ position: "relative", zIndex: 1, borderRadius: 20, overflow: "hidden" }}>
-              <div
-                data-whop-checkout-plan-id="plan_IfzizvyXLSfgV"
-                data-whop-checkout-theme-background-color="#000000"
-                data-whop-checkout-theme-accent-color="#ffffff"
-                data-whop-checkout-theme-border-radius="14"
-                data-whop-checkout-style-container-padding-x="20"
-                data-whop-checkout-style-container-padding-y="28"
-              />
-            </div>
-          </div>
+          </a>
 
         </div>
       </section>
