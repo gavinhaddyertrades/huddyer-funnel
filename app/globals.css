@@ -290,9 +290,36 @@
   gap: 20px;
 }
 
+.feature-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card-img {
+  width: 100%;
+  display: block;
+}
+
+.feature-card-body {
+  padding: 20px 24px 24px;
+}
+
 @media (max-width: 680px) {
   .features-grid {
     grid-template-columns: 1fr !important;
+  }
+  .feature-card {
+    flex-direction: row !important;
+    align-items: center;
+  }
+  .feature-card-img {
+    width: 110px !important;
+    flex-shrink: 0;
+    object-fit: cover;
+    align-self: stretch;
+  }
+  .feature-card-body {
+    padding: 16px !important;
   }
 }
 

@@ -167,15 +167,15 @@ export default function HeroV2() {
                 body: "Miss a session? Every live trading session is recorded and available inside the community so you never fall behind.",
               },
             ].map(({ img, title, body }) => (
-              <div key={title} style={{
+              <div key={title} className="feature-card" style={{
                 backgroundColor: "#111008",
                 border: "1px solid rgba(201,168,76,0.18)",
                 borderRadius: 16,
                 overflow: "hidden",
               }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img} alt={title} style={{ width: "100%", display: "block" }} />
-                <div style={{ padding: "20px 24px 24px" }}>
+                <img src={img} alt={title} className="feature-card-img" />
+                <div className="feature-card-body">
                   <h3 style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "#F2EDE6", letterSpacing: "0.02em", marginBottom: 8 }}>
                     {title}
                   </h3>
