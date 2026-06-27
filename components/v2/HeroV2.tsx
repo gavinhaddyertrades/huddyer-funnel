@@ -153,7 +153,7 @@ export default function HeroV2() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/trading-room.png"
+              src="/trading-room-2.png"
               alt="The Trading Room"
               style={{ width: "100%", display: "block", borderRadius: 8 }}
             />
