@@ -165,7 +165,10 @@ export default function CheckoutPage() {
                     <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600, fontSize: 14 }}>
                       The Trading Room + Inner Circle
                     </span>
-                    <span style={{ fontFamily: "var(--font-display)", color: "#D4AF37", fontWeight: 700, fontSize: 20 }}>$99/mo</span>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontFamily: "var(--font-body)", color: "#666", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>$179.98/mo</div>
+                      <div style={{ fontFamily: "var(--font-display)", color: "#D4AF37", fontWeight: 700, fontSize: 20 }}>$99/mo</div>
+                    </div>
                   </div>
                 </div>
 
