@@ -311,15 +311,18 @@
   .feature-card {
     flex-direction: row !important;
     align-items: center;
+    padding: 12px;
+    gap: 14px;
   }
   .feature-card-img {
-    width: 110px !important;
+    width: 88px !important;
     flex-shrink: 0;
     object-fit: cover;
+    border-radius: 10px;
     align-self: stretch;
   }
   .feature-card-body {
-    padding: 16px !important;
+    padding: 4px 4px 4px 0 !important;
   }
 }
 
