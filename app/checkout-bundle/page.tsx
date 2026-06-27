@@ -105,13 +105,19 @@ export default function CheckoutBundlePage() {
                     <div style={{ fontFamily: "var(--font-body)", color: "#4ade80", fontSize: 12 }}>Added to your order</div>
                   </div>
                 </div>
-                <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600 }}>$69.99/mo</span>
+                <div style={{ textAlign: "right" }}>
+                    <div style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>$149.99/mo</div>
+                    <div style={{ fontFamily: "var(--font-body)", color: "#4ade80", fontWeight: 700, fontSize: 14 }}>$69.99/mo</div>
+                  </div>
               </div>
 
               {/* Total */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 15 }}>Total Today</span>
-                <span style={{ fontFamily: "var(--font-display)", color: "#D4AF37", fontWeight: 700, fontSize: 22 }}>$99.00/mo</span>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontFamily: "var(--font-body)", color: "#666", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>was $179.98/mo</div>
+                  <div style={{ fontFamily: "var(--font-display)", color: "#D4AF37", fontWeight: 700, fontSize: 22 }}>$99.99/mo</div>
+                </div>
               </div>
             </div>
 
@@ -153,7 +159,10 @@ export default function CheckoutBundlePage() {
 
                 <div style={{ borderTop: "1px solid rgba(74,222,128,0.15)", paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontFamily: "var(--font-body)", color: "#c8c2b8", fontSize: 14 }}>Bundle total</span>
-                  <span style={{ fontFamily: "var(--font-display)", color: "#4ade80", fontWeight: 700, fontSize: 22 }}>$99.00/mo</span>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontFamily: "var(--font-body)", color: "#4ade8066", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>was $179.98/mo</div>
+                    <div style={{ fontFamily: "var(--font-display)", color: "#4ade80", fontWeight: 700, fontSize: 22 }}>$99.99/mo</div>
+                  </div>
                 </div>
               </div>
             </div>
