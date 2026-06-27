@@ -7,10 +7,10 @@ export default function ThankYouPage() {
       {/* Icon */}
       <div style={{
         width: 72, height: 72, borderRadius: "50%",
-        backgroundColor: "rgba(74,222,128,0.12)",
-        border: "2px solid #4ade80",
+        backgroundColor: "rgba(201,168,76,0.12)",
+        border: "2px solid #D4AF37",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 32, marginBottom: 32,
+        fontSize: 32, marginBottom: 32, color: "#D4AF37",
       }}>
         ✓
       </div>
