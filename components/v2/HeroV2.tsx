@@ -143,19 +143,12 @@ export default function HeroV2() {
 
           {/* Subheadline */}
           {/* Hero image */}
-          <div
-            style={{
-              border: "1px solid rgba(201,168,76,0.5)",
-              borderRadius: 12,
-              padding: 5,
-              width: "100%",
-            }}
-          >
+          <div style={{ width: "100%", borderRadius: 12, overflow: "hidden" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/trading-room-2.png"
               alt="The Trading Room"
-              style={{ width: "100%", display: "block", borderRadius: 8 }}
+              style={{ width: "100%", display: "block" }}
             />
           </div>
 
