@@ -3,7 +3,6 @@
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
 
-const WISTIA_ID = "brt54jahpj";
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
@@ -104,8 +103,6 @@ export default function HeroV2() {
 
   return (
     <>
-      <Script src="https://fast.wistia.com/player.js" strategy="afterInteractive" />
-      <Script src={`https://fast.wistia.com/embed/${WISTIA_ID}.js`} strategy="afterInteractive" type="module" />
 
       <section
         className="flex items-center justify-center px-5 hero-section"
@@ -145,7 +142,7 @@ export default function HeroV2() {
           </h1>
 
           {/* Subheadline */}
-          {/* Video */}
+          {/* Hero image */}
           <div
             style={{
               border: "1px solid rgba(201,168,76,0.5)",
@@ -154,19 +151,11 @@ export default function HeroV2() {
               width: "100%",
             }}
           >
-            <style>{`
-              wistia-player[media-id='${WISTIA_ID}']:not(:defined) {
-                background: center / contain no-repeat url('https://fast.wistia.com/embed/medias/${WISTIA_ID}/swatch');
-                display: block;
-                filter: blur(5px);
-                padding-top: 56.25%;
-              }
-            `}</style>
-            <div
-              style={{ borderRadius: 8, overflow: "hidden" }}
-              dangerouslySetInnerHTML={{
-                __html: `<wistia-player media-id="${WISTIA_ID}" aspect="1.7777777777777777"></wistia-player>`,
-              }}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/Trading Room.png"
+              alt="The Trading Room"
+              style={{ width: "100%", display: "block", borderRadius: 8 }}
             />
           </div>
 
