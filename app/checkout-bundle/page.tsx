@@ -120,7 +120,7 @@ export default function CheckoutBundlePage() {
               <div style={{ backgroundColor: "#4ade80", padding: "11px 20px", display: "flex", alignItems: "center", gap: 8 }}>
                 <span>●</span>
                 <span style={{ color: "#0A0A0A", fontWeight: 800, fontSize: 11, letterSpacing: "0.13em", fontFamily: "var(--font-body)" }}>
-                  ORDER BUMP INCLUDED
+                  INNER CIRCLE INCLUDED
                 </span>
               </div>
 
