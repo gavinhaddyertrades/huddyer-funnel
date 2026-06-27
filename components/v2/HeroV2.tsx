@@ -212,15 +212,12 @@ export default function HeroV2() {
             />
             <div style={{ position: "relative", zIndex: 1, borderRadius: 20, overflow: "hidden" }}>
               <div
-                data-whop-checkout-plan-id="plan_eQo22hOT09YbV"
+                data-whop-checkout-plan-id="plan_IfzizvyXLSfgV"
                 data-whop-checkout-theme-background-color="#000000"
                 data-whop-checkout-theme-accent-color="#ffffff"
                 data-whop-checkout-theme-border-radius="14"
                 data-whop-checkout-style-container-padding-x="20"
                 data-whop-checkout-style-container-padding-y="28"
-                data-whop-checkout-setup-future-usage="off_session"
-                data-whop-checkout-collect-phone-numbers="true"
-                data-whop-checkout-hide-tos="true"
               />
             </div>
           </div>
