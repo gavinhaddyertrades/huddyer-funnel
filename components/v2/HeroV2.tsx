@@ -172,9 +172,7 @@ export default function HeroV2() {
 
           {/* CTA */}
           <a
-            href="https://whop.com/checkout/plan_PqEIpMY8QVZhi"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/checkout"
             className="btn-gold w-full justify-center"
             style={{ fontSize: "16px", padding: "14px 32px", maxWidth: 260 }}
             onClick={() => {
