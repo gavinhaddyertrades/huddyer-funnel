@@ -103,18 +103,6 @@ export default function HeroV2() {
             <span className="gold-text-gradient">Every Single Day.</span>
           </h1>
 
-          {/* Subheadline */}
-          <p style={{
-            fontFamily: "var(--font-body)",
-            fontSize: "clamp(15px, 1.8vw, 18px)",
-            color: "#a89880",
-            textAlign: "center",
-            lineHeight: 1.7,
-            maxWidth: 600,
-          }}>
-            Watch Hudson&apos;s screen, see every setup, every entry, every exit, live in the markets every single day. Starting at just <strong style={{ color: "#F2EDE6" }}>$29.99/month.</strong>
-          </p>
-
           {/* Hero image */}
           <div style={{ width: "100%", borderRadius: 12, overflow: "hidden" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
