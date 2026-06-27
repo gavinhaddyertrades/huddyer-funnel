@@ -152,41 +152,37 @@ export default function HeroV2() {
           <div className="features-grid">
             {[
               {
-                icon: "📈",
+                img: "/daily-live-trading.png",
                 title: "Daily Live Trading",
                 body: "Watch Hudson trade live every single day at 9:30 EST. See his setups form, his entries, his exits, and his risk management in real time as it happens.",
               },
               {
-                icon: "💬",
+                img: "/private-community.png",
                 title: "Private Community",
                 body: "Connect with other serious traders, share wins, ask questions, and stay accountable inside an active community of traders following the same system.",
               },
               {
-                icon: "🎥",
+                img: "/session-recordings.png",
                 title: "Session Recordings",
                 body: "Miss a session? Every live trading session is recorded and available inside the community so you never fall behind.",
               },
-            ].map(({ icon, title, body }) => (
+            ].map(({ img, title, body }) => (
               <div key={title} style={{
                 backgroundColor: "#111008",
                 border: "1px solid rgba(201,168,76,0.18)",
                 borderRadius: 16,
-                padding: "28px 24px",
+                overflow: "hidden",
               }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: 10,
-                  backgroundColor: "rgba(201,168,76,0.1)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 22, marginBottom: 16,
-                }}>
-                  {icon}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img} alt={title} style={{ width: "100%", display: "block" }} />
+                <div style={{ padding: "20px 24px 24px" }}>
+                  <h3 style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "#F2EDE6", letterSpacing: "0.02em", marginBottom: 8 }}>
+                    {title}
+                  </h3>
+                  <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#999", lineHeight: 1.75, margin: 0 }}>
+                    {body}
+                  </p>
                 </div>
-                <h3 style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "#F2EDE6", letterSpacing: "0.02em", marginBottom: 10 }}>
-                  {title}
-                </h3>
-                <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#999", lineHeight: 1.75, margin: 0 }}>
-                  {body}
-                </p>
               </div>
             ))}
           </div>
