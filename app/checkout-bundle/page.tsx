@@ -105,7 +105,7 @@ export default function CheckoutBundlePage() {
                     <div style={{ fontFamily: "var(--font-body)", color: "#4ade80", fontSize: 12 }}>Added to your order</div>
                   </div>
                 </div>
-                <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600 }}>$69.01/mo</span>
+                <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600 }}>$69.99/mo</span>
               </div>
 
               {/* Total */}
