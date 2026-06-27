@@ -172,7 +172,7 @@ export default function HeroV2() {
 
           {/* CTA */}
           <a
-            href="https://whop.com/checkout/plan_IfzizvyXLSfgV"
+            href="https://whop.com/checkout/plan_PqEIpMY8QVZhi"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-gold w-full justify-center"
