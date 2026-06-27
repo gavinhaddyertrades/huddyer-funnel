@@ -284,6 +284,18 @@
 
 }
 
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 680px) {
+  .features-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .masonry-grid {
   columns: 3 280px;
   column-gap: 16px;

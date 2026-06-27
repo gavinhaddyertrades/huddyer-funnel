@@ -131,6 +131,68 @@ export default function HeroV2() {
         </div>
       </section>
 
+      {/* ── Everything Inside ── */}
+      <section style={{ backgroundColor: "#1a1810", padding: "80px 20px" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#888", textAlign: "center", marginBottom: 12 }}>
+            What You Get
+          </p>
+          <h2 style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(28px, 4vw, 48px)",
+            color: "#F2EDE6",
+            textAlign: "center",
+            letterSpacing: "0.02em",
+            lineHeight: 1.1,
+            marginBottom: 48,
+          }}>
+            Everything Inside the <span className="gold-text-gradient">Trading Room</span>
+          </h2>
+
+          <div className="features-grid">
+            {[
+              {
+                icon: "📈",
+                title: "Daily Live Trading",
+                body: "Watch Hudson trade live every single day at 9:30 EST. See his setups form, his entries, his exits, and his risk management in real time as it happens.",
+              },
+              {
+                icon: "💬",
+                title: "Private Community",
+                body: "Connect with other serious traders, share wins, ask questions, and stay accountable inside an active community of traders following the same system.",
+              },
+              {
+                icon: "🎥",
+                title: "Session Recordings",
+                body: "Miss a session? Every live trading session is recorded and available inside the community so you never fall behind.",
+              },
+            ].map(({ icon, title, body }) => (
+              <div key={title} style={{
+                backgroundColor: "#111008",
+                border: "1px solid rgba(201,168,76,0.18)",
+                borderRadius: 16,
+                padding: "28px 24px",
+              }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 10,
+                  backgroundColor: "rgba(201,168,76,0.1)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 22, marginBottom: 16,
+                }}>
+                  {icon}
+                </div>
+                <h3 style={{ fontFamily: "var(--font-display)", fontSize: 18, color: "#F2EDE6", letterSpacing: "0.02em", marginBottom: 10 }}>
+                  {title}
+                </h3>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#999", lineHeight: 1.75, margin: 0 }}>
+                  {body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Testimonials ── */}
       <section style={{ backgroundColor: "#1a1810", padding: "80px 20px 40px" }} className="testimonials-section">
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
