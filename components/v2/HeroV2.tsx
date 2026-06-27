@@ -168,7 +168,7 @@ export default function HeroV2() {
               (window as Window & { fbq?: (...a: unknown[]) => void }).fbq?.("trackCustom", "GetAccessClicked");
             }}
           >
-            Get Access
+            Join Now
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="#0A0A0A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
