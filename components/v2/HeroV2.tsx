@@ -115,7 +115,7 @@ export default function HeroV2() {
         }
         @media (max-width: 480px) {
           .testimonials-3col { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-          .hero-section { padding: 32px 16px 48px !important; }
+          .hero-section { padding: 15px 16px 20px !important; }
         }
       `}</style>
 
