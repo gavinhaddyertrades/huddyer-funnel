@@ -159,11 +159,7 @@ export default function HeroV2() {
 
           {/* CTA + guarantee */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, width: "100%" }}>
-            <CTAButton
-              label="JOIN THE TRADING ROOM"
-              subtitle="Instant Access · No Contracts · Cancel Anytime"
-              fullWidth
-            />
+            <CTAButton label="JOIN THE TRADING ROOM" fullWidth />
             {/* Guarantee box */}
             <div style={{
               display: "flex", alignItems: "center", gap: 14,
