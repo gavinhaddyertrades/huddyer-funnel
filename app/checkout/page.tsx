@@ -88,61 +88,13 @@ export default function CheckoutPage() {
               </span>
             </div>
 
-            <div style={{ backgroundColor: "#111008", padding: 24 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", gap: 2 }}>
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} style={{ color: "#F5A623", fontSize: 15 }}>★</span>
-                  ))}
-                </div>
-                <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 14 }}>4.9</span>
-                <span style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 13 }}>(117 reviews)</span>
-                <span style={{
-                  fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600,
-                  color: "#4ade80",
-                  backgroundColor: "rgba(74,222,128,0.12)",
-                  border: "1px solid rgba(74,222,128,0.3)",
-                  borderRadius: 999, padding: "3px 10px",
-                }}>87% of buyers add this</span>
-              </div>
-
-              <h3 style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 16, lineHeight: 1.55, marginBottom: 12 }}>
-                Already joining the Trading Room? Add live coaching with Hudson twice a week for just $47 more.
-              </h3>
-              <p style={{ fontFamily: "var(--font-body)", color: "#999", fontSize: 14, lineHeight: 1.75, marginBottom: 18 }}>
-                Twice a week Hudson gets on a live call and breaks down your specific trades, your setups, and exactly what to fix.
+            <div style={{ backgroundColor: "#111008", padding: "16px 20px" }}>
+              <p style={{ fontFamily: "var(--font-body)", color: "#c8c2b8", fontSize: 14, lineHeight: 1.5, marginBottom: 14 }}>
+                Add live 1-on-1 coaching with Hudson twice a week — <span style={{ color: "#D4AF37", fontWeight: 700 }}>$99/mo total</span>
               </p>
-
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                {BULLETS.map((b) => (
-                  <li key={b} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontFamily: "var(--font-body)", color: "#c8c2b8", fontSize: 14 }}>
-                    <span style={{ color: "#C9A84C", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✓</span>
-                    {b}
-                  </li>
-                ))}
-              </ul>
-
-              <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 16, marginBottom: 16 }}>
-                <div style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "#666", marginBottom: 6 }}>
-                  Add to Order
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600, fontSize: 14 }}>
-                    The Trading Room + Inner Circle
-                  </span>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#666", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>$179.98/mo</div>
-                    <div style={{ fontFamily: "var(--font-display)", color: "#D4AF37", fontWeight: 700, fontSize: 20 }}>$99/mo</div>
-                  </div>
-                </div>
-              </div>
-
               <Link href="/checkout-bundle" className="bump-btn">
-                ⚡ Yes, Add This to My Order
+                ⚡ Yes, Add Live Coaching — $99/mo
               </Link>
-              <p style={{ fontFamily: "var(--font-body)", textAlign: "center", fontSize: 12, color: "#555", marginTop: 8 }}>
-                You will be charged $99.00/mo total
-              </p>
             </div>
           </div>
 
