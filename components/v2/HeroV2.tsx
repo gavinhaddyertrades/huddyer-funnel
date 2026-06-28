@@ -109,6 +109,7 @@ export default function HeroV2() {
         @media (max-width: 860px) {
           .offer-grid { grid-template-columns: 1fr; }
           .offer-right { order: -1; }
+          .offer-left { display: none; }
           .why-grid { grid-template-columns: 1fr; }
           .testimonials-3col { grid-template-columns: repeat(2, 1fr); }
         }
@@ -190,7 +191,7 @@ export default function HeroV2() {
           <div className="offer-grid">
 
             {/* LEFT: image */}
-            <div style={{ padding: "60px 44px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ece9e1" }}>
+            <div className="offer-left" style={{ padding: "60px 44px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ece9e1" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/new-mockup-2.png"
