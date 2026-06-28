@@ -125,7 +125,7 @@ export default function HeroV2() {
       <section className="hero-section" style={{ backgroundColor: BG, padding: "52px 20px 64px" }}>
         <div style={{ maxWidth: 880, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
-          <div style={{ marginBottom: 15 }}><Logo /></div>
+          <div style={{ marginBottom: 7.5 }}><Logo /></div>
 
           {/* Label */}
           <div style={{
