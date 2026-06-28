@@ -24,8 +24,14 @@ export default function CheckoutPage() {
           margin: 0 auto;
           padding: 40px 24px;
         }
+        .co-header { display: flex; }
+        .co-mobile-hero { display: none; }
         @media (max-width: 780px) {
-          .co-grid { grid-template-columns: 1fr; padding: 24px 16px; }
+          .co-grid { grid-template-columns: 1fr; padding: 16px 16px; }
+          .co-left { order: 2; }
+          .co-right { order: 1; }
+          .co-header { display: none; }
+          .co-mobile-hero { display: block; text-align: center; padding: 24px 20px 0; }
         }
         .bump-btn {
           display: flex;
@@ -49,12 +55,23 @@ export default function CheckoutPage() {
 
       <div style={{ backgroundColor: "#1a1810", minHeight: "100vh" }}>
 
-        {/* Header */}
-        <header style={{
+        {/* Mobile hero — hidden on desktop */}
+        <div className="co-mobile-hero">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/new-mockup-2.png" alt="The Trading Room" style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto 20px" }} />
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 36, color: "#F2EDE6", letterSpacing: "0.02em", lineHeight: 1, marginBottom: 10 }}>
+            The Trading Room
+          </h1>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "#a89880", lineHeight: 1.6, maxWidth: 320, margin: "0 auto 8px" }}>
+            Complete your order below to secure this special discount
+          </p>
+        </div>
+
+        {/* Header — hidden on mobile */}
+        <header className="co-header" style={{
           backgroundColor: "#0f0e09",
           borderBottom: "1px solid rgba(201,168,76,0.2)",
           padding: "16px 32px",
-          display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}>
@@ -66,7 +83,7 @@ export default function CheckoutPage() {
         <div className="co-grid">
 
           {/* ── LEFT COLUMN ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div className="co-left" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
             {/* Order Summary */}
             <div style={{
@@ -176,7 +193,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* ── RIGHT COLUMN: Whop Embed ── */}
-          <div style={{
+          <div className="co-right" style={{
             backgroundColor: "#111008",
             border: "1px solid rgba(201,168,76,0.2)",
             borderRadius: 16,
