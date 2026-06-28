@@ -16,20 +16,17 @@ export default function CheckoutPage() {
       <Script src="https://js.whop.com/static/checkout/loader.js" strategy="afterInteractive" />
       <style>{`
         .co-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 32px;
-          align-items: start;
-          max-width: 1100px;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          max-width: 560px;
           margin: 0 auto;
-          padding: 40px 24px;
+          padding: 32px 24px;
         }
         .co-header { display: flex; }
         .co-mobile-hero { display: none; }
         @media (max-width: 780px) {
-          .co-grid { grid-template-columns: 1fr; padding: 16px 16px; }
-          .co-left { order: 2; }
-          .co-right { order: 1; }
+          .co-grid { padding: 16px 16px; }
           .co-header { display: none; }
           .co-mobile-hero { display: block; text-align: center; padding: 24px 20px 0; }
         }
@@ -82,118 +79,75 @@ export default function CheckoutPage() {
         {/* Two-column grid */}
         <div className="co-grid">
 
-          {/* ── LEFT COLUMN ── */}
-          <div className="co-left" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-
-            {/* Order Summary */}
-            <div style={{
-              backgroundColor: "#111008",
-              border: "1px solid rgba(201,168,76,0.2)",
-              borderRadius: 16,
-              padding: 24,
-            }}>
-              <h2 style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "#F2EDE6", marginBottom: 20, letterSpacing: "0.02em" }}>
-                Order Summary
-              </h2>
-
-              <div style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                paddingBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 16,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 8,
-                    backgroundColor: "rgba(201,168,76,0.15)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#C9A84C", fontSize: 16,
-                  }}>⚡</div>
-                  <div>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600, fontSize: 14 }}>The Trading Room</div>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 12 }}>Monthly membership</div>
-                  </div>
-                </div>
-                <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600 }}>$29.99/mo</span>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 15 }}>Total Today</span>
-                <span style={{ fontFamily: "var(--font-display)", color: "#D4AF37", fontWeight: 700, fontSize: 22 }}>$29.99/mo</span>
-              </div>
+          {/* Order Bump */}
+          <div style={{ border: "1.5px solid #D4AF37", borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ backgroundColor: "#D4AF37", padding: "11px 20px", display: "flex", alignItems: "center", gap: 8 }}>
+              <span>⚡</span>
+              <span style={{ color: "#0A0A0A", fontWeight: 800, fontSize: 11, letterSpacing: "0.13em", fontFamily: "var(--font-body)" }}>
+                SPECIAL ONE-TIME OFFER
+              </span>
             </div>
 
-            {/* Order Bump */}
-            <div style={{ border: "1.5px solid #D4AF37", borderRadius: 16, overflow: "hidden" }}>
-              <div style={{ backgroundColor: "#D4AF37", padding: "11px 20px", display: "flex", alignItems: "center", gap: 8 }}>
-                <span>⚡</span>
-                <span style={{ color: "#0A0A0A", fontWeight: 800, fontSize: 11, letterSpacing: "0.13em", fontFamily: "var(--font-body)" }}>
-                  SPECIAL ONE-TIME OFFER
-                </span>
-              </div>
-
-              <div style={{ backgroundColor: "#111008", padding: 24 }}>
-
-                {/* Social proof bar */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-                  <div style={{ display: "flex", gap: 2 }}>
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} style={{ color: "#F5A623", fontSize: 15 }}>★</span>
-                    ))}
-                  </div>
-                  <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 14 }}>4.9</span>
-                  <span style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 13 }}>(117 reviews)</span>
-                  <span style={{
-                    fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600,
-                    color: "#4ade80",
-                    backgroundColor: "rgba(74,222,128,0.12)",
-                    border: "1px solid rgba(74,222,128,0.3)",
-                    borderRadius: 999, padding: "3px 10px",
-                  }}>87% of buyers add this</span>
-                </div>
-
-                <h3 style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 16, lineHeight: 1.55, marginBottom: 12 }}>
-                  Already joining the Trading Room? Add live coaching with Hudson twice a week for just $47 more.
-                </h3>
-                <p style={{ fontFamily: "var(--font-body)", color: "#999", fontSize: 14, lineHeight: 1.75, marginBottom: 18 }}>
-                  Twice a week Hudson gets on a live call and breaks down your specific trades, your setups, and exactly what to fix.
-                </p>
-
-                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                  {BULLETS.map((b) => (
-                    <li key={b} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontFamily: "var(--font-body)", color: "#c8c2b8", fontSize: 14 }}>
-                      <span style={{ color: "#C9A84C", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✓</span>
-                      {b}
-                    </li>
+            <div style={{ backgroundColor: "#111008", padding: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 2 }}>
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} style={{ color: "#F5A623", fontSize: 15 }}>★</span>
                   ))}
-                </ul>
+                </div>
+                <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 14 }}>4.9</span>
+                <span style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 13 }}>(117 reviews)</span>
+                <span style={{
+                  fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600,
+                  color: "#4ade80",
+                  backgroundColor: "rgba(74,222,128,0.12)",
+                  border: "1px solid rgba(74,222,128,0.3)",
+                  borderRadius: 999, padding: "3px 10px",
+                }}>87% of buyers add this</span>
+              </div>
 
-                <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 16, marginBottom: 16 }}>
-                  <div style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "#666", marginBottom: 6 }}>
-                    Add to Order
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600, fontSize: 14 }}>
-                      The Trading Room + Inner Circle
-                    </span>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontFamily: "var(--font-body)", color: "#666", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>$179.98/mo</div>
-                      <div style={{ fontFamily: "var(--font-display)", color: "#D4AF37", fontWeight: 700, fontSize: 20 }}>$99/mo</div>
-                    </div>
+              <h3 style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 16, lineHeight: 1.55, marginBottom: 12 }}>
+                Already joining the Trading Room? Add live coaching with Hudson twice a week for just $47 more.
+              </h3>
+              <p style={{ fontFamily: "var(--font-body)", color: "#999", fontSize: 14, lineHeight: 1.75, marginBottom: 18 }}>
+                Twice a week Hudson gets on a live call and breaks down your specific trades, your setups, and exactly what to fix.
+              </p>
+
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {BULLETS.map((b) => (
+                  <li key={b} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontFamily: "var(--font-body)", color: "#c8c2b8", fontSize: 14 }}>
+                    <span style={{ color: "#C9A84C", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✓</span>
+                    {b}
+                  </li>
+                ))}
+              </ul>
+
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 16, marginBottom: 16 }}>
+                <div style={{ fontFamily: "var(--font-body)", fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "#666", marginBottom: 6 }}>
+                  Add to Order
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600, fontSize: 14 }}>
+                    The Trading Room + Inner Circle
+                  </span>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontFamily: "var(--font-body)", color: "#666", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>$179.98/mo</div>
+                    <div style={{ fontFamily: "var(--font-display)", color: "#D4AF37", fontWeight: 700, fontSize: 20 }}>$99/mo</div>
                   </div>
                 </div>
-
-                <Link href="/checkout-bundle" className="bump-btn">
-                  ⚡ Yes, Add This to My Order
-                </Link>
-                <p style={{ fontFamily: "var(--font-body)", textAlign: "center", fontSize: 12, color: "#555", marginTop: 8 }}>
-                  You will be charged $99.00/mo total
-                </p>
               </div>
-            </div>
 
+              <Link href="/checkout-bundle" className="bump-btn">
+                ⚡ Yes, Add This to My Order
+              </Link>
+              <p style={{ fontFamily: "var(--font-body)", textAlign: "center", fontSize: 12, color: "#555", marginTop: 8 }}>
+                You will be charged $99.00/mo total
+              </p>
+            </div>
           </div>
 
-          {/* ── RIGHT COLUMN: Whop Embed ── */}
-          <div className="co-right" style={{
+          {/* Whop Embed */}
+          <div style={{
             backgroundColor: "#111008",
             border: "1px solid rgba(201,168,76,0.2)",
             borderRadius: 16,
