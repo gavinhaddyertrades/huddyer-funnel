@@ -133,7 +133,7 @@ export default function HeroV2() {
             padding: "4px 15px", marginBottom: 20,
             backgroundColor: "rgba(212,175,55,0.06)",
           }}>
-            <span style={{ fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 12, color: GOLD, letterSpacing: "0.16em", textTransform: "uppercase" }}>
+            <span style={{ fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 10, color: GOLD, letterSpacing: "0.08em", whiteSpace: "nowrap" }}>
               DISCLAIMER - I&apos;m Literally Letting You Steal My Trades...
             </span>
           </div>
