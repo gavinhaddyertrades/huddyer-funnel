@@ -30,12 +30,35 @@ export default function CheckoutPage() {
           .co-header { display: none; }
           .co-mobile-hero { display: block; text-align: center; padding: 24px 20px 0; }
         }
+        @keyframes gold-shimmer {
+          0% { background-position: 200% center; }
+          100% { background-position: -200% center; }
+        }
+        .gold-shimmer-bg {
+          background: linear-gradient(90deg, #A07830 0%, #C9A84C 25%, #FFF3B0 50%, #C9A84C 75%, #A07830 100%);
+          background-size: 200% auto;
+          animation: gold-shimmer 3s linear infinite;
+        }
+        .gold-shimmer-border {
+          border-radius: 16px;
+          overflow: hidden;
+          padding: 1.5px;
+          background: linear-gradient(90deg, #A07830 0%, #C9A84C 25%, #FFF3B0 50%, #C9A84C 75%, #A07830 100%);
+          background-size: 200% auto;
+          animation: gold-shimmer 3s linear infinite;
+        }
+        .gold-shimmer-border-inner {
+          border-radius: 14px;
+          overflow: hidden;
+        }
         .bump-btn {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
-          background-color: #D4AF37;
+          background: linear-gradient(90deg, #A07830 0%, #C9A84C 25%, #FFF3B0 50%, #C9A84C 75%, #A07830 100%);
+          background-size: 200% auto;
+          animation: gold-shimmer 3s linear infinite;
           color: #0A0A0A;
           padding: 15px 24px;
           border-radius: 10px;
@@ -44,7 +67,6 @@ export default function CheckoutPage() {
           text-decoration: none;
           width: 100%;
           box-sizing: border-box;
-          transition: opacity 0.15s;
           font-family: var(--font-body);
         }
         .bump-btn:hover { opacity: 0.88; }
@@ -80,8 +102,9 @@ export default function CheckoutPage() {
         <div className="co-grid">
 
           {/* Order Bump */}
-          <div style={{ border: "1.5px solid #D4AF37", borderRadius: 16, overflow: "hidden" }}>
-            <div style={{ backgroundColor: "#D4AF37", padding: "11px 20px", display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="gold-shimmer-border">
+            <div className="gold-shimmer-border-inner">
+            <div className="gold-shimmer-bg" style={{ padding: "11px 20px", display: "flex", alignItems: "center", gap: 8 }}>
               <span>⚡</span>
               <span style={{ color: "#0A0A0A", fontWeight: 800, fontSize: 11, letterSpacing: "0.13em", fontFamily: "var(--font-body)" }}>
                 SPECIAL ONE-TIME OFFER
@@ -95,6 +118,7 @@ export default function CheckoutPage() {
               <Link href="/checkout-bundle" className="bump-btn">
                 Yes, Add Live Coaching
               </Link>
+            </div>
             </div>
           </div>
 
