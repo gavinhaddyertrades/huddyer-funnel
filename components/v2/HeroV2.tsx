@@ -9,7 +9,7 @@ const BG_DARK = "#111008";
 const TESTIMONIALS = [
   "IMG_3080","IMG_3081","IMG_3082","IMG_3083","IMG_3084","IMG_3085",
   "IMG_3086","IMG_3087","IMG_3088","IMG_3089","IMG_3090","IMG_3091",
-  "IMG_3092","IMG_3093","IMG_3094","IMG_3095","IMG_3096",
+  "IMG_3092","IMG_3093","IMG_3094","IMG_3095","IMG_3096","IMG_3080",
 ];
 
 function trackClick() {
@@ -81,7 +81,7 @@ function GoldCheck() {
 
 const Logo = () => (
   /* eslint-disable-next-line @next/next/no-img-element */
-  <img src="/logo.png" alt="HuddyerTrades Elite" style={{ height: 44, width: "auto" }} />
+  <img src="/logo3.png" alt="HuddyerTrades Elite" style={{ height: 56, width: "auto" }} />
 );
 
 export default function HeroV2() {
