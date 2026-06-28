@@ -141,7 +141,7 @@ export default function HeroV2() {
           {/* Headline */}
           <h1
             className="font-display text-center"
-            style={{ fontSize: "clamp(34px, 6vw, 68px)", color: "#F2EDE6", lineHeight: 0.95, letterSpacing: "0.02em", marginBottom: 22 }}
+            style={{ fontSize: "clamp(34px, 6vw, 68px)", color: "#F2EDE6", lineHeight: 0.95, letterSpacing: "0.02em", marginBottom: 11 }}
           >
             WATCH A FUNDED TRADER HIT THE MARKETS{" "}
             <span style={{ color: GOLD }}>LIVE. EVERY SINGLE DAY.</span>
