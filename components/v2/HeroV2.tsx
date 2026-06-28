@@ -81,7 +81,7 @@ function GoldCheck() {
 
 const Logo = () => (
   /* eslint-disable-next-line @next/next/no-img-element */
-  <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 56, width: "auto" }} />
+  <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 80, width: "auto" }} />
 );
 
 export default function HeroV2() {
