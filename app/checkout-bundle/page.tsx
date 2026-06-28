@@ -2,40 +2,63 @@
 
 import Script from "next/script";
 
-const BULLETS = [
-  "Two weekly live coaching calls with Hudson",
-  "Bring your own trades and get direct feedback",
-  "Know exactly what to fix and why",
-  "The fastest way to go from inconsistent to consistently profitable",
-];
-
 export default function CheckoutBundlePage() {
   return (
     <>
       <Script src="https://js.whop.com/static/checkout/loader.js" strategy="afterInteractive" />
       <style>{`
         .co-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 32px;
-          align-items: start;
-          max-width: 1100px;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          max-width: 560px;
           margin: 0 auto;
-          padding: 40px 24px;
+          padding: 32px 24px;
+        }
+        .co-header { display: flex; }
+        .co-mobile-hero { display: none; }
+        .bump-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          background-color: #D4AF37;
+          color: #0A0A0A;
+          padding: 15px 24px;
+          border-radius: 10px;
+          font-weight: 800;
+          font-size: 15px;
+          text-decoration: none;
+          width: 100%;
+          box-sizing: border-box;
+          font-family: var(--font-body);
         }
         @media (max-width: 780px) {
-          .co-grid { grid-template-columns: 1fr; padding: 24px 16px; }
+          .co-grid { padding: 16px 16px; }
+          .co-header { display: none; }
+          .co-mobile-hero { display: block; text-align: center; padding: 24px 20px 0; }
         }
       `}</style>
 
       <div style={{ backgroundColor: "#1a1810", minHeight: "100vh" }}>
 
-        {/* Header */}
-        <header style={{
+        {/* Mobile hero — hidden on desktop */}
+        <div className="co-mobile-hero">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/new-mockup-2.png" alt="The Trading Room" style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto 20px" }} />
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 36, color: "#F2EDE6", letterSpacing: "0.02em", lineHeight: 1, marginBottom: 10 }}>
+            The Trading Room
+          </h1>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "#a89880", lineHeight: 1.6, maxWidth: 320, margin: "0 auto 8px" }}>
+            Complete your order below to secure this special discount
+          </p>
+        </div>
+
+        {/* Header — hidden on mobile */}
+        <header className="co-header" style={{
           backgroundColor: "#0f0e09",
           borderBottom: "1px solid rgba(201,168,76,0.2)",
           padding: "16px 32px",
-          display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}>
@@ -43,125 +66,24 @@ export default function CheckoutBundlePage() {
           <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 48, width: "auto" }} />
         </header>
 
-        {/* Two-column grid */}
         <div className="co-grid">
 
-          {/* ── LEFT COLUMN ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-
-            {/* Order Summary */}
-            <div style={{
-              backgroundColor: "#111008",
-              border: "1px solid rgba(201,168,76,0.2)",
-              borderRadius: 16,
-              padding: 24,
-            }}>
-              <h2 style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "#F2EDE6", marginBottom: 20, letterSpacing: "0.02em" }}>
-                Order Summary
-              </h2>
-
-              {/* Line item 1 — Trading Room */}
-              <div style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 14,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 8,
-                    backgroundColor: "rgba(201,168,76,0.15)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#C9A84C", fontSize: 16,
-                  }}>⚡</div>
-                  <div>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600, fontSize: 14 }}>The Trading Room</div>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 12 }}>Monthly membership</div>
-                  </div>
-                </div>
-                <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600 }}>$29.99/mo</span>
-              </div>
-
-              {/* Line item 2 — Inner Circle (added) */}
-              <div style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                paddingBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 16,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 8,
-                    backgroundColor: "rgba(74,222,128,0.12)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#4ade80", fontSize: 16,
-                  }}>✓</div>
-                  <div>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 600, fontSize: 14 }}>Inner Circle</div>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#4ade80", fontSize: 12 }}>Added to your order</div>
-                  </div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>$149.99/mo</div>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#4ade80", fontWeight: 700, fontSize: 14 }}>$69.99/mo</div>
-                  </div>
-              </div>
-
-              {/* Total */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 15 }}>Total Today</span>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontFamily: "var(--font-body)", color: "#666", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>$179.98/mo</div>
-                  <div style={{ fontFamily: "var(--font-display)", color: "#D4AF37", fontWeight: 700, fontSize: 22 }}>$99.99/mo</div>
-                </div>
-              </div>
+          {/* Live Coaching — Added (green) */}
+          <div style={{ border: "1.5px solid #4ade80", borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ backgroundColor: "#4ade80", padding: "11px 20px", display: "flex", alignItems: "center", gap: 8 }}>
+              <span>✓</span>
+              <span style={{ color: "#0A0A0A", fontWeight: 800, fontSize: 11, letterSpacing: "0.13em", fontFamily: "var(--font-body)" }}>
+                LIVE COACHING ADDED
+              </span>
             </div>
-
-            {/* Bundle Confirmed Box */}
-            <div style={{ border: "1.5px solid #4ade80", borderRadius: 16, overflow: "hidden" }}>
-              <div style={{ backgroundColor: "#4ade80", padding: "11px 20px", display: "flex", alignItems: "center", gap: 8 }}>
-                <span>●</span>
-                <span style={{ color: "#0A0A0A", fontWeight: 800, fontSize: 11, letterSpacing: "0.13em", fontFamily: "var(--font-body)" }}>
-                  INNER CIRCLE INCLUDED
-                </span>
-              </div>
-
-              <div style={{ backgroundColor: "#0c1a10", padding: 24 }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: "50%",
-                    backgroundColor: "rgba(74,222,128,0.15)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#4ade80", fontSize: 16, flexShrink: 0,
-                  }}>✓</div>
-                  <div>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 15, marginBottom: 6 }}>
-                      The Trading Room + Inner Circle has been added!
-                    </div>
-                    <p style={{ fontFamily: "var(--font-body)", color: "#999", fontSize: 14, lineHeight: 1.7, margin: 0 }}>
-                      Twice a week Hudson gets on a live call and breaks down your specific trades, your setups, and exactly what to fix.
-                    </p>
-                  </div>
-                </div>
-
-                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                  {BULLETS.map((b) => (
-                    <li key={b} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontFamily: "var(--font-body)", color: "#c8c2b8", fontSize: 14 }}>
-                      <span style={{ color: "#4ade80", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✓</span>
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-
-                <div style={{ borderTop: "1px solid rgba(74,222,128,0.15)", paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontFamily: "var(--font-body)", color: "#c8c2b8", fontSize: 14 }}>Bundle total</span>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontFamily: "var(--font-body)", color: "#4ade8066", fontSize: 12, textDecoration: "line-through", marginBottom: 2 }}>$179.98/mo</div>
-                    <div style={{ fontFamily: "var(--font-display)", color: "#4ade80", fontWeight: 700, fontSize: 22 }}>$99.99/mo</div>
-                  </div>
-                </div>
-              </div>
+            <div style={{ backgroundColor: "#0c1a10", padding: "16px 20px" }}>
+              <p style={{ fontFamily: "var(--font-body)", color: "#c8c2b8", fontSize: 14, lineHeight: 1.5, margin: 0 }}>
+                Live coaching with Hudson twice a week has been added — <span style={{ color: "#4ade80", fontWeight: 700 }}>$99/mo total</span>
+              </p>
             </div>
-
           </div>
 
-          {/* ── RIGHT COLUMN: Whop Embed ── */}
+          {/* Whop Embed */}
           <div style={{
             backgroundColor: "#111008",
             border: "1px solid rgba(201,168,76,0.2)",
