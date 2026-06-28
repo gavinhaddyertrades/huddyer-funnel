@@ -134,7 +134,7 @@ export default function HeroV2() {
             backgroundColor: "rgba(212,175,55,0.06)",
           }}>
             <span style={{ fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 12, color: GOLD, letterSpacing: "0.16em", textTransform: "uppercase" }}>
-              The Trading Room
+              DISCLAIMER - I&apos;m Literally Letting You Steal My Trades...
             </span>
           </div>
 
