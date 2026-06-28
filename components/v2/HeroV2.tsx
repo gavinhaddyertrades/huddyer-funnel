@@ -37,26 +37,38 @@ function TrustBadges({ onLight = false }: { onLight?: boolean }) {
   );
 }
 
-function CTAButton({ label, dark = false, fullWidth = false }: { label: string; dark?: boolean; fullWidth?: boolean }) {
+function CTAButton({ label, subtitle, dark = false, fullWidth = false }: { label: string; subtitle?: string; dark?: boolean; fullWidth?: boolean }) {
   return (
     <a
       href="/checkout"
       onClick={trackClick}
       style={{
-        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+        display: "inline-flex",
+        flexDirection: subtitle ? "column" : "row",
+        alignItems: "center", justifyContent: "center",
+        gap: subtitle ? 4 : 8,
         width: fullWidth ? "100%" : undefined,
         background: dark ? "#0A0A0A" : `linear-gradient(135deg, #C9A84C 0%, ${GOLD} 50%, #C9A84C 100%)`,
         color: dark ? GOLD : "#0A0A0A",
-        fontFamily: "var(--font-body)", fontWeight: 800, fontSize: 15,
-        padding: "16px 32px", borderRadius: 10, textDecoration: "none",
+        fontFamily: "var(--font-body)", fontWeight: 800,
+        fontSize: subtitle ? 17 : 15,
+        padding: subtitle ? "20px 28px" : "16px 32px",
+        borderRadius: 10, textDecoration: "none",
         letterSpacing: "0.06em", textTransform: "uppercase",
         boxShadow: dark ? "none" : "0 6px 24px rgba(212,175,55,0.35)",
       }}
     >
-      {label}
-      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-        <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {label}
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+          <path d="M3.75 9h10.5M9.75 4.5L14.25 9l-4.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+      {subtitle && (
+        <span style={{ fontFamily: "var(--font-body)", fontWeight: 500, fontSize: 11, letterSpacing: "0.1em", opacity: 0.75, textTransform: "uppercase" }}>
+          {subtitle}
+        </span>
+      )}
     </a>
   );
 }
@@ -102,13 +114,14 @@ export default function HeroV2() {
         }
         @media (max-width: 480px) {
           .testimonials-3col { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .hero-section { padding: 32px 16px 48px !important; }
         }
       `}</style>
 
       {/* ══════════════════════════════════
           SECTION 1 — HERO
       ══════════════════════════════════ */}
-      <section style={{ backgroundColor: BG, padding: "52px 20px 64px" }}>
+      <section className="hero-section" style={{ backgroundColor: BG, padding: "52px 20px 64px" }}>
         <div style={{ maxWidth: 880, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
           <div style={{ marginBottom: 32 }}><Logo /></div>
@@ -144,10 +157,36 @@ export default function HeroV2() {
             <img src="/new-mockup-2.png" alt="The Trading Room Live Dashboard" style={{ width: "100%", display: "block" }} />
           </div>
 
-          {/* CTA + trust */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, width: "100%", maxWidth: 400 }}>
-            <CTAButton label="Join the Trading Room" fullWidth />
-            <TrustBadges />
+          {/* CTA + guarantee */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, width: "100%" }}>
+            <CTAButton
+              label="JOIN THE TRADING ROOM"
+              subtitle="Instant Access · No Contracts · Cancel Anytime"
+              fullWidth
+            />
+            {/* Guarantee box */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: 14,
+              border: "1.5px dashed rgba(212,175,55,0.4)",
+              borderRadius: 14, padding: "14px 20px", width: "100%",
+            }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: "50%",
+                backgroundColor: GOLD, flexShrink: 0,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{ fontFamily: "var(--font-body)", fontWeight: 900, fontSize: 16, color: "#0A0A0A", lineHeight: 1 }}>30</span>
+                <span style={{ fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 7, color: "#0A0A0A", lineHeight: 1.4, letterSpacing: "0.05em" }}>DAYS</span>
+              </div>
+              <div>
+                <p style={{ fontFamily: "var(--font-body)", fontWeight: 800, fontSize: 13, color: "#F2EDE6", margin: 0, marginBottom: 3, letterSpacing: "0.04em" }}>
+                  30-DAY MONEY BACK GUARANTEE
+                </p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#888", margin: 0, lineHeight: 1.5 }}>
+                  Not happy within 30 days? Email us for a full refund, no questions asked.
+                </p>
+              </div>
+            </div>
           </div>
 
         </div>
