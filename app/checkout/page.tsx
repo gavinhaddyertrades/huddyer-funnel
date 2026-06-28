@@ -90,7 +90,7 @@ export default function CheckoutPage() {
 
             <div style={{ backgroundColor: "#111008", padding: "16px 20px" }}>
               <p style={{ fontFamily: "var(--font-body)", color: "#c8c2b8", fontSize: 14, lineHeight: 1.5, marginBottom: 14 }}>
-                Add live coaching with Hudson twice a week — <span style={{ color: "#D4AF37", fontWeight: 700 }}>$99/mo total</span>
+                Add live coaching with Hudson twice a week
               </p>
               <Link href="/checkout-bundle" className="bump-btn">
                 ⚡ Yes, Add Live Coaching — $99/mo
