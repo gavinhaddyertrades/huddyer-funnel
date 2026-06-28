@@ -141,7 +141,7 @@ export default function HeroV2() {
           {/* Hero mockup image */}
           <div style={{ width: "100%", marginBottom: 36 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/new-mockup.png" alt="The Trading Room Live Dashboard" style={{ width: "100%", display: "block" }} />
+            <img src="/new-mockup-2.png" alt="The Trading Room Live Dashboard" style={{ width: "100%", display: "block" }} />
           </div>
 
           {/* CTA + trust */}
