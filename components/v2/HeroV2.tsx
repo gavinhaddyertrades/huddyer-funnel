@@ -193,7 +193,7 @@ export default function HeroV2() {
             <div style={{ padding: "60px 44px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ece9e1" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/trading-room-2.png"
+                src="/new-mockup-2.png"
                 alt="The Trading Room"
                 style={{ width: "100%", maxWidth: 460, borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", display: "block" }}
               />
@@ -304,7 +304,7 @@ export default function HeroV2() {
           {/* Large centered image */}
           <div style={{ width: "100%", borderRadius: 16, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", marginBottom: 48 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/trading-room-2.png" alt="Inside the Trading Room" style={{ width: "100%", display: "block" }} />
+            <img src="/new-mockup-2.png" alt="Inside the Trading Room" style={{ width: "100%", display: "block" }} />
           </div>
 
           {/* Bullets */}
