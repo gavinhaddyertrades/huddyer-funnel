@@ -35,7 +35,7 @@ export default function CheckoutPage() {
           100% { background-position: -200% center; }
         }
         .gold-shimmer-bg {
-          background: linear-gradient(90deg, #8B2010 0%, #da4f37 30%, #FF9070 50%, #da4f37 70%, #8B2010 100%);
+          background: linear-gradient(90deg, #A07830 0%, #D4AF37 30%, #FFF3B0 50%, #D4AF37 70%, #A07830 100%);
           background-size: 200% auto;
           animation: gold-shimmer 6s linear infinite;
         }
@@ -43,7 +43,7 @@ export default function CheckoutPage() {
           border-radius: 16px;
           overflow: hidden;
           padding: 1.5px;
-          background: linear-gradient(90deg, #8B2010 0%, #da4f37 30%, #FF9070 50%, #da4f37 70%, #8B2010 100%);
+          background: linear-gradient(90deg, #A07830 0%, #D4AF37 30%, #FFF3B0 50%, #D4AF37 70%, #A07830 100%);
           background-size: 200% auto;
           animation: gold-shimmer 6s linear infinite;
         }
@@ -56,7 +56,7 @@ export default function CheckoutPage() {
           align-items: center;
           justify-content: center;
           gap: 8px;
-          background: linear-gradient(90deg, #8B2010 0%, #da4f37 30%, #FF9070 50%, #da4f37 70%, #8B2010 100%);
+          background: linear-gradient(90deg, #A07830 0%, #D4AF37 30%, #FFF3B0 50%, #D4AF37 70%, #A07830 100%);
           background-size: 200% auto;
           animation: gold-shimmer 6s linear infinite;
           color: #0A0A0A;
