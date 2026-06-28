@@ -170,14 +170,8 @@ export default function HeroV2() {
               border: "1.5px dashed rgba(212,175,55,0.4)",
               borderRadius: 14, padding: "14px 20px", width: "100%",
             }}>
-              <div style={{
-                width: 52, height: 52, borderRadius: "50%",
-                backgroundColor: GOLD, flexShrink: 0,
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              }}>
-                <span style={{ fontFamily: "var(--font-body)", fontWeight: 900, fontSize: 16, color: "#0A0A0A", lineHeight: 1 }}>30</span>
-                <span style={{ fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 7, color: "#0A0A0A", lineHeight: 1.4, letterSpacing: "0.05em" }}>DAYS</span>
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/money-back.png" alt="30-Day Money Back Guarantee" style={{ width: 64, height: 64, objectFit: "contain", flexShrink: 0 }} />
               <div>
                 <p style={{ fontFamily: "var(--font-body)", fontWeight: 800, fontSize: 13, color: "#F2EDE6", margin: 0, marginBottom: 3, letterSpacing: "0.04em" }}>
                   30-DAY MONEY BACK GUARANTEE
