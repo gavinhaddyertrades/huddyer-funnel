@@ -53,6 +53,10 @@ export default function CheckoutThankYouPage() {
         YOU&apos;RE IN THE <span style={{ color: "#D4AF37" }}>TRADING ROOM.</span>
       </h1>
 
+      {/* Mockup */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/new-mockup-2.png" alt="The Trading Room" style={{ width: "100%", maxWidth: 480, display: "block", marginBottom: 36 }} />
+
       <p style={{
         fontFamily: "var(--font-body)",
         fontSize: 16,
