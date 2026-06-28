@@ -130,7 +130,7 @@ export default function HeroV2() {
           {/* Label */}
           <div style={{
             border: `1px solid rgba(212,175,55,0.4)`, borderRadius: 999,
-            padding: "5px 18px", marginBottom: 20,
+            padding: "4px 15px", marginBottom: 20,
             backgroundColor: "rgba(212,175,55,0.06)",
           }}>
             <span style={{ fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 12, color: GOLD, letterSpacing: "0.16em", textTransform: "uppercase" }}>
