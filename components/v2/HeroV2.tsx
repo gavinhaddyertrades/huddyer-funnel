@@ -147,7 +147,7 @@ export default function HeroV2() {
           </h1>
 
           {/* Subheadline */}
-          <p style={{ fontFamily: "var(--font-body)", fontSize: "clamp(16px, 2vw, 19px)", color: "#b0a898", textAlign: "center", lineHeight: 1.8, maxWidth: 640, marginBottom: 36 }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: "clamp(16px, 2vw, 19px)", color: "#b0a898", textAlign: "center", lineHeight: 1, maxWidth: 640, marginBottom: 36 }}>
             Join Hudson live every morning and follow the exact system his students use to pass prop firm evals and pull consistent payouts.
           </p>
 
