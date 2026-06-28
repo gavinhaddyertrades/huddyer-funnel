@@ -58,17 +58,8 @@ export default function CheckoutPage() {
           alignItems: "center",
           justifyContent: "center",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2"  y="22" width="6" height="14" rx="1.5" fill="#C9A84C" />
-              <rect x="12" y="14" width="6" height="22" rx="1.5" fill="#D4AF37" />
-              <rect x="22" y="8"  width="6" height="28" rx="1.5" fill="#C9A84C" />
-              <rect x="32" y="2"  width="6" height="34" rx="1.5" fill="#D4AF37" />
-            </svg>
-            <span style={{ color: "#F2EDE6", fontWeight: 700, fontSize: 16, fontFamily: "var(--font-display)", letterSpacing: "0.12em" }}>
-              HUDDYERTRADES ELITE
-            </span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 48, width: "auto" }} />
         </header>
 
         {/* Two-column grid */}
