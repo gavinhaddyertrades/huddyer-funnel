@@ -35,17 +35,17 @@ export default function CheckoutPage() {
           100% { background-position: -200% center; }
         }
         .gold-shimmer-bg {
-          background: linear-gradient(90deg, #A07830 0%, #C9A84C 25%, #FFF3B0 50%, #C9A84C 75%, #A07830 100%);
+          background: linear-gradient(90deg, #8B2010 0%, #da4f37 30%, #FF9070 50%, #da4f37 70%, #8B2010 100%);
           background-size: 200% auto;
-          animation: gold-shimmer 3s linear infinite;
+          animation: gold-shimmer 6s linear infinite;
         }
         .gold-shimmer-border {
           border-radius: 16px;
           overflow: hidden;
           padding: 1.5px;
-          background: linear-gradient(90deg, #A07830 0%, #C9A84C 25%, #FFF3B0 50%, #C9A84C 75%, #A07830 100%);
+          background: linear-gradient(90deg, #8B2010 0%, #da4f37 30%, #FF9070 50%, #da4f37 70%, #8B2010 100%);
           background-size: 200% auto;
-          animation: gold-shimmer 3s linear infinite;
+          animation: gold-shimmer 6s linear infinite;
         }
         .gold-shimmer-border-inner {
           border-radius: 14px;
@@ -56,9 +56,9 @@ export default function CheckoutPage() {
           align-items: center;
           justify-content: center;
           gap: 8px;
-          background: linear-gradient(90deg, #A07830 0%, #C9A84C 25%, #FFF3B0 50%, #C9A84C 75%, #A07830 100%);
+          background: linear-gradient(90deg, #8B2010 0%, #da4f37 30%, #FF9070 50%, #da4f37 70%, #8B2010 100%);
           background-size: 200% auto;
-          animation: gold-shimmer 3s linear infinite;
+          animation: gold-shimmer 6s linear infinite;
           color: #0A0A0A;
           padding: 15px 24px;
           border-radius: 10px;
