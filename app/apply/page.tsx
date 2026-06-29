@@ -36,7 +36,8 @@ export default function ApplyPage() {
             lineHeight: 0.95,
             marginBottom: 18,
           }}>
-            WATCH THIS BEFORE{" "}
+            WATCH THIS BEFORE
+            <br />
             <span className="gold-text-gradient">YOU APPLY.</span>
           </h1>
           <p style={{
