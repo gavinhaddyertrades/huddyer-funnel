@@ -2,23 +2,33 @@
 
 import Script from "next/script";
 
+const INCLUDES = [
+  { title: "40+ Video Modules", desc: "Hudson's complete trading system broken down step-by-step — from market structure to advanced execution." },
+  { title: "The Blueprint Workbook", desc: "Follow-along workbook covering every module so you can apply what you learn immediately." },
+  { title: "Market Structure Mastery", desc: "Learn to read BOS, CHoCH, liquidity zones, and entries the way Hudson trades them live every day." },
+  { title: "Risk Management Framework", desc: "Position sizing, drawdown control, and the consistency rules Hudson uses on funded accounts." },
+  { title: "Trade Examples & Setups", desc: "Real setups with annotated charts — see exactly how Hudson identifies and executes his trades." },
+];
+
 export default function BlueprintPage() {
   return (
     <>
       <Script src="https://js.whop.com/static/checkout/loader.js" strategy="afterInteractive" />
       <style>{`
-        .co-grid {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-          max-width: 560px;
+        .bp-layout {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
+          max-width: 1100px;
           margin: 0 auto;
-          padding: 32px 24px;
+          padding: 40px 32px;
+          align-items: start;
         }
         .co-header { display: flex; }
         .co-mobile-hero { display: none; }
         @media (max-width: 780px) {
-          .co-grid { padding: 16px 16px; }
+          .bp-layout { grid-template-columns: 1fr; padding: 16px 16px; gap: 24px; }
+          .bp-right { display: none; }
           .co-header { display: none; }
           .co-mobile-hero { display: block; text-align: center; padding: 24px 20px 0; }
         }
@@ -29,7 +39,7 @@ export default function BlueprintPage() {
         {/* Mobile hero — hidden on desktop */}
         <div className="co-mobile-hero">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/blueprint-mockup.png" alt="The Market Blueprint" style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto 20px" }} />
+          <img src="/blueprint-mockup.png" alt="The Blueprint" style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto 20px" }} />
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: 36, color: "#F2EDE6", letterSpacing: "0.02em", lineHeight: 1, marginBottom: 10 }}>
             The Market Blueprint
           </h1>
@@ -50,9 +60,9 @@ export default function BlueprintPage() {
           <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 48, width: "auto" }} />
         </header>
 
-        <div className="co-grid">
+        <div className="bp-layout">
 
-          {/* Whop Embed */}
+          {/* LEFT — Whop Checkout */}
           <div style={{
             backgroundColor: "#111008",
             border: "1px solid rgba(201,168,76,0.2)",
@@ -73,6 +83,37 @@ export default function BlueprintPage() {
               data-whop-checkout-style-container-padding-x="0"
               data-whop-checkout-style-container-padding-y="0"
             />
+          </div>
+
+          {/* RIGHT — Product info */}
+          <div className="bp-right">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/blueprint-mockup.png" alt="The Blueprint" style={{ width: "100%", display: "block", marginBottom: 28, borderRadius: 12 }} />
+
+            <p style={{ fontFamily: "var(--font-display)", fontSize: 13, letterSpacing: "0.18em", color: "#D4AF37", marginBottom: 8 }}>
+              HERE'S EVERYTHING YOU GET
+            </p>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(26px, 2.5vw, 36px)", color: "#F2EDE6", letterSpacing: "0.02em", lineHeight: 1.05, marginBottom: 24 }}>
+              The Blueprint — Hudson's Complete Trading System
+            </h2>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              {INCLUDES.map((item) => (
+                <div key={item.title} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: "50%", flexShrink: 0, marginTop: 2,
+                    backgroundColor: "rgba(212,175,55,0.15)",
+                    border: "1px solid rgba(212,175,55,0.4)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: "#D4AF37", fontSize: 12, fontWeight: 700,
+                  }}>✓</div>
+                  <div>
+                    <div style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{item.title}</div>
+                    <div style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 13, lineHeight: 1.6 }}>{item.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
         </div>
