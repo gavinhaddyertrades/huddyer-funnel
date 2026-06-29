@@ -27,7 +27,7 @@ export default function ApplyPage() {
         <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 72, width: "auto", marginBottom: 12 }} />
 
         {/* Headline */}
-        <div style={{ textAlign: "center", maxWidth: 760, marginBottom: 36 }}>
+        <div style={{ textAlign: "center", maxWidth: 760, marginBottom: 22 }}>
           <h1 style={{
             fontFamily: "var(--font-display)",
             fontSize: "clamp(40px, 6.5vw, 80px)",
