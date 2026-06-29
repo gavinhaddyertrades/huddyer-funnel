@@ -109,7 +109,7 @@ export default function HeroV2() {
         @media (max-width: 860px) {
           .offer-grid { grid-template-columns: 1fr; }
           .offer-right { order: -1; }
-          .offer-left { display: none; }
+          .offer-left { padding: 20px 20px 0 !important; }
           .why-grid { grid-template-columns: 1fr; }
           .testimonials-3col { grid-template-columns: repeat(2, 1fr); }
         }
@@ -192,12 +192,12 @@ export default function HeroV2() {
           <div className="offer-grid">
 
             {/* LEFT: image */}
-            <div className="offer-left" style={{ padding: "60px 44px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#ece9e1" }}>
+            <div className="offer-left" style={{ padding: "60px 44px", display: "flex", alignItems: "center", justifyContent: "center" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/new-mockup-2.png"
                 alt="The Trading Room"
-                style={{ width: "100%", maxWidth: 460, borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", display: "block" }}
+                style={{ width: "100%", maxWidth: 460, display: "block" }}
               />
             </div>
 
