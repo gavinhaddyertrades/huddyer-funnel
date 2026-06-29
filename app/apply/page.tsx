@@ -24,7 +24,7 @@ export default function ApplyPage() {
 
         {/* Logo */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 52, width: "auto", marginBottom: 48 }} />
+        <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 72, width: "auto", marginBottom: 24 }} />
 
         {/* Headline */}
         <div style={{ textAlign: "center", maxWidth: 760, marginBottom: 36 }}>
@@ -37,7 +37,7 @@ export default function ApplyPage() {
             marginBottom: 18,
           }}>
             WATCH THIS BEFORE{" "}
-            <span style={{ color: "#D4AF37" }}>YOU APPLY.</span>
+            <span className="gold-text-gradient">YOU APPLY.</span>
           </h1>
           <p style={{
             fontFamily: "var(--font-body)",
