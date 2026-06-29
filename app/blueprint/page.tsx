@@ -1,0 +1,103 @@
+"use client";
+
+import Script from "next/script";
+
+export default function BlueprintPage() {
+  return (
+    <>
+      <Script src="https://js.whop.com/static/checkout/loader.js" strategy="afterInteractive" />
+      <style>{`
+        .co-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          max-width: 560px;
+          margin: 0 auto;
+          padding: 32px 24px;
+        }
+        .co-header { display: flex; }
+        .co-mobile-hero { display: none; }
+        @media (max-width: 780px) {
+          .co-grid { padding: 16px 16px; }
+          .co-header { display: none; }
+          .co-mobile-hero { display: block; text-align: center; padding: 24px 20px 0; }
+        }
+      `}</style>
+
+      <div style={{ backgroundColor: "#1a1810", minHeight: "100vh" }}>
+
+        {/* Mobile hero — hidden on desktop */}
+        <div className="co-mobile-hero">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/blueprint-mockup.png" alt="The Market Blueprint" style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto 20px" }} />
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 36, color: "#F2EDE6", letterSpacing: "0.02em", lineHeight: 1, marginBottom: 10 }}>
+            The Market Blueprint
+          </h1>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "#a89880", lineHeight: 1.6, maxWidth: 320, margin: "0 auto 8px" }}>
+            Complete your order below to get instant access
+          </p>
+        </div>
+
+        {/* Header — hidden on mobile */}
+        <header className="co-header" style={{
+          backgroundColor: "#0f0e09",
+          borderBottom: "1px solid rgba(201,168,76,0.2)",
+          padding: "16px 32px",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 48, width: "auto" }} />
+        </header>
+
+        <div className="co-grid">
+
+          {/* Whop Embed */}
+          <div style={{
+            backgroundColor: "#111008",
+            border: "1px solid rgba(201,168,76,0.2)",
+            borderRadius: 16,
+            padding: 28,
+          }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "#F2EDE6", marginBottom: 4, letterSpacing: "0.02em" }}>
+              Complete Your Order
+            </h2>
+            <p style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 13, marginBottom: 24 }}>
+              Enter your details below to get instant access
+            </p>
+            <div
+              data-whop-checkout-plan-id="plan_Z4SVGh6whbYCQ"
+              data-whop-checkout-theme-background-color="#111008"
+              data-whop-checkout-theme-accent-color="#D4AF37"
+              data-whop-checkout-theme-border-radius="10"
+              data-whop-checkout-style-container-padding-x="0"
+              data-whop-checkout-style-container-padding-y="0"
+            />
+          </div>
+
+        </div>
+
+        {/* Footer */}
+        <footer style={{
+          textAlign: "center",
+          padding: "24px 20px 56px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 20,
+          fontFamily: "var(--font-body)",
+          color: "#555",
+          fontSize: 13,
+          flexWrap: "wrap",
+        }}>
+          <span>🔒 Secure Payment</span>
+          <span>•</span>
+          <span>⚡ Powered by Whop</span>
+          <span>•</span>
+          <span>✓ Instant Access</span>
+        </footer>
+
+      </div>
+    </>
+  );
+}
