@@ -43,9 +43,26 @@ export default function BlueprintPage() {
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: 36, color: "#F2EDE6", letterSpacing: "0.02em", lineHeight: 1, marginBottom: 10 }}>
             The Market Blueprint
           </h1>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "#a89880", lineHeight: 1.6, maxWidth: 320, margin: "0 auto 8px" }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "#a89880", lineHeight: 1.6, maxWidth: 320, margin: "0 auto 20px" }}>
             Complete your order below to get instant access
           </p>
+          <div style={{ textAlign: "left", maxWidth: 340, margin: "0 auto 8px", display: "flex", flexDirection: "column", gap: 14 }}>
+            {INCLUDES.map((item) => (
+              <div key={item.title} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <div style={{
+                  width: 20, height: 20, borderRadius: "50%", flexShrink: 0, marginTop: 2,
+                  backgroundColor: "rgba(212,175,55,0.15)",
+                  border: "1px solid rgba(212,175,55,0.4)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "#D4AF37", fontSize: 11, fontWeight: 700,
+                }}>✓</div>
+                <div>
+                  <div style={{ fontFamily: "var(--font-body)", color: "#F2EDE6", fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{item.title}</div>
+                  <div style={{ fontFamily: "var(--font-body)", color: "#888", fontSize: 13, lineHeight: 1.5 }}>{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Header — hidden on mobile */}
