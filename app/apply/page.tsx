@@ -20,11 +20,11 @@ export default function ApplyPage() {
         }
       `}</style>
 
-      <div style={{ backgroundColor: "#1a1810", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 20px 72px" }}>
+      <div style={{ backgroundColor: "#1a1810", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "15px 20px 72px" }}>
 
         {/* Logo */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 72, width: "auto", marginBottom: 24 }} />
+        <img src="/logo4.png" alt="HuddyerTrades Elite" style={{ height: 72, width: "auto", marginBottom: 12 }} />
 
         {/* Headline */}
         <div style={{ textAlign: "center", maxWidth: 760, marginBottom: 36 }}>
