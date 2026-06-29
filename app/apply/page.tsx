@@ -40,16 +40,6 @@ export default function ApplyPage() {
             <br />
             <span className="gold-text-gradient">YOU APPLY.</span>
           </h1>
-          <p style={{
-            fontFamily: "var(--font-body)",
-            fontSize: 16,
-            color: "#a89880",
-            lineHeight: 1.6,
-            maxWidth: 520,
-            margin: "0 auto",
-          }}>
-            Hudson walks through exactly how the program works, what he looks for, and what it takes to get access.
-          </p>
         </div>
 
         {/* VSL */}
