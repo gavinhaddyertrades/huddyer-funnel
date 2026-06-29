@@ -242,7 +242,6 @@ export default function HeroV2() {
                 <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#888", textAlign: "center", margin: 0 }}>
                   30-Day Money Back Guarantee. No contracts. Cancel anytime.
                 </p>
-                <TrustBadges onLight />
               </div>
             </div>
 
