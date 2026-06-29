@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, DM_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import Script from "next/script";
 import "./globals.css";
 
 // Trim DM Sans to only the two weights actually used on the page
@@ -87,6 +86,11 @@ export default function RootLayout({
         */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        {/* Google Analytics */}
+        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7F060ZZC3W" />
+        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+        <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-7F060ZZC3W');` }} />
         <link rel="preconnect" href="https://fast.wistia.com" />
         <link rel="preconnect" href="https://embedwistia-a.akamaihd.net" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://connect.facebook.net" />
@@ -124,13 +128,6 @@ export default function RootLayout({
       >
         {children}
         <Analytics />
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-7F060ZZC3W" strategy="afterInteractive" />
-        <Script id="ga-init" strategy="afterInteractive">{`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-7F060ZZC3W');
-        `}</Script>
       </body>
     </html>
   );
