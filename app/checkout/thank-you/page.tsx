@@ -1,8 +1,20 @@
 "use client";
 
+import { useEffect } from "react";
+
 const CIRCLE_LINK = "https://huddyertrades.circle.so/join?invitation_token=a3ef0280162ad7f0fbecac34f5a9e005334036ad-e75dd0ab-cd2d-46e4-bbc1-c558ff26bf5a";
 
 export default function CheckoutThankYouPage() {
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as Window & { gtag?: (...args: unknown[]) => void }).gtag) {
+      (window as Window & { gtag?: (...args: unknown[]) => void }).gtag!("event", "purchase", {
+        event_category: "conversion",
+        event_label: "Trading Room Purchase",
+        value: 29.99,
+        currency: "USD",
+      });
+    }
+  }, []);
 
   return (
     <div style={{ backgroundColor: "#1a1810", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 20px" }}>
